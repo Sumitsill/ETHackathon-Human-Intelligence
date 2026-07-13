@@ -1,0 +1,30 @@
+# Environmental secrets
+.env
+credentials.json
+token.json
+
+# Local databases and locks
+*.db
+*.db-journal
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Document queues and processing directories
+Module 1/backend/uploads/
+Module 1/backend/outputs/
+
+# Python caching & build folders
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.venv/
+venv/
+env/
+.env/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
