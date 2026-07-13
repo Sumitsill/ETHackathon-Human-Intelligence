@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 1 - Ingestion & Knowledge Graph Console</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: rgba(17, 24, 39, 0.7);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --accent-primary: #3b82f6;
+            --accent-secondary: #8b5cf6;
+            --accent-cyan: #06b6d4;
+            --accent-green: #10b981;
+            --accent-amber: #f59e0b;
+            --accent-red: #ef4444;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(at 10% 10%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+                radial-gradient(at 90% 90%, rgba(139, 92, 246, 0.15) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        header {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--card-border);
+            padding: 0.5rem 1.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-section h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.025em;
+        }
+
+        .logo-section p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.1rem;
+        }
+
+        .status-bar {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .status-badge {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            padding: 0.35rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .dot-green { background-color: var(--accent-green); box-shadow: 0 0 8px var(--accent-green); }
+        .dot-yellow { background-color: var(--accent-amber); box-shadow: 0 0 8px var(--accent-amber); }
+        .dot-red { background-color: var(--accent-red); box-shadow: 0 0 8px var(--accent-red); }
+
+        .btn {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            border: none;
+            padding: 0.5rem 1.25rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: none;
+        }
+
+        main {
+            max-width: 1600px;
+            margin: 0.5rem auto;
+            padding: 0 1.5rem;
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 1100px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 1rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 0.75rem;
+        }
+
+        .card-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 0.5rem;
+        }
+
+        /* Upload Area Styling */
+        .upload-area {
+            border: 2px dashed rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 1rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .upload-area:hover, .upload-area.dragover {
+            border-color: var(--accent-cyan);
+            background: rgba(6, 182, 212, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 1.75rem;
+            color: var(--accent-cyan);
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-text {
+            font-size: 0.85rem;
+            color: var(--text-main);
+            margin-bottom: 0.25rem;
+        }
+
+        .upload-hint {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        /* File List / Processing Status */
+        .file-list {
+            margin-top: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .file-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .file-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .file-name {
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .file-status {
+            font-size: 0.7rem;
+            color: var(--accent-cyan);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            margin-top: 0.1rem;
+        }
+
+        /* Search Section */
+        .search-box {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .search-input {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 0.85rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .search-input:focus {
+            border-color: var(--accent-secondary);
+        }
+
+        .search-results {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            max-height: 160px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .result-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1rem;
+            transition: all 0.3s;
+        }
+
+        .result-item:hover {
+            border-color: rgba(139, 92, 246, 0.3);
+            background: rgba(139, 92, 246, 0.02);
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .result-source {
+            font-weight: 600;
+            color: var(--accent-cyan);
+        }
+
+        .result-score {
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+        }
+
+        .result-text {
+            font-size: 0.85rem;
+            color: var(--text-main);
+            margin-bottom: 0.75rem;
+        }
+
+        .result-tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .tag-pill {
+            font-size: 0.7rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--accent-primary);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        /* SVG Graph Visualizer */
+        .graph-container {
+            width: 100%;
+            height: 360px;
+            position: relative;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .node {
+            cursor: pointer;
+            transition: filter 0.3s;
+        }
+
+        .node:hover {
+            filter: brightness(1.3);
+        }
+
+        .link {
+            stroke: rgba(255, 255, 255, 0.12);
+            stroke-width: 1.5;
+            transition: stroke 0.3s;
+        }
+
+        .link.highlight {
+            stroke: var(--accent-cyan);
+            stroke-width: 2.5;
+        }
+
+        .node-label {
+            font-size: 10px;
+            fill: #ffffff;
+            font-family: inherit;
+            text-anchor: middle;
+            pointer-events: none;
+            font-weight: 500;
+        }
+
+        .graph-legend {
+            position: absolute;
+            bottom: 1rem;
+            left: 1rem;
+            background: rgba(15, 23, 42, 0.9);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--card-border);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            font-size: 0.75rem;
+            max-width: 80%;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 4px;
+        }
+
+        .legend-doc { background-color: var(--accent-cyan); }
+        .legend-eq { background-color: var(--accent-green); }
+        .legend-reg { background-color: var(--accent-red); }
+        .legend-pers { background-color: var(--accent-amber); }
+        .legend-inc { background-color: #f97316; }
+
+        .node-details-card {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid var(--accent-primary);
+            border-radius: 12px;
+            padding: 1rem;
+            width: 280px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            font-size: 0.8rem;
+            z-index: 10;
+            display: none;
+        }
+
+        .details-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 0.25rem;
+            color: var(--accent-cyan);
+        }
+
+        .details-row {
+            margin-bottom: 0.35rem;
+        }
+
+        .details-label {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* Scrollbar custom colors */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-section">
+            <h1>Universal Document Ingestion Console</h1>
+            <p>Module 1 — Ingestion, Knowledge Graph & Vector Store Interface</p>
+        </div>
+        <div class="status-bar">
+            <div class="status-badge" id="badge-gemini">
+                <span class="status-dot dot-yellow"></span> Gemini API
+            </div>
+            <div class="status-badge" id="badge-qdrant">
+                <span class="status-dot dot-yellow"></span> Qdrant DB
+            </div>
+            <div class="status-badge" id="badge-neo4j">
+                <span class="status-dot dot-yellow"></span> Neo4j DB
+            </div>
+            <button class="btn btn-secondary" onclick="triggerScan()">Scan Folder</button>
+        </div>
+    </header>
+
+    <main>
+        <!-- Left side: Ingestion & Files -->
+        <div class="left-column">
+            <div class="card">
+                <div class="card-title">
+                    <span>Ingest Document</span>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">Heterogeneous Formats</span>
+                </div>
+                
+                <div class="upload-area" id="drop-zone" onclick="document.getElementById('file-input').click()">
+                    <div class="upload-icon">✦</div>
+                    <div class="upload-text">Drag & Drop files here or click to browse</div>
+                    <div class="upload-hint">Supports PDF, PNG, JPG, CSV, XLSX, EML, TXT</div>
+                    <input type="file" id="file-input" onchange="uploadFile(this.files[0])">
+                </div>
+
+                <div class="file-list" id="upload-status-list"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <span>Developer Testing Suite</span>
+                    <span style="font-size: 0.75rem; color: var(--accent-cyan);">Presets & Logs</span>
+                </div>
+                <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                    <button class="btn" style="flex: 1; font-size: 0.8rem; padding: 0.5rem;" onclick="runPresetTests()">Run Presets Ingestion</button>
+                    <button class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.5rem; color: var(--accent-red); border-color: rgba(239, 68, 68, 0.3);" onclick="resetSystem()">Reset System</button>
+                </div>
+                <div id="test-loader" style="display: none; text-align: center; font-size: 0.8rem; margin-bottom: 0.75rem; color: var(--accent-cyan);">
+                    Running ingestion pipelines... please wait (takes ~20-30s)
+                </div>
+                <pre id="terminal-logs" style="background: rgba(0, 0, 0, 0.4); border: 1px solid var(--card-border); border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; max-height: 200px; overflow-y: auto; display: none; padding: 0.75rem; color: #a7f3d0; white-space: pre-wrap; word-break: break-all;"></pre>
+            </div>
+
+            <div class="card">
+                <div class="card-title">System Status</div>
+                <div style="font-size: 0.85rem; display: flex; flex-direction: column; gap: 0.5rem;" id="sys-details">
+                    <div><strong>Watched Folder:</strong> <span id="watched-dir" style="word-break: break-all; color: var(--accent-cyan);">Loading...</span></div>
+                    <div><strong>Local Qdrant Path:</strong> <span id="qdrant-dir" style="word-break: break-all; color: var(--accent-cyan);">Loading...</span></div>
+                    <div><strong>Ingested Files Count:</strong> <span id="ingested-count" style="font-weight: 600;">0</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right side: Semantic Search & Interactive Graph -->
+        <div class="right-column">
+            <div class="card" style="padding: 1.5rem 0.5rem 0.5rem 0.5rem;">
+                <div class="card-title" style="padding: 0 1rem 0.75rem 1rem;">
+                    <span>Knowledge Graph Visualizer</span>
+                    <button class="btn btn-secondary" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;" onclick="loadGraph()">Refresh Graph</button>
+                </div>
+                <div class="graph-container">
+                    <svg id="graph-svg"></svg>
+                    
+                    <div class="graph-legend">
+                        <div class="legend-item"><span class="legend-color legend-doc"></span> Document</div>
+                        <div class="legend-item"><span class="legend-color legend-eq"></span> Equipment</div>
+                        <div class="legend-item"><span class="legend-color legend-reg"></span> Regulation</div>
+                        <div class="legend-item"><span class="legend-color legend-pers"></span> Personnel</div>
+                        <div class="legend-item"><span class="legend-color legend-inc"></span> Incident</div>
+                    </div>
+
+                    <div class="node-details-card" id="details-card">
+                        <div class="details-title" id="node-title">Node Title</div>
+                        <div id="node-properties"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Semantic Retrieval Search</div>
+                <div class="search-box">
+                    <input type="text" class="search-input" id="search-query" placeholder="Ask something (e.g. 'Safety guidelines for pump P-204' or 'Who inspected XV-101?')">
+                    <button class="btn" onclick="performSearch()">Search</button>
+                </div>
+                <div class="search-results" id="search-results-list">
+                    <div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 2rem;">Search results will display here.</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const API_URL = "http://127.0.0.1:8000";
+
+        // Drop zone drag and drop handlers
+        const dropZone = document.getElementById('drop-zone');
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+            }, false);
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if(files.length > 0) {
+                uploadFile(files[0]);
+            }
+        });
+
+        // Initialize status and load data
+        window.addEventListener('DOMContentLoaded', () => {
+            checkSystemStatus();
+            loadGraph();
+            setInterval(checkSystemStatus, 10000); // Poll status every 10 sec
+        });
+
+        async function checkSystemStatus() {
+            try {
+                const response = await fetch(`${API_URL}/status`);
+                const data = await response.json();
+                
+                // Update Badges
+                updateBadge('badge-gemini', data.gemini_api);
+                updateBadge('badge-qdrant', data.qdrant_vector.includes("connected") ? "ok" : "error");
+                updateBadge('badge-neo4j', data.neo4j_graph);
+
+                // Update details
+                document.getElementById('watched-dir').innerText = data.watched_directory;
+                document.getElementById('qdrant-dir').innerText = data.qdrant_directory;
+                document.getElementById('ingested-count').innerText = data.ingested_files_count;
+            } catch (err) {
+                console.error("Status check failed:", err);
+                updateBadge('badge-gemini', 'error');
+                updateBadge('badge-qdrant', 'error');
+                updateBadge('badge-neo4j', 'error');
+            }
+        }
+
+        function updateBadge(id, status) {
+            const badge = document.getElementById(id);
+            const dot = badge.querySelector('.status-dot');
+            dot.className = "status-dot"; // reset
+            
+            if (status === "ok" || status === "connected" || status === "mock_active") {
+                dot.classList.add('dot-green');
+                if (status === "mock_active") {
+                    badge.title = "Connected with Local JSON Graph database";
+                }
+            } else if (status === "error" || status.includes("error") || status.includes("offline")) {
+                dot.classList.add('dot-red');
+            } else {
+                dot.classList.add('dot-yellow');
+            }
+        }
+
+        async function uploadFile(file) {
+            if(!file) return;
+
+            const list = document.getElementById('upload-status-list');
+            const item = document.createElement('div');
+            item.className = 'file-item';
+            item.innerHTML = `
+                <div class="file-info">
+                    <span class="file-name">${file.name}</span>
+                    <span class="file-status">⌛ Ingesting pipeline running...</span>
+                </div>
+            `;
+            list.prepend(item);
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            try {
+                const response = await fetch(`${API_URL}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    item.querySelector('.file-status').innerHTML = "🟢 Ingested successfully!";
+                    item.querySelector('.file-status').style.color = "var(--accent-green)";
+                    // Refresh graph and status
+                    loadGraph();
+                    checkSystemStatus();
+                } else {
+                    const errData = await response.json();
+                    item.querySelector('.file-status').innerHTML = `🔴 Ingestion failed: ${errData.detail || "Unknown error"}`;
+                    item.querySelector('.file-status').style.color = "var(--accent-red)";
+                }
+            } catch (err) {
+                item.querySelector('.file-status').innerHTML = `🔴 Network error during ingestion`;
+                item.querySelector('.file-status').style.color = "var(--accent-red)";
+            }
+        }
+
+        async function triggerScan() {
+            try {
+                const response = await fetch(`${API_URL}/scan`, { method: 'POST' });
+                const data = await response.json();
+                alert(data.message);
+                checkSystemStatus();
+                loadGraph();
+            } catch (err) {
+                alert("Failed to trigger folder scan");
+            }
+        }
+
+        async function runPresetTests() {
+            const loader = document.getElementById('test-loader');
+            const terminal = document.getElementById('terminal-logs');
+            
+            loader.style.display = 'block';
+            terminal.style.display = 'none';
+            terminal.innerText = "";
+            
+            try {
+                const response = await fetch(`${API_URL}/run_tests`, { method: 'POST' });
+                const data = await response.json();
+                
+                loader.style.display = 'none';
+                terminal.innerText = data.logs;
+                terminal.style.display = 'block';
+                
+                // Refresh graph and system status view
+                loadGraph();
+                checkSystemStatus();
+            } catch (err) {
+                loader.style.display = 'none';
+                terminal.innerText = "Error running presets: " + err.message;
+                terminal.style.display = 'block';
+            }
+        }
+
+        async function resetSystem() {
+            if(!confirm("Are you sure you want to clear all registry records, empty the Qdrant database, and delete watched folder documents?")) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/reset`, { method: 'POST' });
+                const data = await response.json();
+                alert(data.message);
+                
+                // Clear UI lists
+                document.getElementById('upload-status-list').innerHTML = "";
+                document.getElementById('terminal-logs').style.display = 'none';
+                document.getElementById('terminal-logs').innerText = "";
+                
+                loadGraph();
+                checkSystemStatus();
+            } catch (err) {
+                alert("Reset request failed: " + err.message);
+            }
+        }
+
+        async function performSearch() {
+            const query = document.getElementById('search-query').value;
+            if(!query.strip && query === "") return;
+
+            const resultsList = document.getElementById('search-results-list');
+            resultsList.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 2rem;">Searching semantic vectors...</div>`;
+
+            try {
+                const response = await fetch(`${API_URL}/search?query=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                
+                if (data.results.length === 0) {
+                    resultsList.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 2rem;">No relevant document chunks found.</div>`;
+                    return;
+                }
+
+                resultsList.innerHTML = "";
+                data.results.forEach(res => {
+                    const item = document.createElement('div');
+                    item.className = "result-item";
+                    
+                    const scoreText = res.score ? (res.score * 100).toFixed(1) + "% match" : "N/A match";
+                    
+                    let tagsHtml = "";
+                    if(res.related_node_ids && res.related_node_ids.length > 0) {
+                        res.related_node_ids.forEach(nodeId => {
+                            tagsHtml += `<span class="tag-pill" onclick="highlightGraphNode('${nodeId}')">${nodeId}</span>`;
+                        });
+                    }
+
+                    item.innerHTML = `
+                        <div class="result-header">
+                            <span class="result-source">📄 ${res.document_id}</span>
+                            <span class="result-score">${scoreText}</span>
+                        </div>
+                        <div class="result-text">${res.text}</div>
+                        <div class="result-tags">${tagsHtml}</div>
+                    `;
+                    resultsList.appendChild(item);
+                });
+            } catch (err) {
+                resultsList.innerHTML = `<div style="text-align: center; color: var(--accent-red); font-size: 0.85rem; padding: 2rem;">Search query failed: ${err.message}</div>`;
+            }
+        }
+
+        // SVG Graph Renderer using simple circular or physics layout
+        let graphData = { nodes: [], relationships: [] };
+        
+        async function loadGraph() {
+            try {
+                const response = await fetch(`${API_URL}/graph`);
+                const resData = await response.json();
+                graphData = resData.data;
+                renderGraph();
+            } catch (err) {
+                console.error("Failed to load graph:", err);
+            }
+        }
+
+        function renderGraph() {
+            const svg = document.getElementById('graph-svg');
+            svg.innerHTML = ""; // Clear
+            
+            const nodes = graphData.nodes || [];
+            const links = graphData.relationships || [];
+            
+            if (nodes.length === 0) {
+                svg.innerHTML = `<text x="50%" y="50%" fill="#9ca3af" text-anchor="middle" font-size="14">Knowledge Graph is empty. Ingest documents to see links.</text>`;
+                return;
+            }
+
+            // Simple map of unique keys
+            const nodeMap = {};
+            nodes.forEach(n => {
+                let key = n.properties.id || n.properties.tag || n.properties.name || "Unknown";
+                nodeMap[key] = {
+                    key: key,
+                    type: n.type,
+                    properties: n.properties,
+                    connectedLinks: []
+                };
+            });
+
+            // Make sure all link ends exist as nodes, if not, create placeholder
+            links.forEach(l => {
+                const fKey = l.from.val;
+                const tKey = l.to.val;
+                if(!nodeMap[fKey]) {
+                    nodeMap[fKey] = { key: fKey, type: l.from.type, properties: { name: fKey } };
+                }
+                if(!nodeMap[tKey]) {
+                    nodeMap[tKey] = { key: tKey, type: l.to.type, properties: { name: tKey } };
+                }
+            });
+
+            // Map back to array
+            const uniqueNodes = Object.values(nodeMap);
+            const w = svg.clientWidth || 800;
+            const h = svg.clientHeight || 360;
+            const centerX = w / 2;
+            const centerY = h / 2;
+
+            // Compute physics-less positions (distribute in concentric circles by type)
+            uniqueNodes.forEach((node, idx) => {
+                let radius = 140;
+                if (node.type === "Document") radius = 65;
+                else if (node.type === "Equipment") radius = 140;
+                else if (node.type === "Regulation") radius = 100;
+                
+                // Add jitter/spacing
+                const angle = (idx / uniqueNodes.length) * 2 * Math.PI;
+                node.x = centerX + radius * Math.cos(angle) + (Math.random() - 0.5) * 30;
+                node.y = centerY + radius * Math.sin(angle) + (Math.random() - 0.5) * 30;
+            });
+
+            // Run simple spring layout iterations for spacing
+            for (let k = 0; k < 60; k++) {
+                // Node repulsion
+                for (let i = 0; i < uniqueNodes.length; i++) {
+                    for (let j = i + 1; j < uniqueNodes.length; j++) {
+                        const n1 = uniqueNodes[i];
+                        const n2 = uniqueNodes[j];
+                        const dx = n2.x - n1.x;
+                        const dy = n2.y - n1.y;
+                        const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+                        if (dist < 50) {
+                            const force = (50 - dist) / 2;
+                            const fx = (dx / dist) * force;
+                            const fy = (dy / dist) * force;
+                            n2.x += fx;
+                            n2.y += fy;
+                            n1.x -= fx;
+                            n1.y -= fy;
+                        }
+                    }
+                }
+                // Edge attraction
+                links.forEach(l => {
+                    const n1 = nodeMap[l.from.val];
+                    const n2 = nodeMap[l.to.val];
+                    if (n1 && n2) {
+                        const dx = n2.x - n1.x;
+                        const dy = n2.y - n1.y;
+                        const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+                        if (dist > 90) {
+                            const force = (dist - 90) * 0.05;
+                            const fx = (dx / dist) * force;
+                            const fy = (dy / dist) * force;
+                            n2.x -= fx;
+                            n2.y -= fy;
+                            n1.x += fx;
+                            n1.y += fy;
+                        }
+                    }
+                });
+                
+                // Keep inside bounds
+                uniqueNodes.forEach(node => {
+                    node.x = Math.max(40, Math.min(w - 40, node.x));
+                    node.y = Math.max(40, Math.min(h - 40, node.y));
+                });
+            }
+
+            // Draw link lines
+            links.forEach(l => {
+                const n1 = nodeMap[l.from.val];
+                const n2 = nodeMap[l.to.val];
+                if (n1 && n2) {
+                    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                    line.setAttribute("x1", n1.x);
+                    line.setAttribute("y1", n1.y);
+                    line.setAttribute("x2", n2.x);
+                    line.setAttribute("y2", n2.y);
+                    line.setAttribute("class", "link");
+                    line.setAttribute("data-from", n1.key);
+                    line.setAttribute("data-to", n2.key);
+                    line.setAttribute("data-type", l.type);
+                    
+                    // Tooltip text
+                    const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
+                    title.textContent = `:${l.type}`;
+                    line.appendChild(title);
+                    
+                    svg.appendChild(line);
+                }
+            });
+
+            // Draw node circles
+            uniqueNodes.forEach(node => {
+                const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+                group.setAttribute("class", "node");
+                group.setAttribute("id", `node-${node.key}`);
+                group.onclick = () => showNodeDetails(node);
+
+                const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                circle.setAttribute("cx", node.x);
+                circle.setAttribute("cy", node.y);
+                circle.setAttribute("r", node.type === "Document" ? 18 : 14);
+                
+                // Colors based on Node Type
+                let color = "var(--accent-primary)";
+                if (node.type === "Document") color = "var(--accent-cyan)";
+                else if (node.type === "Equipment") color = "var(--accent-green)";
+                else if (node.type === "Regulation") color = "var(--accent-red)";
+                else if (node.type === "Personnel") color = "var(--accent-amber)";
+                else if (node.type === "Incident") color = "#f97316";
+
+                circle.setAttribute("fill", color);
+                circle.setAttribute("stroke", "rgba(255, 255, 255, 0.2)");
+                circle.setAttribute("stroke-width", "2");
+
+                const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                text.setAttribute("x", node.x);
+                text.setAttribute("y", node.y + (node.type === "Document" ? 30 : 25));
+                text.setAttribute("class", "node-label");
+                
+                // Display text: just show short tag name
+                let displayLabel = node.key;
+                if(displayLabel.length > 15) displayLabel = displayLabel.substring(0,12) + "...";
+                text.textContent = displayLabel;
+
+                // Add browser hover tooltip
+                const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
+                title.textContent = `${node.type}: ${node.key}\n${JSON.stringify(node.properties, null, 2)}`;
+                group.appendChild(title);
+
+                group.appendChild(circle);
+                group.appendChild(text);
+                svg.appendChild(group);
+            });
+        }
+
+        function showNodeDetails(node) {
+            const card = document.getElementById('details-card');
+            const title = document.getElementById('node-title');
+            const props = document.getElementById('node-properties');
+            
+            title.innerText = `${node.type}: ${node.key}`;
+            
+            let html = "";
+            for (const [k, v] of Object.entries(node.properties)) {
+                if (k !== "id" && k !== "tag" && k !== "name") {
+                    html += `
+                        <div class="details-row">
+                            <span class="details-label">${k.capitalize()}:</span>
+                            <span style="word-break: break-all;">${v}</span>
+                        </div>
+                    `;
+                }
+            }
+            props.innerHTML = html || `<span style="color:var(--text-muted);">No additional properties.</span>`;
+            card.style.display = "block";
+
+            // Highlight links connected to this node
+            const links = document.querySelectorAll('.link');
+            links.forEach(l => {
+                if(l.getAttribute('data-from') === node.key || l.getAttribute('data-to') === node.key) {
+                    l.classList.add('highlight');
+                } else {
+                    l.classList.remove('highlight');
+                }
+            });
+        }
+
+        function highlightGraphNode(nodeId) {
+            // Find node elements and click them programmatically
+            const nodeEl = document.getElementById(`node-${nodeId}`);
+            if(nodeEl) {
+                nodeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                nodeEl.dispatchEvent(new Event('click'));
+            }
+        }
+
+        String.prototype.capitalize = function() {
+            return this.charAt(0).toUpperCase() + this.slice(1);
+        }
+    </script>
+</body>
+</html>

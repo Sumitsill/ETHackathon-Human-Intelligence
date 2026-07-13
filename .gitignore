@@ -1,0 +1,13 @@
+# Python cache files
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+
+# Local Qdrant Database instances
+Mod 1/qdrant_db/
+Mod 1/test_qdrant/
+Mod 1/test_qdrant_db/
+
+# Local run state/metadata
+Mod 1/processed_registry.json

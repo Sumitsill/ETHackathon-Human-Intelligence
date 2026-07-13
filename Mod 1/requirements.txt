@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+watchdog
+pandas
+openpyxl
+neo4j
+qdrant-client
+google-generativeai
+pymupdf
+python-multipart
+pillow
+pydantic
