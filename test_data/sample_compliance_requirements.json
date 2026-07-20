@@ -1,0 +1,16 @@
+[
+  {
+    "regulation_id": "OISD-117",
+    "equipment_type": "Centrifugal Pump",
+    "parameter": "max_pressure_bar",
+    "limit_value": 15,
+    "operator": "<="
+  },
+  {
+    "regulation_id": "Factory Act Sec 37",
+    "equipment_type": "Pressure Vessel",
+    "parameter": "inspection_interval_months",
+    "limit_value": 12,
+    "operator": "<="
+  }
+]

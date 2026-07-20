@@ -1,0 +1,27 @@
+[
+  {
+    "question": "What is the operating pressure range of the crude separator?",
+    "document": "Refinery Operating Manual Section 4. Crude Separator TK-301 operates under a pressure range of 45 to 65 PSI. If pressure exceeds 80 PSI, the safety valve RV-301 releases to flare.",
+    "answers": ["45 to 65 PSI", "45-65 PSI"]
+  },
+  {
+    "question": "Who approved the inspection report for CDU-1?",
+    "document": "CDU-1 Annual Inspection Report. Date: 2025-11-12. Inspected by Chief Inspector Alan Turing. Approved by Plant Manager David Hilbert.",
+    "answers": ["David Hilbert", "Plant Manager David Hilbert"]
+  },
+  {
+    "question": "What is the serial number of the turbine generator TG-02?",
+    "document": "Equipment Specification Sheet - TG-02. Turbine Generator Unit 2. Serial Number: SN-7749-XG2. Manufacturer: GE Power. Rating: 45 MW.",
+    "answers": ["SN-7749-XG2", "SN7749-XG2"]
+  },
+  {
+    "question": "What is the minimum safety clearance for storage tanks under OISD?",
+    "document": "OISD Layout Guidelines: Standard clearance between hydrocarbon storage tanks and process units must be a minimum of 30 meters to prevent thermal radiation damage in case of a fire incident.",
+    "answers": ["30 meters", "30m"]
+  },
+  {
+    "question": "What flow rate is the cooling water pump designed for?",
+    "document": "Datasheet CW-P-02: Cooling Water Auxiliary Pump. Design flow rate: 1200 cubic meters per hour at a head of 45 meters. Motor rating: 250 kW.",
+    "answers": ["1200 cubic meters per hour", "1200 m3/h", "1200 cubic meters/hour"]
+  }
+]

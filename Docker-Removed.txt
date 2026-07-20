@@ -1,0 +1,303 @@
+================================================================================
+  ET UNIFIED OPERATIONS BRAIN 2026 - COMPLETE DOCKER CONFIGURATIONS ARCHIVE
+================================================================================
+Generated: 2026-07-20
+Location: Root / DOCKER_FILES_ARCHIVE.txt
+
+This document stores full details, exact code, file locations, network ports, 
+volume mounts, build contexts, advantages, and recreation instructions for all 
+Dockerfiles and the orchestration compose file in the repository.
+
+================================================================================
+SUMMARY OF ALL DOCKER INFRASTRUCTURE FILES
+================================================================================
+
+1. docker-compose.yml
+   - Location: Root / docker-compose.yml
+   - Service Target: Orchestrates all 4 backend microservices concurrently
+   - Network Ports: 8000 (Md 1), 8001 (Md 2), 8002 (Md 3), 8003 (Md 4)
+
+2. Module 1 Dockerfile
+   - Location: ML MODELS/Md 1/backend/Dockerfile
+   - Service Target: Universal Document Ingestion & Knowledge Graph Agent
+   - Container Port: 8000
+
+3. Module 2 Dockerfile
+   - Location: ML MODELS/Md 2/Dockerfile
+   - Service Target: Grounded Expert Knowledge Copilot & Evaluation Engine
+   - Container Port: 8001
+
+4. Module 3 Dockerfile
+   - Location: ML MODELS/Md 3/Mod 3/Dockerfile
+   - Service Target: Maintenance Intelligence & RCA Agent (MIRA)
+   - Container Port: 8002
+
+5. Module 4 Dockerfile
+   - Location: ML MODELS/Md 4/Mod 4/Dockerfile
+   - Service Target: Quality & Regulatory Compliance Intelligence (QRCI)
+   - Container Port: 8003
+
+================================================================================
+SECTION 1: DOCKER COMPOSE ORCHESTRATOR
+================================================================================
+
+--------------------------------------------------------------------------------
+FILE NAME: docker-compose.yml
+LOCATION:  Root / docker-compose.yml
+--------------------------------------------------------------------------------
+
+USAGE & COMMANDS:
+  - Start all backend services in containerized mode:
+    $ docker compose up --build -d
+  - View container logs:
+    $ docker compose logs -f
+  - Stop all running containers:
+    $ docker compose down
+
+KEY ADVANTAGES:
+  1. Single-Command Multi-Container Launch: Starts all 4 independent FastAPI 
+     microservices with one terminal command.
+  2. Isolated Network & Container Names: Assigns dedicated container names 
+     (cockpit-knowledge, cockpit-rag, cockpit-mira, cockpit-qrci).
+  3. Automated Persistent Volume Binding: Binds SQLite databases (`knowledge_graph.db`, 
+     `workspace_copilot.db`, `compliance.db`), upload folders (`/uploads`), and 
+     Qdrant vector stores (`/qdrant_db`) to host machine disk for zero data loss on restart.
+  4. Automatic Restart Policy: `restart: unless-stopped` ensures production resiliency.
+
+EXACT CODE:
+```yaml
+version: "3.9"
+
+services:
+  knowledge:
+    build: 
+      context: "./ML MODELS/Md 1/backend"
+      dockerfile: Dockerfile
+    container_name: cockpit-knowledge
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - "./ML MODELS/Md 1/backend/uploads:/app/uploads"
+      - "./ML MODELS/Md 1/backend/outputs:/app/outputs"
+      - "./ML MODELS/Md 1/backend/knowledge_graph.db:/app/knowledge_graph.db"
+    restart: unless-stopped
+
+  rag-copilot:
+    build:
+      context: "./ML MODELS/Md 2"
+      dockerfile: Dockerfile
+    container_name: cockpit-rag
+    ports:
+      - "8001:8001"
+    env_file:
+      - .env
+    volumes:
+      - "./ML MODELS/Md 2/workspace_copilot.db:/app/workspace_copilot.db"
+    restart: unless-stopped
+
+  mira-rca:
+    build:
+      context: "./ML MODELS/Md 3/Mod 3"
+      dockerfile: Dockerfile
+    container_name: cockpit-mira
+    ports:
+      - "8002:8002"
+    env_file:
+      - .env
+    volumes:
+      - "./ML MODELS/Md 3/Mod 3/qdrant_db:/app/qdrant_db"
+      - "./ML MODELS/Md 3/Mod 3/mock_graph.json:/app/mock_graph.json"
+    restart: unless-stopped
+
+  qrci-compliance:
+    build:
+      context: "./ML MODELS/Md 4/Mod 4"
+      dockerfile: Dockerfile
+    container_name: cockpit-qrci
+    ports:
+      - "8003:8003"
+    env_file:
+      - .env
+    volumes:
+      - "./ML MODELS/Md 4/Mod 4/qdrant_db:/app/qdrant_db"
+      - "./ML MODELS/Md 4/Mod 4/mock_graph_compliance.json:/app/mock_graph_compliance.json"
+      - "./ML MODELS/Md 4/Mod 4/compliance.db:/app/compliance.db"
+    restart: unless-stopped
+```
+
+RE-ESTABLISHMENT INSTRUCTIONS:
+Create a file named `docker-compose.yml` in the root folder of the repository 
+and paste the YAML code snippet above. Ensure relative build context paths match 
+the active folder structure (`ML MODELS/Md 1/backend`, `ML MODELS/Md 2`, etc.).
+
+================================================================================
+SECTION 2: MODULE DOCKERFILES
+================================================================================
+
+--------------------------------------------------------------------------------
+FILE NAME: Dockerfile (Module 1 - Ingestion & Knowledge Graph)
+LOCATION:  ML MODELS/Md 1/backend/Dockerfile
+--------------------------------------------------------------------------------
+
+USAGE & COMMANDS:
+  - Build standalone Module 1 container image:
+    $ cd "ML MODELS/Md 1/backend"
+    $ docker build -t cockpit-module1 .
+  - Run container standalone on Port 8000:
+    $ docker run -d -p 8000:8000 --env-file ../../.env --name module1 cockpit-module1
+
+KEY ADVANTAGES:
+  1. Base Image: `python:3.11-slim` ensures a minimal footprint (~150MB base).
+  2. C++ System Tooling: Installs `build-essential` required for compiling 
+     PyMuPDF and Pillow image processing headers.
+  3. No-Cache Pip Installation: Avoids bloating container image size with cached wheels.
+  4. Container Host Binding: `--host 0.0.0.0` allows binding across Docker network bridges.
+
+EXACT CODE:
+```dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies required for pymupdf and pillow
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+EXPOSE 8000
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+RE-ESTABLISHMENT INSTRUCTIONS:
+Create a file named `Dockerfile` inside `ML MODELS/Md 1/backend/` and paste the code snippet above.
+
+--------------------------------------------------------------------------------
+FILE NAME: Dockerfile (Module 2 - Grounded Expert RAG Copilot)
+LOCATION:  ML MODELS/Md 2/Dockerfile
+--------------------------------------------------------------------------------
+
+USAGE & COMMANDS:
+  - Build standalone Module 2 container image:
+    $ cd "ML MODELS/Md 2"
+    $ docker build -t cockpit-module2 .
+  - Run container standalone on Port 8001:
+    $ docker run -d -p 8001:8001 --env-file ../.env --name module2 cockpit-module2
+
+KEY ADVANTAGES:
+  1. Isolated RAG Engine: Packages sentence-transformers embeddings model and Groq 
+     API bindings cleanly into container memory.
+  2. Exposed Port: Exposes port 8001 matching Next.js BFF proxy contract.
+
+EXACT CODE:
+```dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies required for pymupdf and pillow
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+EXPOSE 8001
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8001"]
+```
+
+RE-ESTABLISHMENT INSTRUCTIONS:
+Create a file named `Dockerfile` inside `ML MODELS/Md 2/` and paste the code snippet above.
+
+--------------------------------------------------------------------------------
+FILE NAME: Dockerfile (Module 3 - MIRA RCA & Predictive Maintenance)
+LOCATION:  ML MODELS/Md 3/Mod 3/Dockerfile
+--------------------------------------------------------------------------------
+
+USAGE & COMMANDS:
+  - Build standalone Module 3 container image:
+    $ cd "ML MODELS/Md 3/Mod 3"
+    $ docker build -t cockpit-module3 .
+  - Run container standalone on Port 8002:
+    $ docker run -d -p 8002:8002 --env-file ../../.env --name module3 cockpit-module3
+
+KEY ADVANTAGES:
+  1. High-Performance Optimization Solvers: Pre-installs build dependencies for 
+     running matrix scheduling solvers and fault tree graph traversals.
+  2. Exposed Port: Exposes port 8002 for RCA & anomaly alert API.
+
+EXACT CODE:
+```dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies required for build-essential tools
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+EXPOSE 8002
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8002"]
+```
+
+RE-ESTABLISHMENT INSTRUCTIONS:
+Create a file named `Dockerfile` inside `ML MODELS/Md 3/Mod 3/` and paste the code snippet above.
+
+--------------------------------------------------------------------------------
+FILE NAME: Dockerfile (Module 4 - QRCI Compliance Intelligence)
+LOCATION:  ML MODELS/Md 4/Mod 4/Dockerfile
+--------------------------------------------------------------------------------
+
+USAGE & COMMANDS:
+  - Build standalone Module 4 container image:
+    $ cd "ML MODELS/Md 4/Mod 4"
+    $ docker build -t cockpit-module4 .
+  - Run container standalone on Port 8003:
+    $ docker run -d -p 8003:8003 --env-file ../../.env --name module4 cockpit-module4
+
+KEY ADVANTAGES:
+  1. Self-Contained Regulatory Compliance Engine: Packages deterministic threshold 
+     scans, evidence package compilers, and local vector/graph stores.
+  2. Exposed Port: Exposes port 8003 for QRCI compliance API endpoints.
+
+EXACT CODE:
+```dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies required for build-essential tools
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+EXPOSE 8003
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8003"]
+```
+
+RE-ESTABLISHMENT INSTRUCTIONS:
+Create a file named `Dockerfile` inside `ML MODELS/Md 4/Mod 4/` and paste the code snippet above.
+
+================================================================================
+END OF DOCKER CONFIGURATIONS ARCHIVE
+================================================================================

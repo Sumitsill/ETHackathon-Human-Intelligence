@@ -1,0 +1,1476 @@
+{
+  "nodes": [
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Crude Charge Centrifugal Pump",
+        "asset_class": "Pump",
+        "location": "CDU-1",
+        "criticality": "High",
+        "oem_manual_ref": "MAN-P14",
+        "tag": "Pump-14",
+        "created_at": "2026-07-20 20:03:02.983466"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Crude Charge Pump Drive Motor",
+        "asset_class": "Motor",
+        "location": "CDU-1",
+        "criticality": "High",
+        "oem_manual_ref": "MAN-P14",
+        "tag": "Motor-14",
+        "created_at": "2026-07-20 20:03:02.996909"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Pump Main Radial Bearing Housing",
+        "asset_class": "Bearing",
+        "location": "CDU-1",
+        "criticality": "High",
+        "oem_manual_ref": "MAN-P14",
+        "tag": "Bearing-14",
+        "created_at": "2026-07-20 20:03:03.028735"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Emergency Diesel Generator 3",
+        "asset_class": "Generator",
+        "location": "Powerhouse-A",
+        "criticality": "Critical",
+        "oem_manual_ref": "MAN-G3",
+        "tag": "Generator-3",
+        "created_at": "2026-07-20 20:03:03.059925"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Generator Alternator Stator Winding",
+        "asset_class": "Stator",
+        "location": "Powerhouse-A",
+        "criticality": "Critical",
+        "oem_manual_ref": "MAN-G3",
+        "tag": "Stator-3",
+        "created_at": "2026-07-20 20:03:03.070808"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Reciprocating Instrument Air Compressor",
+        "asset_class": "Compressor",
+        "location": "Utility-Line-2",
+        "criticality": "Medium",
+        "oem_manual_ref": "MAN-C8",
+        "tag": "Compressor-8",
+        "created_at": "2026-07-20 20:03:03.098397"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Effluent Treatment Plant Discharge Point",
+        "asset_class": "EffluentDischarge",
+        "location": "Offsite-Utilities",
+        "criticality": "High",
+        "oem_manual_ref": "N/A",
+        "tag": "ETP-01",
+        "created_at": "2026-07-20 20:03:03.110514"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Crude Heater Flue Gas Stack",
+        "asset_class": "EmissionStack",
+        "location": "CDU-1",
+        "criticality": "High",
+        "oem_manual_ref": "N/A",
+        "tag": "Stack-01",
+        "created_at": "2026-07-20 20:03:03.127763"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "LPG Mounded Storage Vessel 101",
+        "asset_class": "PressureVessel",
+        "location": "LPG-Terminal",
+        "criticality": "Critical",
+        "oem_manual_ref": "N/A",
+        "tag": "LPG-Storage",
+        "created_at": "2026-07-20 20:03:03.140964"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Cummins Compressor",
+        "asset_class": "Compressor",
+        "location": "Unit-1 Process Area",
+        "criticality": "High",
+        "oem_manual_ref": "N/A",
+        "tag": "CMP-101",
+        "created_at": "2026-07-20 20:03:03.154022"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Forbes Marshall Reactor",
+        "asset_class": "Reactor",
+        "location": "Unit-1 Process Area",
+        "criticality": "High",
+        "oem_manual_ref": "N/A",
+        "tag": "RCT-102",
+        "created_at": "2026-07-20 20:03:03.170194"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Kirloskar Reactor",
+        "asset_class": "Reactor",
+        "location": "Compressor Station",
+        "criticality": "Low",
+        "oem_manual_ref": "N/A",
+        "tag": "RCT-103",
+        "created_at": "2026-07-20 20:03:03.182211"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Siemens Reactor",
+        "asset_class": "Reactor",
+        "location": "Boiler House",
+        "criticality": "Medium",
+        "oem_manual_ref": "N/A",
+        "tag": "RCT-104",
+        "created_at": "2026-07-20 20:03:03.196112"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Forbes Marshall Pump",
+        "asset_class": "Pump",
+        "location": "Unit-2 Utilities",
+        "criticality": "Medium",
+        "oem_manual_ref": "N/A",
+        "tag": "PMP-105",
+        "created_at": "2026-07-20 20:03:03.209978"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Thermax Control Valve",
+        "asset_class": "Control Valve",
+        "location": "Unit-1 Process Area",
+        "criticality": "Medium",
+        "oem_manual_ref": "N/A",
+        "tag": "VLV-106",
+        "created_at": "2026-07-20 20:03:03.221902"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Kirloskar Cooling Tower",
+        "asset_class": "Cooling Tower",
+        "location": "Tank Farm",
+        "criticality": "Low",
+        "oem_manual_ref": "N/A",
+        "tag": "CT-107",
+        "created_at": "2026-07-20 20:03:03.237035"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Cummins Turbine",
+        "asset_class": "Turbine",
+        "location": "Unit-1 Process Area",
+        "criticality": "Low",
+        "oem_manual_ref": "N/A",
+        "tag": "TRB-108",
+        "created_at": "2026-07-20 20:03:03.249709"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Thermax Cooling Tower",
+        "asset_class": "Cooling Tower",
+        "location": "Unit-2 Utilities",
+        "criticality": "High",
+        "oem_manual_ref": "N/A",
+        "tag": "CT-109",
+        "created_at": "2026-07-20 20:03:03.266110"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Thermax Compressor",
+        "asset_class": "Compressor",
+        "location": "Unit-2 Utilities",
+        "criticality": "Medium",
+        "oem_manual_ref": "N/A",
+        "tag": "CMP-110",
+        "created_at": "2026-07-20 20:03:03.280083"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Grundfos Control Valve",
+        "asset_class": "Control Valve",
+        "location": "Unit-2 Utilities",
+        "criticality": "Medium",
+        "oem_manual_ref": "N/A",
+        "tag": "VLV-111",
+        "created_at": "2026-07-20 20:03:03.293314"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "BHEL Compressor",
+        "asset_class": "Compressor",
+        "location": "Compressor Station",
+        "criticality": "Low",
+        "oem_manual_ref": "N/A",
+        "tag": "CMP-112",
+        "created_at": "2026-07-20 20:03:03.307703"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Siemens Turbine",
+        "asset_class": "Turbine",
+        "location": "Tank Farm",
+        "criticality": "Low",
+        "oem_manual_ref": "N/A",
+        "tag": "TRB-113",
+        "created_at": "2026-07-20 20:03:03.320354"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Kirloskar Pump",
+        "asset_class": "Pump",
+        "location": "Unit-2 Utilities",
+        "criticality": "Medium",
+        "oem_manual_ref": "N/A",
+        "tag": "PMP-114",
+        "created_at": "2026-07-20 20:03:03.339278"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Grundfos Cooling Tower",
+        "asset_class": "Cooling Tower",
+        "location": "Effluent Treatment Plant",
+        "criticality": "High",
+        "oem_manual_ref": "N/A",
+        "tag": "CT-115",
+        "created_at": "2026-07-20 20:03:03.351388"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Cummins Conveyor",
+        "asset_class": "Conveyor",
+        "location": "Unit-2 Utilities",
+        "criticality": "High",
+        "oem_manual_ref": "N/A",
+        "tag": "CNV-116",
+        "created_at": "2026-07-20 20:03:03.366619"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Forbes Marshall Boiler",
+        "asset_class": "Boiler",
+        "location": "Effluent Treatment Plant",
+        "criticality": "Low",
+        "oem_manual_ref": "N/A",
+        "tag": "BLR-117",
+        "created_at": "2026-07-20 20:03:03.379128"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "L&T Heat Exchanger",
+        "asset_class": "Heat Exchanger",
+        "location": "Compressor Station",
+        "criticality": "High",
+        "oem_manual_ref": "N/A",
+        "tag": "HEX-118",
+        "created_at": "2026-07-20 20:03:03.393214"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "BHEL Heat Exchanger",
+        "asset_class": "Heat Exchanger",
+        "location": "Effluent Treatment Plant",
+        "criticality": "Low",
+        "oem_manual_ref": "N/A",
+        "tag": "HEX-119",
+        "created_at": "2026-07-20 20:03:03.411562"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "L&T Turbine",
+        "asset_class": "Turbine",
+        "location": "Compressor Station",
+        "criticality": "Low",
+        "oem_manual_ref": "N/A",
+        "tag": "TRB-120",
+        "created_at": "2026-07-20 20:03:03.424156"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Thermax Pump",
+        "asset_class": "Pump",
+        "location": "Effluent Treatment Plant",
+        "criticality": "Low",
+        "oem_manual_ref": "N/A",
+        "tag": "PMP-121",
+        "created_at": "2026-07-20 20:03:03.440971"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Cummins Control Valve",
+        "asset_class": "Control Valve",
+        "location": "Unit-1 Process Area",
+        "criticality": "Medium",
+        "oem_manual_ref": "N/A",
+        "tag": "VLV-122",
+        "created_at": "2026-07-20 20:03:03.452349"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "BHEL Boiler",
+        "asset_class": "Boiler",
+        "location": "Compressor Station",
+        "criticality": "Low",
+        "oem_manual_ref": "N/A",
+        "tag": "BLR-123",
+        "created_at": "2026-07-20 20:03:03.465867"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Siemens Boiler",
+        "asset_class": "Boiler",
+        "location": "Effluent Treatment Plant",
+        "criticality": "High",
+        "oem_manual_ref": "N/A",
+        "tag": "BLR-124",
+        "created_at": "2026-07-20 20:03:03.481740"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Grundfos Reactor",
+        "asset_class": "Reactor",
+        "location": "Unit-1 Process Area",
+        "criticality": "Medium",
+        "oem_manual_ref": "N/A",
+        "tag": "RCT-125",
+        "created_at": "2026-07-20 20:03:03.495853"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Kirloskar Boiler",
+        "asset_class": "Boiler",
+        "location": "Unit-2 Utilities",
+        "criticality": "High",
+        "oem_manual_ref": "N/A",
+        "tag": "BLR-126",
+        "created_at": "2026-07-20 20:03:03.511376"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "L&T Compressor",
+        "asset_class": "Compressor",
+        "location": "Effluent Treatment Plant",
+        "criticality": "High",
+        "oem_manual_ref": "N/A",
+        "tag": "CMP-127",
+        "created_at": "2026-07-20 20:03:03.523505"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "L&T Heat Exchanger",
+        "asset_class": "Heat Exchanger",
+        "location": "Unit-2 Utilities",
+        "criticality": "Low",
+        "oem_manual_ref": "N/A",
+        "tag": "HEX-128",
+        "created_at": "2026-07-20 20:03:03.536900"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Siemens Cooling Tower",
+        "asset_class": "Cooling Tower",
+        "location": "Boiler House",
+        "criticality": "Low",
+        "oem_manual_ref": "N/A",
+        "tag": "CT-129",
+        "created_at": "2026-07-20 20:03:03.552988"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Grundfos Boiler",
+        "asset_class": "Boiler",
+        "location": "Boiler House",
+        "criticality": "Medium",
+        "oem_manual_ref": "N/A",
+        "tag": "BLR-130",
+        "created_at": "2026-07-20 20:03:03.565794"
+      }
+    },
+    {
+      "label": "Regulation",
+      "properties": {
+        "source_body": "Factories_Act",
+        "title": "The Factories Act, 1948",
+        "version": "v1.0",
+        "status": "active",
+        "id": "REG-FAC-1948",
+        "created_at": "2026-07-20 20:03:03.582927"
+      }
+    },
+    {
+      "label": "Regulation",
+      "properties": {
+        "source_body": "PESO",
+        "title": "The Petroleum Rules, 2002",
+        "version": "v1.0",
+        "status": "active",
+        "id": "REG-PESO-2002",
+        "created_at": "2026-07-20 20:03:03.596248"
+      }
+    },
+    {
+      "label": "Regulation",
+      "properties": {
+        "source_body": "OISD",
+        "title": "OISD-STD-105: Work Permit System",
+        "version": "v2.0",
+        "status": "active",
+        "id": "REG-OISD-105",
+        "created_at": "2026-07-20 20:03:03.612330"
+      }
+    },
+    {
+      "label": "Regulation",
+      "properties": {
+        "source_body": "CPCB",
+        "title": "CPCB General Effluent and Emission Standards",
+        "version": "v1.0",
+        "status": "active",
+        "id": "REG-CPCB-ENV",
+        "created_at": "2026-07-20 20:03:03.625605"
+      }
+    },
+    {
+      "label": "Regulation",
+      "properties": {
+        "source_body": "BIS",
+        "title": "IS/IEC 60079-1: Flameproof Enclosures 'd' (BIS Standard)",
+        "version": "v1.0",
+        "status": "active",
+        "id": "REG-BIS-IS2148",
+        "created_at": "2026-07-20 20:03:03.638866"
+      }
+    },
+    {
+      "label": "Regulation",
+      "properties": {
+        "source_body": "OISD",
+        "title": "OISD-STD-105 Standard",
+        "version": "v1.0",
+        "status": "active",
+        "id": "REG-OISD-STD-105",
+        "created_at": "2026-07-20 20:03:03.654793"
+      }
+    },
+    {
+      "label": "Regulation",
+      "properties": {
+        "source_body": "PESO",
+        "title": "PESO Standard",
+        "version": "v1.0",
+        "status": "active",
+        "id": "REG-PESO",
+        "created_at": "2026-07-20 20:03:03.669177"
+      }
+    },
+    {
+      "label": "Regulation",
+      "properties": {
+        "source_body": "Factories_Act",
+        "title": "Factories Act 1948 Standard",
+        "version": "v1.0",
+        "status": "active",
+        "id": "REG-FACTORIES_ACT_1948",
+        "created_at": "2026-07-20 20:03:03.683796"
+      }
+    },
+    {
+      "label": "Regulation",
+      "properties": {
+        "source_body": "OISD",
+        "title": "OISD-STD-222 Standard",
+        "version": "v1.0",
+        "status": "active",
+        "id": "REG-OISD-STD-222",
+        "created_at": "2026-07-20 20:03:03.696441"
+      }
+    },
+    {
+      "label": "Regulation",
+      "properties": {
+        "source_body": "IBR",
+        "title": "Indian Boiler Regulations Standard",
+        "version": "v1.0",
+        "status": "active",
+        "id": "REG-INDIAN_BOILER_REGULATIONS",
+        "created_at": "2026-07-20 20:03:03.710309"
+      }
+    },
+    {
+      "label": "Requirement",
+      "properties": {
+        "clause_id": "Section 21",
+        "obligation_text": "Every moving part of dangerous machinery, including every shaft, wheel, or pinion, shall be securely fenced by safeguards of substantial construction.",
+        "numeric_threshold": "N/A",
+        "id": "REQ-FAC-21",
+        "created_at": "2026-07-20 20:03:03.723818"
+      }
+    },
+    {
+      "label": "Requirement",
+      "properties": {
+        "clause_id": "Section 38",
+        "obligation_text": "Precautions in case of fire. All factories shall be provided with effective means of escape and fire extinguishing equipment. Fire safety training must be verified.",
+        "numeric_threshold": "N/A",
+        "id": "REQ-FAC-38",
+        "created_at": "2026-07-20 20:03:03.804822"
+      }
+    },
+    {
+      "label": "Requirement",
+      "properties": {
+        "clause_id": "Rule 105",
+        "obligation_text": "No electrical wiring or apparatus shall be used in hazardous locations unless certified Flameproof (FLP) or Intrinsically Safe (IS) by PESO.",
+        "numeric_threshold": "N/A",
+        "id": "REQ-PESO-105",
+        "created_at": "2026-07-20 20:03:03.890056"
+      }
+    },
+    {
+      "label": "Requirement",
+      "properties": {
+        "clause_id": "Rule 122",
+        "obligation_text": "All pressure vessels in service shall be fitted with safety valves that must be tested and certified by a competent person at least once in a year.",
+        "numeric_threshold": "N/A",
+        "id": "REQ-PESO-122",
+        "created_at": "2026-07-20 20:03:03.932284"
+      }
+    },
+    {
+      "label": "Requirement",
+      "properties": {
+        "clause_id": "Section 4.1",
+        "obligation_text": "A written Permit to Work (PTW) must be issued before commencing any hot work, welding, cutting or cold work on hydrocarbon processing equipment.",
+        "numeric_threshold": "N/A",
+        "id": "REQ-OISD-105-WORK",
+        "created_at": "2026-07-20 20:03:03.972595"
+      }
+    },
+    {
+      "label": "Requirement",
+      "properties": {
+        "clause_id": "Effluent pH",
+        "obligation_text": "Effluent discharge pH must be maintained strictly between 5.5 and 9.0.",
+        "numeric_threshold": "{\"parameter\": \"ph\", \"operator\": \"between\", \"value\": [5.5, 9.0], \"unit\": \"pH\"}",
+        "id": "REQ-CPCB-PH",
+        "created_at": "2026-07-20 20:03:04.076160"
+      }
+    },
+    {
+      "label": "Requirement",
+      "properties": {
+        "clause_id": "Effluent BOD",
+        "obligation_text": "Effluent biochemical oxygen demand (BOD) must not exceed 30 mg/l.",
+        "numeric_threshold": "{\"parameter\": \"bod\", \"operator\": \"<=\", \"value\": 30.0, \"unit\": \"mg/l\"}",
+        "id": "REQ-CPCB-BOD",
+        "created_at": "2026-07-20 20:03:04.120923"
+      }
+    },
+    {
+      "label": "Requirement",
+      "properties": {
+        "clause_id": "Effluent COD",
+        "obligation_text": "Effluent chemical oxygen demand (COD) must not exceed 250 mg/l.",
+        "numeric_threshold": "{\"parameter\": \"cod\", \"operator\": \"<=\", \"value\": 250.0, \"unit\": \"mg/l\"}",
+        "id": "REQ-CPCB-COD",
+        "created_at": "2026-07-20 20:03:04.167576"
+      }
+    },
+    {
+      "label": "Requirement",
+      "properties": {
+        "clause_id": "Emission SO2",
+        "obligation_text": "Flue gas sulfur dioxide (SO2) emission from stacks must not exceed 50 mg/Nm3.",
+        "numeric_threshold": "{\"parameter\": \"so2\", \"operator\": \"<=\", \"value\": 50.0, \"unit\": \"mg/Nm3\"}",
+        "id": "REQ-CPCB-SO2",
+        "created_at": "2026-07-20 20:03:04.214121"
+      }
+    },
+    {
+      "label": "Requirement",
+      "properties": {
+        "clause_id": "Emission NOx",
+        "obligation_text": "Flue gas nitrogen oxides (NOx) emission from stacks must not exceed 300 mg/Nm3.",
+        "numeric_threshold": "{\"parameter\": \"nox\", \"operator\": \"<=\", \"value\": 300.0, \"unit\": \"mg/Nm3\"}",
+        "id": "REQ-CPCB-NOX",
+        "created_at": "2026-07-20 20:03:04.256191"
+      }
+    },
+    {
+      "label": "Requirement",
+      "properties": {
+        "clause_id": "OISD-105-3.2",
+        "obligation_text": "Pressure vessels shall undergo internal inspection at least once every 5 years or as per statutory requirement.",
+        "numeric_threshold": "N/A",
+        "id": "OISD-105-3.2",
+        "created_at": "2026-07-20 20:03:04.304522"
+      }
+    },
+    {
+      "label": "Requirement",
+      "properties": {
+        "clause_id": "PESO-CCE-12",
+        "obligation_text": "Storage tanks handling flammable liquids shall have functional relief valves tested annually.",
+        "numeric_threshold": "N/A",
+        "id": "PESO-CCE-12",
+        "created_at": "2026-07-20 20:03:04.342505"
+      }
+    },
+    {
+      "label": "Requirement",
+      "properties": {
+        "clause_id": "FactoriesAct-Sec-28",
+        "obligation_text": "All hoists, lifts and pressure plants shall be periodically examined by a competent person.",
+        "numeric_threshold": "N/A",
+        "id": "FactoriesAct-Sec-28",
+        "created_at": "2026-07-20 20:03:04.379284"
+      }
+    },
+    {
+      "label": "Requirement",
+      "properties": {
+        "clause_id": "OISD-222-4.1",
+        "obligation_text": "Rotating equipment in hydrocarbon service shall have vibration monitoring records maintained.",
+        "numeric_threshold": "N/A",
+        "id": "OISD-222-4.1",
+        "created_at": "2026-07-20 20:03:04.482343"
+      }
+    },
+    {
+      "label": "Requirement",
+      "properties": {
+        "clause_id": "IBR-Reg-387",
+        "obligation_text": "Boilers shall be subjected to hydraulic test and internal inspection annually by authorized inspector.",
+        "numeric_threshold": "N/A",
+        "id": "IBR-Reg-387",
+        "created_at": "2026-07-20 20:03:04.584818"
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "type": "PART_OF",
+      "from": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Motor-14"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Pump-14"
+      },
+      "properties": {}
+    },
+    {
+      "type": "PART_OF",
+      "from": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Bearing-14"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Pump-14"
+      },
+      "properties": {}
+    },
+    {
+      "type": "PART_OF",
+      "from": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Stator-3"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Generator-3"
+      },
+      "properties": {}
+    },
+    {
+      "type": "UNDER_REGULATION",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "REQ-FAC-21"
+      },
+      "to": {
+        "label": "Regulation",
+        "key": "id",
+        "val": "REG-FAC-1948"
+      },
+      "properties": {}
+    },
+    {
+      "type": "APPLIES_TO",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "REQ-FAC-21"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Pump-14"
+      },
+      "properties": {}
+    },
+    {
+      "type": "APPLIES_TO",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "REQ-FAC-21"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "PMP-105"
+      },
+      "properties": {}
+    },
+    {
+      "type": "APPLIES_TO",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "REQ-FAC-21"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "PMP-114"
+      },
+      "properties": {}
+    },
+    {
+      "type": "APPLIES_TO",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "REQ-FAC-21"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "PMP-121"
+      },
+      "properties": {}
+    },
+    {
+      "type": "UNDER_REGULATION",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "REQ-FAC-38"
+      },
+      "to": {
+        "label": "Regulation",
+        "key": "id",
+        "val": "REG-FAC-1948"
+      },
+      "properties": {}
+    },
+    {
+      "type": "APPLIES_TO",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "REQ-FAC-38"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Pump-14"
+      },
+      "properties": {}
+    },
+    {
+      "type": "APPLIES_TO",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "REQ-FAC-38"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Motor-14"
+      },
+      "properties": {}
+    },
+    {
+      "type": "APPLIES_TO",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "REQ-FAC-38"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Bearing-14"
+      },
+      "properties": {}
+    },
+    {
+      "type": "APPLIES_TO",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "REQ-FAC-38"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Stack-01"
+      },
+      "properties": {}
+    },
+    {
+      "type": "UNDER_REGULATION",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "REQ-PESO-105"
+      },
+      "to": {
+        "label": "Regulation",
+        "key": "id",
+        "val": "REG-PESO-2002"
+      },
+      "properties": {}
+    },
+    {
+      "type": "APPLIES_TO",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "REQ-PESO-105"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Motor-14"
+      },
+      "properties": {}
+    },
+    {
+      "type": "UNDER_REGULATION",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "REQ-PESO-122"
+      },
+      "to": {
+        "label": "Regulation",
+        "key": "id",
+        "val": "REG-PESO-2002"
+      },
+      "properties": {}
+    },
+    {
+      "type": "APPLIES_TO",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "REQ-PESO-122"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "LPG-Storage"
+      },
+      "properties": {}
+    },
+    {
+      "type": "UNDER_REGULATION",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "REQ-OISD-105-WORK"
+      },
+      "to": {
+        "label": "Regulation",
+        "key": "id",
+        "val": "REG-OISD-105"
+      },
+      "properties": {}
+    },
+    {
+      "type": "APPLIES_TO",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "REQ-OISD-105-WORK"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Pump-14"
+      },
+      "properties": {}
+    },
+    {
+      "type": "APPLIES_TO",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "REQ-OISD-105-WORK"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "PMP-105"
+      },
+      "properties": {}
+    },
+    {
+      "type": "APPLIES_TO",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "REQ-OISD-105-WORK"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "PMP-114"
+      },
+      "properties": {}
+    },
+    {
+      "type": "APPLIES_TO",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "REQ-OISD-105-WORK"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "PMP-121"
+      },
+      "properties": {}
+    },
+    {
+      "type": "UNDER_REGULATION",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "REQ-CPCB-PH"
+      },
+      "to": {
+        "label": "Regulation",
+        "key": "id",
+        "val": "REG-CPCB-ENV"
+      },
+      "properties": {}
+    },
+    {
+      "type": "APPLIES_TO",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "REQ-CPCB-PH"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "ETP-01"
+      },
+      "properties": {}
+    },
+    {
+      "type": "UNDER_REGULATION",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "REQ-CPCB-BOD"
+      },
+      "to": {
+        "label": "Regulation",
+        "key": "id",
+        "val": "REG-CPCB-ENV"
+      },
+      "properties": {}
+    },
+    {
+      "type": "APPLIES_TO",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "REQ-CPCB-BOD"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "ETP-01"
+      },
+      "properties": {}
+    },
+    {
+      "type": "UNDER_REGULATION",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "REQ-CPCB-COD"
+      },
+      "to": {
+        "label": "Regulation",
+        "key": "id",
+        "val": "REG-CPCB-ENV"
+      },
+      "properties": {}
+    },
+    {
+      "type": "APPLIES_TO",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "REQ-CPCB-COD"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "ETP-01"
+      },
+      "properties": {}
+    },
+    {
+      "type": "UNDER_REGULATION",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "REQ-CPCB-SO2"
+      },
+      "to": {
+        "label": "Regulation",
+        "key": "id",
+        "val": "REG-CPCB-ENV"
+      },
+      "properties": {}
+    },
+    {
+      "type": "APPLIES_TO",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "REQ-CPCB-SO2"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Stack-01"
+      },
+      "properties": {}
+    },
+    {
+      "type": "UNDER_REGULATION",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "REQ-CPCB-NOX"
+      },
+      "to": {
+        "label": "Regulation",
+        "key": "id",
+        "val": "REG-CPCB-ENV"
+      },
+      "properties": {}
+    },
+    {
+      "type": "APPLIES_TO",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "REQ-CPCB-NOX"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Stack-01"
+      },
+      "properties": {}
+    },
+    {
+      "type": "UNDER_REGULATION",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "OISD-105-3.2"
+      },
+      "to": {
+        "label": "Regulation",
+        "key": "id",
+        "val": "REG-OISD-STD-105"
+      },
+      "properties": {}
+    },
+    {
+      "type": "UNDER_REGULATION",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "PESO-CCE-12"
+      },
+      "to": {
+        "label": "Regulation",
+        "key": "id",
+        "val": "REG-PESO"
+      },
+      "properties": {}
+    },
+    {
+      "type": "UNDER_REGULATION",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "FactoriesAct-Sec-28"
+      },
+      "to": {
+        "label": "Regulation",
+        "key": "id",
+        "val": "REG-FACTORIES_ACT_1948"
+      },
+      "properties": {}
+    },
+    {
+      "type": "APPLIES_TO",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "FactoriesAct-Sec-28"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "BLR-117"
+      },
+      "properties": {}
+    },
+    {
+      "type": "APPLIES_TO",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "FactoriesAct-Sec-28"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "BLR-123"
+      },
+      "properties": {}
+    },
+    {
+      "type": "APPLIES_TO",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "FactoriesAct-Sec-28"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "BLR-124"
+      },
+      "properties": {}
+    },
+    {
+      "type": "APPLIES_TO",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "FactoriesAct-Sec-28"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "BLR-126"
+      },
+      "properties": {}
+    },
+    {
+      "type": "APPLIES_TO",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "FactoriesAct-Sec-28"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "BLR-130"
+      },
+      "properties": {}
+    },
+    {
+      "type": "UNDER_REGULATION",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "OISD-222-4.1"
+      },
+      "to": {
+        "label": "Regulation",
+        "key": "id",
+        "val": "REG-OISD-STD-222"
+      },
+      "properties": {}
+    },
+    {
+      "type": "APPLIES_TO",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "OISD-222-4.1"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Compressor-8"
+      },
+      "properties": {}
+    },
+    {
+      "type": "APPLIES_TO",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "OISD-222-4.1"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "CMP-101"
+      },
+      "properties": {}
+    },
+    {
+      "type": "APPLIES_TO",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "OISD-222-4.1"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "CMP-110"
+      },
+      "properties": {}
+    },
+    {
+      "type": "APPLIES_TO",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "OISD-222-4.1"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "CMP-112"
+      },
+      "properties": {}
+    },
+    {
+      "type": "APPLIES_TO",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "OISD-222-4.1"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "CMP-127"
+      },
+      "properties": {}
+    },
+    {
+      "type": "UNDER_REGULATION",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "IBR-Reg-387"
+      },
+      "to": {
+        "label": "Regulation",
+        "key": "id",
+        "val": "REG-INDIAN_BOILER_REGULATIONS"
+      },
+      "properties": {}
+    },
+    {
+      "type": "APPLIES_TO",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "IBR-Reg-387"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "BLR-117"
+      },
+      "properties": {}
+    },
+    {
+      "type": "APPLIES_TO",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "IBR-Reg-387"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "BLR-123"
+      },
+      "properties": {}
+    },
+    {
+      "type": "APPLIES_TO",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "IBR-Reg-387"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "BLR-124"
+      },
+      "properties": {}
+    },
+    {
+      "type": "APPLIES_TO",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "IBR-Reg-387"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "BLR-126"
+      },
+      "properties": {}
+    },
+    {
+      "type": "APPLIES_TO",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "IBR-Reg-387"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "BLR-130"
+      },
+      "properties": {}
+    },
+    {
+      "type": "REFERENCES_STANDARDS",
+      "from": {
+        "label": "Requirement",
+        "key": "id",
+        "val": "REQ-PESO-105"
+      },
+      "to": {
+        "label": "Regulation",
+        "key": "id",
+        "val": "REG-BIS-IS2148"
+      },
+      "properties": {}
+    }
+  ]
+}

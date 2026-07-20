@@ -1,0 +1,302 @@
+[
+  {
+    "equipment_tag": "CMP-101",
+    "equipment_type": "Compressor",
+    "plant_area": "Unit-1 Process Area",
+    "manufacturer": "Cummins",
+    "install_date": "2022-05-31",
+    "criticality": "High",
+    "design_pressure_bar": 10.5,
+    "design_temp_c": 265.7
+  },
+  {
+    "equipment_tag": "RCT-102",
+    "equipment_type": "Reactor",
+    "plant_area": "Unit-1 Process Area",
+    "manufacturer": "Forbes Marshall",
+    "install_date": "2013-06-05",
+    "criticality": "High",
+    "design_pressure_bar": 3.1,
+    "design_temp_c": 100.0
+  },
+  {
+    "equipment_tag": "RCT-103",
+    "equipment_type": "Reactor",
+    "plant_area": "Compressor Station",
+    "manufacturer": "Kirloskar",
+    "install_date": "2011-12-17",
+    "criticality": "Low",
+    "design_pressure_bar": 9.6,
+    "design_temp_c": 238.0
+  },
+  {
+    "equipment_tag": "RCT-104",
+    "equipment_type": "Reactor",
+    "plant_area": "Boiler House",
+    "manufacturer": "Siemens",
+    "install_date": "2024-02-24",
+    "criticality": "Medium",
+    "design_pressure_bar": 24.4,
+    "design_temp_c": 289.0
+  },
+  {
+    "equipment_tag": "PMP-105",
+    "equipment_type": "Pump",
+    "plant_area": "Unit-2 Utilities",
+    "manufacturer": "Forbes Marshall",
+    "install_date": "2016-03-18",
+    "criticality": "Medium",
+    "design_pressure_bar": 12.6,
+    "design_temp_c": 98.9
+  },
+  {
+    "equipment_tag": "VLV-106",
+    "equipment_type": "Control Valve",
+    "plant_area": "Unit-1 Process Area",
+    "manufacturer": "Thermax",
+    "install_date": "2015-09-13",
+    "criticality": "Medium",
+    "design_pressure_bar": 5.7,
+    "design_temp_c": 301.2
+  },
+  {
+    "equipment_tag": "CT-107",
+    "equipment_type": "Cooling Tower",
+    "plant_area": "Tank Farm",
+    "manufacturer": "Kirloskar",
+    "install_date": "2015-05-01",
+    "criticality": "Low",
+    "design_pressure_bar": 19.5,
+    "design_temp_c": 69.9
+  },
+  {
+    "equipment_tag": "TRB-108",
+    "equipment_type": "Turbine",
+    "plant_area": "Unit-1 Process Area",
+    "manufacturer": "Cummins",
+    "install_date": "2013-11-28",
+    "criticality": "Low",
+    "design_pressure_bar": 25.5,
+    "design_temp_c": 305.7
+  },
+  {
+    "equipment_tag": "CT-109",
+    "equipment_type": "Cooling Tower",
+    "plant_area": "Unit-2 Utilities",
+    "manufacturer": "Thermax",
+    "install_date": "2024-01-24",
+    "criticality": "High",
+    "design_pressure_bar": 27.1,
+    "design_temp_c": 277.4
+  },
+  {
+    "equipment_tag": "CMP-110",
+    "equipment_type": "Compressor",
+    "plant_area": "Unit-2 Utilities",
+    "manufacturer": "Thermax",
+    "install_date": "2013-04-11",
+    "criticality": "Medium",
+    "design_pressure_bar": 12.6,
+    "design_temp_c": 233.4
+  },
+  {
+    "equipment_tag": "VLV-111",
+    "equipment_type": "Control Valve",
+    "plant_area": "Unit-2 Utilities",
+    "manufacturer": "Grundfos",
+    "install_date": "2023-01-17",
+    "criticality": "Medium",
+    "design_pressure_bar": 10.0,
+    "design_temp_c": 115.4
+  },
+  {
+    "equipment_tag": "CMP-112",
+    "equipment_type": "Compressor",
+    "plant_area": "Compressor Station",
+    "manufacturer": "BHEL",
+    "install_date": "2024-02-19",
+    "criticality": "Low",
+    "design_pressure_bar": 29.7,
+    "design_temp_c": 82.3
+  },
+  {
+    "equipment_tag": "TRB-113",
+    "equipment_type": "Turbine",
+    "plant_area": "Tank Farm",
+    "manufacturer": "Siemens",
+    "install_date": "2020-10-23",
+    "criticality": "Low",
+    "design_pressure_bar": 14.3,
+    "design_temp_c": 275.9
+  },
+  {
+    "equipment_tag": "PMP-114",
+    "equipment_type": "Pump",
+    "plant_area": "Unit-2 Utilities",
+    "manufacturer": "Kirloskar",
+    "install_date": "2013-01-05",
+    "criticality": "Medium",
+    "design_pressure_bar": 17.2,
+    "design_temp_c": 51.2
+  },
+  {
+    "equipment_tag": "CT-115",
+    "equipment_type": "Cooling Tower",
+    "plant_area": "Effluent Treatment Plant",
+    "manufacturer": "Grundfos",
+    "install_date": "2021-07-31",
+    "criticality": "High",
+    "design_pressure_bar": 26.9,
+    "design_temp_c": 156.6
+  },
+  {
+    "equipment_tag": "CNV-116",
+    "equipment_type": "Conveyor",
+    "plant_area": "Unit-2 Utilities",
+    "manufacturer": "Cummins",
+    "install_date": "2018-09-17",
+    "criticality": "High",
+    "design_pressure_bar": 11.4,
+    "design_temp_c": 209.6
+  },
+  {
+    "equipment_tag": "BLR-117",
+    "equipment_type": "Boiler",
+    "plant_area": "Effluent Treatment Plant",
+    "manufacturer": "Forbes Marshall",
+    "install_date": "2012-01-28",
+    "criticality": "Low",
+    "design_pressure_bar": 17.2,
+    "design_temp_c": 100.2
+  },
+  {
+    "equipment_tag": "HEX-118",
+    "equipment_type": "Heat Exchanger",
+    "plant_area": "Compressor Station",
+    "manufacturer": "L&T",
+    "install_date": "2012-01-16",
+    "criticality": "High",
+    "design_pressure_bar": 30.7,
+    "design_temp_c": 305.6
+  },
+  {
+    "equipment_tag": "HEX-119",
+    "equipment_type": "Heat Exchanger",
+    "plant_area": "Effluent Treatment Plant",
+    "manufacturer": "BHEL",
+    "install_date": "2013-02-16",
+    "criticality": "Low",
+    "design_pressure_bar": 18.0,
+    "design_temp_c": 50.3
+  },
+  {
+    "equipment_tag": "TRB-120",
+    "equipment_type": "Turbine",
+    "plant_area": "Compressor Station",
+    "manufacturer": "L&T",
+    "install_date": "2015-04-03",
+    "criticality": "Low",
+    "design_pressure_bar": 11.6,
+    "design_temp_c": 207.0
+  },
+  {
+    "equipment_tag": "PMP-121",
+    "equipment_type": "Pump",
+    "plant_area": "Effluent Treatment Plant",
+    "manufacturer": "Thermax",
+    "install_date": "2015-06-29",
+    "criticality": "Low",
+    "design_pressure_bar": 35.6,
+    "design_temp_c": 270.3
+  },
+  {
+    "equipment_tag": "VLV-122",
+    "equipment_type": "Control Valve",
+    "plant_area": "Unit-1 Process Area",
+    "manufacturer": "Cummins",
+    "install_date": "2020-02-18",
+    "criticality": "Medium",
+    "design_pressure_bar": 8.0,
+    "design_temp_c": 31.0
+  },
+  {
+    "equipment_tag": "BLR-123",
+    "equipment_type": "Boiler",
+    "plant_area": "Compressor Station",
+    "manufacturer": "BHEL",
+    "install_date": "2021-10-10",
+    "criticality": "Low",
+    "design_pressure_bar": 36.7,
+    "design_temp_c": 308.6
+  },
+  {
+    "equipment_tag": "BLR-124",
+    "equipment_type": "Boiler",
+    "plant_area": "Effluent Treatment Plant",
+    "manufacturer": "Siemens",
+    "install_date": "2011-12-26",
+    "criticality": "High",
+    "design_pressure_bar": 16.2,
+    "design_temp_c": 81.7
+  },
+  {
+    "equipment_tag": "RCT-125",
+    "equipment_type": "Reactor",
+    "plant_area": "Unit-1 Process Area",
+    "manufacturer": "Grundfos",
+    "install_date": "2021-01-30",
+    "criticality": "Medium",
+    "design_pressure_bar": 2.7,
+    "design_temp_c": 327.3
+  },
+  {
+    "equipment_tag": "BLR-126",
+    "equipment_type": "Boiler",
+    "plant_area": "Unit-2 Utilities",
+    "manufacturer": "Kirloskar",
+    "install_date": "2014-12-01",
+    "criticality": "High",
+    "design_pressure_bar": 35.4,
+    "design_temp_c": 333.0
+  },
+  {
+    "equipment_tag": "CMP-127",
+    "equipment_type": "Compressor",
+    "plant_area": "Effluent Treatment Plant",
+    "manufacturer": "L&T",
+    "install_date": "2023-09-19",
+    "criticality": "High",
+    "design_pressure_bar": 39.2,
+    "design_temp_c": 200.5
+  },
+  {
+    "equipment_tag": "HEX-128",
+    "equipment_type": "Heat Exchanger",
+    "plant_area": "Unit-2 Utilities",
+    "manufacturer": "L&T",
+    "install_date": "2022-08-04",
+    "criticality": "Low",
+    "design_pressure_bar": 8.3,
+    "design_temp_c": 198.9
+  },
+  {
+    "equipment_tag": "CT-129",
+    "equipment_type": "Cooling Tower",
+    "plant_area": "Boiler House",
+    "manufacturer": "Siemens",
+    "install_date": "2023-06-19",
+    "criticality": "Low",
+    "design_pressure_bar": 30.7,
+    "design_temp_c": 250.8
+  },
+  {
+    "equipment_tag": "BLR-130",
+    "equipment_type": "Boiler",
+    "plant_area": "Boiler House",
+    "manufacturer": "Grundfos",
+    "install_date": "2020-10-21",
+    "criticality": "Medium",
+    "design_pressure_bar": 36.2,
+    "design_temp_c": 174.5
+  }
+]

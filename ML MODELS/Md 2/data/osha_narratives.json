@@ -1,0 +1,17 @@
+[
+  {
+    "id": "OSHA-2026-01",
+    "text": "On July 10, 2026, an operator was attempting to isolate pump P-204 for scheduled maintenance. The operator did not verify that the line pressure had bled off. When the flange was unbolted, pressurized hydrocarbon fluid sprayed out, causing chemical burns. The root cause was failure to follow the lock-out tag-out checklist per SOP-112.",
+    "cause": "Failure to verify line pressure bleed-off and follow SOP-112 lock-out tag-out checklist"
+  },
+  {
+    "id": "OSHA-2026-02",
+    "text": "An incident occurred on March 15, 2026, at CDU-2 when a relief valve on storage tank TK-105 failed to open during an overpressure event. Investigation revealed that the calibration interval had been exceeded. The annual safety check was overdue by 3 months. Sarah Connor, Safety Officer, had raised a compliance alert prior to the failure.",
+    "cause": "Overdue safety valve calibration and exceeded maintenance interval"
+  },
+  {
+    "id": "OSHA-2026-03",
+    "text": "On January 22, 2026, a technician suffered an electric shock while servicing the drive motor Motor-14 of the Crude Charge Pump. The circuit breaker had not been properly locked out in the MCC room. The technician did not perform a zero-energy verification before starting work.",
+    "cause": "Failure to perform lock-out tag-out and zero-energy electrical verification"
+  }
+]

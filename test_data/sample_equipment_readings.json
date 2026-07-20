@@ -1,0 +1,20 @@
+[
+  {
+    "equipment_tag": "P-204",
+    "type": "Centrifugal Pump",
+    "current_pressure_bar": 16.5,
+    "severity": "critical"
+  },
+  {
+    "equipment_tag": "V-102",
+    "type": "Pressure Vessel",
+    "last_inspection_months_ago": 14,
+    "severity": "major"
+  },
+  {
+    "equipment_tag": "P-108",
+    "type": "Centrifugal Pump",
+    "current_pressure_bar": 15.2,
+    "severity": "minor"
+  }
+]

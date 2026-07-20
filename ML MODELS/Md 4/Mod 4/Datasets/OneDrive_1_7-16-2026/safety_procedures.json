@@ -1,0 +1,129 @@
+[
+  {
+    "sop_id": "SOP-101",
+    "title": "SOP for Pump Start-up and Shutdown",
+    "applicable_equipment_type": "Pump",
+    "applicable_equipment_tags": [
+      "PMP-105",
+      "PMP-114",
+      "PMP-121"
+    ],
+    "revision": "Rev 3",
+    "last_reviewed": "2026-07-01",
+    "key_hazards": [
+      "Confined space asphyxiation",
+      "Toxic gas exposure"
+    ],
+    "mandatory_ppe": [
+      "Full body harness",
+      "Safety helmet",
+      "Fire retardant coverall"
+    ]
+  },
+  {
+    "sop_id": "SOP-102",
+    "title": "SOP for Confined Space Entry near Storage Tanks",
+    "applicable_equipment_type": "Storage Tank",
+    "applicable_equipment_tags": [],
+    "revision": "Rev 3",
+    "last_reviewed": "2025-02-04",
+    "key_hazards": [
+      "Chemical splash",
+      "Hot surface contact"
+    ],
+    "mandatory_ppe": [
+      "Safety helmet",
+      "Chemical goggles",
+      "Full body harness"
+    ]
+  },
+  {
+    "sop_id": "SOP-103",
+    "title": "SOP for Compressor Isolation (LOTO)",
+    "applicable_equipment_type": "Compressor",
+    "applicable_equipment_tags": [
+      "CMP-101",
+      "CMP-110",
+      "CMP-112",
+      "CMP-127"
+    ],
+    "revision": "Rev 1",
+    "last_reviewed": "2026-03-17",
+    "key_hazards": [
+      "Rotating equipment entanglement",
+      "Hot surface contact"
+    ],
+    "mandatory_ppe": [
+      "Safety helmet",
+      "Full body harness",
+      "Chemical goggles"
+    ]
+  },
+  {
+    "sop_id": "SOP-104",
+    "title": "SOP for Boiler Blowdown Operation",
+    "applicable_equipment_type": "Boiler",
+    "applicable_equipment_tags": [
+      "BLR-117",
+      "BLR-123",
+      "BLR-124",
+      "BLR-126",
+      "BLR-130"
+    ],
+    "revision": "Rev 2",
+    "last_reviewed": "2026-03-20",
+    "key_hazards": [
+      "Hot surface contact",
+      "Chemical splash"
+    ],
+    "mandatory_ppe": [
+      "Insulated gloves",
+      "Gas detector",
+      "Fire retardant coverall"
+    ]
+  },
+  {
+    "sop_id": "SOP-105",
+    "title": "SOP for Hot Work Permit near Reactors",
+    "applicable_equipment_type": "Reactor",
+    "applicable_equipment_tags": [
+      "RCT-102",
+      "RCT-103",
+      "RCT-104",
+      "RCT-125"
+    ],
+    "revision": "Rev 2",
+    "last_reviewed": "2025-11-11",
+    "key_hazards": [
+      "Hot surface contact",
+      "High pressure release"
+    ],
+    "mandatory_ppe": [
+      "Fire retardant coverall",
+      "Gas detector",
+      "Full body harness"
+    ]
+  },
+  {
+    "sop_id": "SOP-106",
+    "title": "SOP for Cooling Tower Chemical Dosing",
+    "applicable_equipment_type": "Cooling Tower",
+    "applicable_equipment_tags": [
+      "CT-107",
+      "CT-109",
+      "CT-115",
+      "CT-129"
+    ],
+    "revision": "Rev 3",
+    "last_reviewed": "2025-10-15",
+    "key_hazards": [
+      "High pressure release",
+      "Rotating equipment entanglement"
+    ],
+    "mandatory_ppe": [
+      "Chemical goggles",
+      "Fire retardant coverall",
+      "Gas detector"
+    ]
+  }
+]

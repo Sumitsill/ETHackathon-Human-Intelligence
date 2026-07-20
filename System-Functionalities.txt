@@ -1,0 +1,81 @@
+================================================================================
+        ET UNIFIED OPERATIONS BRAIN 2026 - WHAT THE SYSTEM CAN DO
+================================================================================
+Updated: 2026-07-20
+File: SYSTEM_FUNCTIONALITIES_SIMPLE.txt
+
+Here is a clear, simple guide explaining everything this application can do 
+right now across its frontend dashboard and AI backend services.
+
+--------------------------------------------------------------------------------
+1. READING DOCUMENTS & BUILDING A KNOWLEDGE GRAPH (Module 1)
+--------------------------------------------------------------------------------
+* Reads Any File Format: Upload PDFs (OEM manuals, SOPs), blueprints/images, 
+  Excel spreadsheets, or Gmail inbox emails.
+* Smart OCR & Text Reading: Automatically reads scanned paper documents and 
+  handwriting using vision AI to convert raw files into searchable text.
+* Interactive Knowledge Graph: Extracts equipment tags (e.g. Pump P-204, 
+  Valve V-102), process limits, and safety standards, connecting them into 
+  a visual network graph.
+
+--------------------------------------------------------------------------------
+2. GROUNDED AI EXPERT COPILOT (Module 2)
+--------------------------------------------------------------------------------
+* Verified Answers with Sources: Ask questions about refinery equipment, 
+  operating limits, or safety rules. Every answer includes exact citations 
+  pointing back to the original source document.
+* Field Technician Mode: Mobile workers in the plant can turn on 
+  "Field Tech Mode" to receive lightweight, fast text answers optimized 
+  for low-bandwidth phones.
+* Knowledge Decay Warnings: Automatically warns engineers if an answer is 
+  based on a document or SOP that is over 12 months old and needs re-verification.
+* Visual Diagrams: Automatically generates interactive Mindmaps and process 
+  Flowcharts directly from written operating manuals.
+
+--------------------------------------------------------------------------------
+3. FAILURE DIAGNOSIS & MAINTENANCE INTELLIGENCE (Module 3 - MIRA)
+--------------------------------------------------------------------------------
+* 5-Why Failure Analysis: Builds interactive 5-Why root cause trees when 
+  equipment breaks down (such as pump seizures, seal leaks, or compressor trips).
+* Predictive Anomaly Alerts: Scans live machine sensors (vibration, heat, 
+  pressure) to flag abnormal behavior before machines fail.
+* Near-Miss Pattern Mining: Analyzes historical work orders to discover 
+  recurring failure signatures across different plant machines.
+* Smart Maintenance Scheduler: Optimizes labor hours and budget limits to 
+  schedule maintenance work orders based on safety urgency.
+
+--------------------------------------------------------------------------------
+4. SAFETY & REGULATORY COMPLIANCE INTELLIGENCE (Module 4 - QRCI)
+--------------------------------------------------------------------------------
+* Automatic Law & Rule Scans: Scans plant operations against government and 
+  industry safety standards including:
+  - Factories Act (Safety fencing, work permits)
+  - OISD (Oil Industry Safety Directorate regulations)
+  - PESO (Petroleum and Explosives Safety Organization rules)
+  - IBR (Indian Boiler Regulations)
+* Audit-Ready Evidence Compiler: Assembles complete audit evidence packages 
+  combining asset records, work orders, inspection logs, and statutory citations 
+  with one click.
+* Audit Auto-Narration: Generates plain-language executive cover summaries 
+  on audit packages so non-technical government auditors can easily review them.
+* Regulatory Diff Alerts: Pushes alerts when government regulations change, 
+  showing exactly which machines are affected and what actions engineers must take.
+
+--------------------------------------------------------------------------------
+5. BRAIN SYNC - UNIFIED OPERATIONAL & COMPLIANCE RISK TRACKING
+--------------------------------------------------------------------------------
+* Cross-Module Risk Sync: Bridges maintenance failure alerts with safety 
+  compliance records. If a pump experiences a mechanical failure, Brain Sync 
+  immediately checks and alerts if that failure also breaches government 
+  safety regulations.
+
+--------------------------------------------------------------------------------
+6. WEB DASHBOARD & EASY SERVER LAUNCH
+--------------------------------------------------------------------------------
+* Operations Command Center: A modern web interface (running on Next.js) for 
+  viewing plant health metrics, chatting with the copilot, inspecting 5-Why 
+  trees, and approving compliance reports.
+* Single-Command Server Launcher: Running `python run_servers.py` launches 
+  all 4 backend AI microservices concurrently on ports 8000, 8001, 8002, and 8003.
+
+================================================================================

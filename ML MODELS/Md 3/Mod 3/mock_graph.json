@@ -1,0 +1,774 @@
+{
+  "nodes": [
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Crude Charge Centrifugal Pump",
+        "type": "Pump",
+        "criticality": "High",
+        "installation_date": "2022-03-12",
+        "tag": "Pump-14",
+        "created_at": "2026-07-14 21:05:43.181251",
+        "asset_class": "Pump",
+        "location": "CDU-1",
+        "oem_manual_ref": "MAN-P14",
+        "updated_at": "2026-07-20 20:02:59.614963"
+      }
+    },
+    {
+      "label": "Component",
+      "properties": {
+        "type": "Motor",
+        "name": "Motor-14",
+        "created_at": "2026-07-14 21:05:43.181871"
+      }
+    },
+    {
+      "label": "Component",
+      "properties": {
+        "type": "Bearing",
+        "name": "Bearing-14",
+        "created_at": "2026-07-14 21:05:43.182847"
+      }
+    },
+    {
+      "label": "Component",
+      "properties": {
+        "type": "Seal",
+        "name": "Seal-14",
+        "created_at": "2026-07-14 21:05:43.183784"
+      }
+    },
+    {
+      "label": "Component",
+      "properties": {
+        "type": "Component",
+        "name": "Impeller-14",
+        "created_at": "2026-07-14 21:05:43.184869"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Emergency Diesel Generator 3",
+        "type": "Generator",
+        "criticality": "Critical",
+        "installation_date": "2020-08-15",
+        "tag": "Generator-3",
+        "created_at": "2026-07-14 21:05:43.185868",
+        "asset_class": "Generator",
+        "location": "Powerhouse-A",
+        "oem_manual_ref": "MAN-G3",
+        "updated_at": "2026-07-20 20:02:59.687363"
+      }
+    },
+    {
+      "label": "Component",
+      "properties": {
+        "type": "Component",
+        "name": "Stator-3",
+        "created_at": "2026-07-14 21:05:43.186413"
+      }
+    },
+    {
+      "label": "Component",
+      "properties": {
+        "type": "Component",
+        "name": "Rotor-3",
+        "created_at": "2026-07-14 21:05:43.187715"
+      }
+    },
+    {
+      "label": "Component",
+      "properties": {
+        "type": "Component",
+        "name": "CoolingFan-3",
+        "created_at": "2026-07-14 21:05:43.189016"
+      }
+    },
+    {
+      "label": "Component",
+      "properties": {
+        "type": "Bearing",
+        "name": "Bearing-G3",
+        "created_at": "2026-07-14 21:05:43.190591"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Reciprocating Instrument Air Compressor",
+        "type": "Compressor",
+        "criticality": "Medium",
+        "installation_date": "2023-01-20",
+        "tag": "Compressor-8",
+        "created_at": "2026-07-14 21:05:43.192021",
+        "asset_class": "Compressor",
+        "location": "Utility-Line-2",
+        "oem_manual_ref": "MAN-C8",
+        "updated_at": "2026-07-20 20:02:59.731452"
+      }
+    },
+    {
+      "label": "Component",
+      "properties": {
+        "type": "Component",
+        "name": "CylinderValves-8",
+        "created_at": "2026-07-14 21:05:43.192755"
+      }
+    },
+    {
+      "label": "Component",
+      "properties": {
+        "type": "Component",
+        "name": "Piston-8",
+        "created_at": "2026-07-14 21:05:43.193961"
+      }
+    },
+    {
+      "label": "Component",
+      "properties": {
+        "type": "Component",
+        "name": "Crankshaft-8",
+        "created_at": "2026-07-14 21:05:43.195302"
+      }
+    },
+    {
+      "label": "WorkOrder",
+      "properties": {
+        "type": "corrective",
+        "cost": 2500,
+        "duration_hours": 6,
+        "status": "closed",
+        "date": "2026-01-15",
+        "technician": "Alice Green",
+        "description": "Replaced worn impeller due to cavitation and flow degradation. Adjusted wearing rings.",
+        "id": "WO-1002",
+        "created_at": "2026-07-14 21:05:43.196521",
+        "opened_at": "2026-01-14 08:00:00",
+        "closed_at": "2026-01-15 14:00:00",
+        "technician_id": "Alice Green",
+        "updated_at": "2026-07-20 20:02:59.747193"
+      }
+    },
+    {
+      "label": "WorkOrder",
+      "properties": {
+        "type": "preventive",
+        "cost": 350,
+        "duration_hours": 2,
+        "status": "closed",
+        "date": "2026-03-10",
+        "technician": "Bob Miller",
+        "description": "Performed quarterly lubrication check. Flushed housing and replaced bearing oil with synthetic ISO VG 46.",
+        "id": "WO-2041",
+        "created_at": "2026-07-14 21:05:43.198063",
+        "opened_at": "2026-03-10 09:00:00",
+        "closed_at": "2026-03-10 11:00:00",
+        "technician_id": "Bob Miller",
+        "updated_at": "2026-07-20 20:02:59.776219"
+      }
+    },
+    {
+      "label": "WorkOrder",
+      "properties": {
+        "type": "preventive",
+        "cost": 350,
+        "duration_hours": 2,
+        "status": "deferred",
+        "date": "2026-05-15",
+        "technician": "Bob Miller",
+        "description": "Quarterly lubrication PM scheduled. Deferred by operations coordinator due to high plant feed demands.",
+        "id": "WO-4019",
+        "created_at": "2026-07-14 21:05:43.199392",
+        "opened_at": "2026-05-15 08:00:00",
+        "closed_at": "N/A",
+        "technician_id": "Bob Miller",
+        "updated_at": "2026-07-20 20:02:59.807504"
+      }
+    },
+    {
+      "label": "WorkOrder",
+      "properties": {
+        "type": "preventive",
+        "cost": 350,
+        "duration_hours": 2,
+        "status": "deferred",
+        "date": "2026-06-25",
+        "technician": "Charlie Davis",
+        "description": "Lubrication follow-up PM. Deferred again by operations. Technician note: Bearing housing running warm, needs attention.",
+        "id": "WO-6012",
+        "created_at": "2026-07-14 21:05:43.200862",
+        "opened_at": "2026-06-25 08:00:00",
+        "closed_at": "N/A",
+        "technician_id": "Charlie Davis",
+        "updated_at": "2026-07-20 20:02:59.833282"
+      }
+    },
+    {
+      "label": "WorkOrder",
+      "properties": {
+        "type": "corrective",
+        "cost": 4200,
+        "duration_hours": 12,
+        "status": "closed",
+        "date": "2026-07-11",
+        "technician": "Bob Miller & Alice Green",
+        "description": "Breakdown repair. Replaced seized bearing, mechanical seals, and shaft sleeve. Noticed dry bearing housing with visual heat discolouration.",
+        "id": "WO-9872",
+        "created_at": "2026-07-14 21:05:43.202617",
+        "opened_at": "2026-07-10 12:00:00",
+        "closed_at": "2026-07-11 18:00:00",
+        "technician_id": "Bob Miller & Alice Green",
+        "updated_at": "2026-07-20 20:02:59.865816"
+      }
+    },
+    {
+      "label": "WorkOrder",
+      "properties": {
+        "type": "preventive",
+        "cost": 450,
+        "duration_hours": 3,
+        "status": "scheduled",
+        "date": "2026-07-20",
+        "technician": "Charlie Davis",
+        "description": "Post-overhaul calibration. Align shaft coupling, verify seal flush line flow, and check bearing thermal trends.",
+        "id": "WO-9910",
+        "created_at": "2026-07-14 21:05:43.204166",
+        "opened_at": "2026-07-14 08:00:00",
+        "closed_at": "N/A",
+        "technician_id": "Charlie Davis",
+        "updated_at": "2026-07-20 20:02:59.893989"
+      }
+    },
+    {
+      "label": "WorkOrder",
+      "properties": {
+        "type": "preventive",
+        "cost": 1200,
+        "duration_hours": 8,
+        "status": "closed",
+        "date": "2026-02-20",
+        "technician": "Dave Carter",
+        "description": "Completed annual load bank testing and fuel quality analysis. Checked battery charging system.",
+        "id": "WO-3022",
+        "created_at": "2026-07-14 21:05:43.205581",
+        "opened_at": "2026-02-20 08:00:00",
+        "closed_at": "2026-02-20 16:00:00",
+        "technician_id": "Dave Carter",
+        "updated_at": "2026-07-20 20:02:59.923118"
+      }
+    },
+    {
+      "label": "WorkOrder",
+      "properties": {
+        "type": "preventive",
+        "cost": 450,
+        "duration_hours": 3,
+        "status": "closed",
+        "date": "2026-05-20",
+        "technician": "Dave Carter",
+        "description": "Changed engine oil, oil filters, and coolant level check. Verified diesel fuel tank level.",
+        "id": "WO-5011",
+        "created_at": "2026-07-14 21:05:43.207211",
+        "opened_at": "2026-05-20 08:00:00",
+        "closed_at": "2026-05-20 11:00:00",
+        "technician_id": "Dave Carter",
+        "updated_at": "2026-07-20 20:02:59.950839"
+      }
+    },
+    {
+      "label": "WorkOrder",
+      "properties": {
+        "type": "corrective",
+        "cost": 1800,
+        "duration_hours": 4,
+        "status": "scheduled",
+        "date": "2026-07-18",
+        "technician": "Elena Rostova",
+        "description": "Replace worn stator insulation sleeves identified during insulation resistance test (Megger test).",
+        "id": "WO-8874",
+        "created_at": "2026-07-14 21:05:43.208777",
+        "opened_at": "2026-07-14 08:00:00",
+        "closed_at": "N/A",
+        "technician_id": "Elena Rostova",
+        "updated_at": "2026-07-20 20:02:59.978063"
+      }
+    },
+    {
+      "label": "WorkOrder",
+      "properties": {
+        "type": "Corrective",
+        "cost": 850,
+        "duration_hours": 4,
+        "status": "Completed",
+        "date": "2026-04-10",
+        "technician": "Bob Miller",
+        "description": "Replaced discharge valve plate on cylinder B. Corrected minor air leakage from compressor piping.",
+        "id": "WO-4089",
+        "created_at": "2026-07-14 21:05:43.210310"
+      }
+    },
+    {
+      "label": "WorkOrder",
+      "properties": {
+        "type": "Preventive",
+        "cost": 500,
+        "duration_hours": 3,
+        "status": "Completed",
+        "date": "2026-06-15",
+        "technician": "Charlie Davis",
+        "description": "Cleaned air intake filters, checked belt tension, and drained condensate water from the receiver tank.",
+        "id": "WO-7012",
+        "created_at": "2026-07-14 21:05:43.212113"
+      }
+    },
+    {
+      "label": "FailureEvent",
+      "properties": {
+        "date": "2026-07-10",
+        "downtime_hours": 18.0,
+        "cost": 45000,
+        "failure_mode": "Bearing housing seizure",
+        "reported_cause": "Lubrication failure",
+        "root_cause": "Lubrication PM deferral (WO-4019 & WO-6012 skipped), causing oil depletion and thermal seizure.",
+        "status": "Confirmed",
+        "id": "FAIL-091",
+        "created_at": "2026-07-14 21:05:43.213744"
+      }
+    },
+    {
+      "label": "FailureEvent",
+      "properties": {
+        "date": "2025-11-05",
+        "downtime_hours": 4.5,
+        "cost": 12000,
+        "failure_mode": "Overheating shut down",
+        "reported_cause": "Cooling fan belt snapped",
+        "root_cause": "Belt fatigue due to delayed replacement cycle.",
+        "status": "Confirmed",
+        "id": "FAIL-042",
+        "created_at": "2026-07-14 21:05:43.215575"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Crude Charge Pump Drive Motor",
+        "asset_class": "Motor",
+        "location": "CDU-1",
+        "criticality": "High",
+        "oem_manual_ref": "MAN-P14",
+        "tag": "Motor-14",
+        "created_at": "2026-07-14 21:11:19.138410",
+        "updated_at": "2026-07-20 20:02:59.629753"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Pump Main Radial Bearing Housing",
+        "asset_class": "Bearing",
+        "location": "CDU-1",
+        "criticality": "High",
+        "oem_manual_ref": "MAN-P14",
+        "tag": "Bearing-14",
+        "created_at": "2026-07-14 21:11:19.140296",
+        "updated_at": "2026-07-20 20:02:59.657304"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Generator Alternator Stator Winding",
+        "asset_class": "Stator",
+        "location": "Powerhouse-A",
+        "criticality": "Critical",
+        "oem_manual_ref": "MAN-G3",
+        "tag": "Stator-3",
+        "created_at": "2026-07-14 21:11:19.143264",
+        "updated_at": "2026-07-20 20:02:59.703848"
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "type": "PART_OF",
+      "from": {
+        "label": "Component",
+        "key": "name",
+        "val": "Motor-14"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Pump-14"
+      },
+      "properties": {}
+    },
+    {
+      "type": "PART_OF",
+      "from": {
+        "label": "Component",
+        "key": "name",
+        "val": "Bearing-14"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Pump-14"
+      },
+      "properties": {}
+    },
+    {
+      "type": "PART_OF",
+      "from": {
+        "label": "Component",
+        "key": "name",
+        "val": "Seal-14"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Pump-14"
+      },
+      "properties": {}
+    },
+    {
+      "type": "PART_OF",
+      "from": {
+        "label": "Component",
+        "key": "name",
+        "val": "Impeller-14"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Pump-14"
+      },
+      "properties": {}
+    },
+    {
+      "type": "PART_OF",
+      "from": {
+        "label": "Component",
+        "key": "name",
+        "val": "Stator-3"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Generator-3"
+      },
+      "properties": {}
+    },
+    {
+      "type": "PART_OF",
+      "from": {
+        "label": "Component",
+        "key": "name",
+        "val": "Rotor-3"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Generator-3"
+      },
+      "properties": {}
+    },
+    {
+      "type": "PART_OF",
+      "from": {
+        "label": "Component",
+        "key": "name",
+        "val": "CoolingFan-3"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Generator-3"
+      },
+      "properties": {}
+    },
+    {
+      "type": "PART_OF",
+      "from": {
+        "label": "Component",
+        "key": "name",
+        "val": "Bearing-G3"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Generator-3"
+      },
+      "properties": {}
+    },
+    {
+      "type": "PART_OF",
+      "from": {
+        "label": "Component",
+        "key": "name",
+        "val": "CylinderValves-8"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Compressor-8"
+      },
+      "properties": {}
+    },
+    {
+      "type": "PART_OF",
+      "from": {
+        "label": "Component",
+        "key": "name",
+        "val": "Piston-8"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Compressor-8"
+      },
+      "properties": {}
+    },
+    {
+      "type": "PART_OF",
+      "from": {
+        "label": "Component",
+        "key": "name",
+        "val": "Crankshaft-8"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Compressor-8"
+      },
+      "properties": {}
+    },
+    {
+      "type": "SERVICED",
+      "from": {
+        "label": "WorkOrder",
+        "key": "id",
+        "val": "WO-1002"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Pump-14"
+      },
+      "properties": {}
+    },
+    {
+      "type": "SERVICED",
+      "from": {
+        "label": "WorkOrder",
+        "key": "id",
+        "val": "WO-2041"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Pump-14"
+      },
+      "properties": {}
+    },
+    {
+      "type": "SERVICED",
+      "from": {
+        "label": "WorkOrder",
+        "key": "id",
+        "val": "WO-4019"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Pump-14"
+      },
+      "properties": {}
+    },
+    {
+      "type": "SERVICED",
+      "from": {
+        "label": "WorkOrder",
+        "key": "id",
+        "val": "WO-6012"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Pump-14"
+      },
+      "properties": {}
+    },
+    {
+      "type": "SERVICED",
+      "from": {
+        "label": "WorkOrder",
+        "key": "id",
+        "val": "WO-9872"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Pump-14"
+      },
+      "properties": {}
+    },
+    {
+      "type": "SERVICED",
+      "from": {
+        "label": "WorkOrder",
+        "key": "id",
+        "val": "WO-9910"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Pump-14"
+      },
+      "properties": {}
+    },
+    {
+      "type": "SERVICED",
+      "from": {
+        "label": "WorkOrder",
+        "key": "id",
+        "val": "WO-3022"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Generator-3"
+      },
+      "properties": {}
+    },
+    {
+      "type": "SERVICED",
+      "from": {
+        "label": "WorkOrder",
+        "key": "id",
+        "val": "WO-5011"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Generator-3"
+      },
+      "properties": {}
+    },
+    {
+      "type": "SERVICED",
+      "from": {
+        "label": "WorkOrder",
+        "key": "id",
+        "val": "WO-8874"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Generator-3"
+      },
+      "properties": {}
+    },
+    {
+      "type": "SERVICED",
+      "from": {
+        "label": "WorkOrder",
+        "key": "id",
+        "val": "WO-4089"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Compressor-8"
+      },
+      "properties": {}
+    },
+    {
+      "type": "SERVICED",
+      "from": {
+        "label": "WorkOrder",
+        "key": "id",
+        "val": "WO-7012"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Compressor-8"
+      },
+      "properties": {}
+    },
+    {
+      "type": "OCCURRED_ON",
+      "from": {
+        "label": "FailureEvent",
+        "key": "id",
+        "val": "FAIL-091"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Pump-14"
+      },
+      "properties": {}
+    },
+    {
+      "type": "OCCURRED_ON",
+      "from": {
+        "label": "FailureEvent",
+        "key": "id",
+        "val": "FAIL-042"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Generator-3"
+      },
+      "properties": {}
+    },
+    {
+      "type": "PART_OF",
+      "from": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Motor-14"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Pump-14"
+      },
+      "properties": {}
+    },
+    {
+      "type": "PART_OF",
+      "from": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Bearing-14"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Pump-14"
+      },
+      "properties": {}
+    },
+    {
+      "type": "PART_OF",
+      "from": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Stator-3"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Generator-3"
+      },
+      "properties": {}
+    }
+  ]
+}

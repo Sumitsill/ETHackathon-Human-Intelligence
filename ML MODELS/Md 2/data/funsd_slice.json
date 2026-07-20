@@ -1,0 +1,28 @@
+[
+  {
+    "text": "Equipment Inspection Log\nDate: 2026-05-10\nUnit: CDU-1\nEquipment Tag: P-102A\nStatus: Satisfactory\nInspector Signature: Dave Miller",
+    "annotations": {
+      "Date": "2026-05-10",
+      "Unit": "CDU-1",
+      "Equipment Tag": "P-102A",
+      "Inspector Signature": "Dave Miller"
+    }
+  },
+  {
+    "text": "Work Order Details\nWork Order: WO-4492\nPriority: Urgent\nEquipment: TK-204\nAction Required: Check relief valve calibration\nAssigned To: Alice Green",
+    "annotations": {
+      "Work Order": "WO-4492",
+      "Equipment": "TK-204",
+      "Assigned To": "Alice Green"
+    }
+  },
+  {
+    "text": "Safety Permit-To-Work\nPermit No: PTW-8831\nDate: 2026-07-14\nJob Description: Hot work on piping line L-409\nAuthorized By: Sarah Connor",
+    "annotations": {
+      "Permit No": "PTW-8831",
+      "Date": "2026-07-14",
+      "Job Description": "Hot work on piping line L-409",
+      "Authorized By": "Sarah Connor"
+    }
+  }
+]

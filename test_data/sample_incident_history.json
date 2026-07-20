@@ -1,0 +1,17 @@
+[
+  {
+    "equipment_tag": "P-204",
+    "failure_mode": "bearing lubrication failure",
+    "date": "2026-07-20"
+  },
+  {
+    "equipment_tag": "P-108",
+    "failure_mode": "bearing lubrication failure",
+    "date": "2025-11-20"
+  },
+  {
+    "equipment_tag": "P-311",
+    "failure_mode": "bearing lubrication failure",
+    "date": "2025-12-05"
+  }
+]

@@ -11,8 +11,10 @@ token.json
 *.sqlite3
 
 # Document queues and processing directories
-Module 1/backend/uploads/
-Module 1/backend/outputs/
+**/uploads/
+**/outputs/
+**/qdrant_db/
+logs/
 
 # Python caching & build folders
 __pycache__/

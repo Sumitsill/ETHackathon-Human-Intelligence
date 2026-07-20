@@ -1,0 +1,81 @@
+[
+  {
+    "question": "What was the last maintenance action taken on BLR-123?",
+    "expected_answer_contains": "Overhauled seal and refilled lubricant to recommended level.",
+    "source_document": "WO-2024092"
+  },
+  {
+    "question": "What was the last maintenance action taken on BLR-124?",
+    "expected_answer_contains": "Cleaned and recalibrated instrumentation as per OEM manual.",
+    "source_document": "WO-2024042"
+  },
+  {
+    "question": "What was the last maintenance action taken on CMP-101?",
+    "expected_answer_contains": "Overhauled seal and refilled lubricant to recommended level.",
+    "source_document": "WO-2024049"
+  },
+  {
+    "question": "What was the last maintenance action taken on CMP-101?",
+    "expected_answer_contains": "Replaced bearing assembly and re-aligned coupling.",
+    "source_document": "WO-2024077"
+  },
+  {
+    "question": "What was the last maintenance action taken on CT-109?",
+    "expected_answer_contains": "Replaced bearing assembly and re-aligned coupling.",
+    "source_document": "WO-2024068"
+  },
+  {
+    "question": "What was the last maintenance action taken on VLV-106?",
+    "expected_answer_contains": "Replaced bearing assembly and re-aligned coupling.",
+    "source_document": "WO-2024038"
+  },
+  {
+    "question": "What was the last maintenance action taken on RCT-103?",
+    "expected_answer_contains": "Cleaned and recalibrated instrumentation as per OEM manual.",
+    "source_document": "WO-2024059"
+  },
+  {
+    "question": "What was the last maintenance action taken on HEX-119?",
+    "expected_answer_contains": "Replaced bearing assembly and re-aligned coupling.",
+    "source_document": "WO-2024065"
+  },
+  {
+    "question": "What did the last inspection find on HEX-119?",
+    "expected_answer_contains": "Relief valve set pressure verified and found within tolerance.",
+    "source_document": "INSP-3039"
+  },
+  {
+    "question": "What did the last inspection find on BLR-126?",
+    "expected_answer_contains": "Minor external corrosion noted on shell, recommend repainting within 6 months.",
+    "source_document": "INSP-3028"
+  },
+  {
+    "question": "What did the last inspection find on TRB-108?",
+    "expected_answer_contains": "Insulation damage observed near flange joint, recommend repair.",
+    "source_document": "INSP-3007"
+  },
+  {
+    "question": "What did the last inspection find on BLR-117?",
+    "expected_answer_contains": "Minor external corrosion noted on shell, recommend repainting within 6 months.",
+    "source_document": "INSP-3051"
+  },
+  {
+    "question": "What did the last inspection find on RCT-125?",
+    "expected_answer_contains": "Relief valve set pressure verified and found within tolerance.",
+    "source_document": "INSP-3045"
+  },
+  {
+    "question": "Which equipment had emergency priority work orders in the last year?",
+    "expected_answer_contains": "cross-document aggregation test",
+    "source_document": "multiple"
+  },
+  {
+    "question": "What PPE is mandatory before working on a Boiler?",
+    "expected_answer_contains": [
+      "Insulated gloves",
+      "Gas detector",
+      "Fire retardant coverall"
+    ],
+    "source_document": "SOP"
+  }
+]

@@ -1,0 +1,2298 @@
+================================================================================
+  STANDALONE TEST FILES & TESTING SCRIPTS ARCHIVE - FULL UNTRUNCATED CODE DATA
+================================================================================
+Generated: 2026-07-20
+Location: Root / STANDALONE_TEST_SCRIPTS_ARCHIVE.txt
+
+This archive contains the full, untruncated content of all 14 test, CLI, batch, 
+and verification files in the repository. These files exist for standalone testing, 
+manual terminal interactive sessions, or unit test verification and can be retrieved 
+from here at any time.
+
+================================================================================
+SECTION 1: STANDALONE CLI & TERMINAL TEST TOOLS
+================================================================================
+
+--------------------------------------------------------------------------------
+FILE 1: ML MODELS/Md 1/backend/cli.py
+Explanation: Terminal console for manually testing Module 1 ingestion, OCR parsing, 
+entity extraction, vector indexing, and graph node creation in interactive menu mode.
+--------------------------------------------------------------------------------
+import os
+import sys
+import uuid
+import json
+import logging
+from datetime import datetime
+from pathlib import Path
+
+# Set up clean logging to console (warnings/errors only to avoid cluttering menu output)
+logging.basicConfig(level=logging.WARNING, format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger("pipeline_cli")
+
+# Add current folder to Python path
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+import config
+import database
+import parser_service
+import vector_service
+import gemini_service
+import gmail_service
+
+# Initialize DB on start
+database.init_db()
+
+def print_banner():
+    print("\n" + "=" * 70)
+    print("    🔥 UNIVERSAL INGESTION & KNOWLEDGE GRAPH OPERATIONS CONSOLE 🔥")
+    print("=" * 70)
+
+def show_stats():
+    conn = database.get_db_connection()
+    doc_count = conn.execute("SELECT count(*) FROM documents").fetchone()[0]
+    node_count = conn.execute("SELECT count(*) FROM nodes").fetchone()[0]
+    edge_count = conn.execute("SELECT count(*) FROM edges").fetchone()[0]
+    chunk_count = conn.execute("SELECT count(*) FROM chunks").fetchone()[0]
+    query_count = conn.execute("SELECT count(*) FROM queries").fetchone()[0]
+    conn.close()
+    
+    print("\n📊 DATABASE METRICS & STATISTICS:")
+    print(f"  - Total Documents Ingested : {doc_count}")
+    print(f"  - Total Text Chunks Indexed: {chunk_count}")
+    print(f"  - Knowledge Graph Nodes    : {node_count}")
+    print(f"  - Knowledge Graph Edges    : {edge_count}")
+    print(f"  - Grounded Queries Logged  : {query_count}")
+
+def list_ready_documents():
+    docs = database.list_documents()
+    ready_docs = [d for d in docs if d["status"] == "Ready"]
+    if not ready_docs:
+        print("  (No Ready documents in DB. Ingest a file first.)")
+        return []
+    
+    print("\n📄 READY DOCUMENTS IN QUEUE:")
+    for idx, d in enumerate(ready_docs):
+        print(f"  [{idx + 1}] {d['filename']} (ID: {d['id']}, Type: {d['source_type'].upper()})")
+    return ready_docs
+
+def handle_ingestion():
+    print("\n📥 INGEST LOCAL DOCUMENT:")
+    file_path_str = input("  Enter absolute or relative path to file: ").strip()
+    if not file_path_str:
+        print("❌ Canceled.")
+        return
+    
+    file_path = Path(file_path_str)
+    if not file_path.exists():
+        print(f"❌ File not found at: {file_path.resolve()}")
+        return
+        
+    filename = file_path.name
+    ext = file_path.suffix.lower()
+    
+    if ext == ".pdf":
+        source_type = "pdf"
+    elif ext in [".png", ".jpg", ".jpeg", ".webp"]:
+        source_type = "image"
+    elif ext in [".xlsx", ".xls", ".csv"]:
+        source_type = "xlsx"
+    else:
+        print("❌ Unsupported format. Please load PDF, PNG/JPG, or Excel/CSV.")
+        return
+        
+    doc_id = f"doc_{uuid.uuid4().hex[:10]}"
+    print(f"\n1. Registering document as '{filename}' (ID: {doc_id})...")
+    database.add_document(doc_id=doc_id, source_type=source_type, filename=filename, raw_path=str(file_path.resolve()))
+    
+    # Run pipeline synchronously in terminal
+    try:
+        # Step 1: Read and OCR
+        print("2. Reading document content & generating embeddings index...")
+        extracted_content = ""
+        
+        if source_type == "pdf":
+            pages = parser_service.parse_pdf(str(file_path))
+            ocr_pages = [p["page"] for p in pages if p["ocr_required"]]
+            
+            if ocr_pages:
+                print(f"   [Scan Detected] Running OCR fallbacks on pages {ocr_pages}...")
+                ocr_text = gemini_service.read_scanned_pdf_with_gemini(str(file_path), ocr_pages)
+                
+                # Merge OCR text
+                ocr_sections = ocr_text.split("--- PAGE ")
+                ocr_map = {}
+                for sec in ocr_sections:
+                    if not sec.strip():
+                        continue
+                    parts = sec.strip().split("---\n", 1)
+                    if len(parts) == 2:
+                        try:
+                            p_num = int(parts[0].split()[0])
+                            ocr_map[p_num] = parts[1]
+                        except:
+                            pass
+                for p in pages:
+                    if p["page"] in ocr_map:
+                        p["text"] = ocr_map[p["page"]]
+                        
+            for p in pages:
+                extracted_content += f"--- PAGE {p['page']} ---\n{p['text']}\n\n"
+                if p["text"]:
+                    vector_service.index_document_text(doc_id, p["text"], page_or_ref=f"Page {p['page']}")
+                    
+        elif source_type == "image":
+            extracted_content = gemini_service.read_image_with_gemini(str(file_path))
+            if extracted_content:
+                vector_service.index_document_text(doc_id, extracted_content, page_or_ref="Image Content")
+                
+        elif source_type == "xlsx":
+            sheets = parser_service.parse_excel(str(file_path))
+            for sheet_name, sheet_data in sheets.items():
+                markdown_tbl = sheet_data["markdown_content"]
+                extracted_content += f"--- SHEET {sheet_name} ---\n{markdown_tbl}\n\n"
+                vector_service.index_document_text(doc_id, markdown_tbl, page_or_ref=f"Sheet {sheet_name}")
+                
+        if not extracted_content.strip():
+            raise ValueError("No text could be extracted.")
+            
+        # Step 2: Entity extraction
+        print("3. Extracting entities and relationships using Llama-3.3-70b (Groq)...")
+        extraction_result = gemini_service.extract_entities_and_relationships(extracted_content, source_type)
+        
+        # Step 3: Graph construction
+        print("4. Saving resolved entities & deduplicating SQLite Knowledge Graph...")
+        gemini_service.resolve_and_save_graph(doc_id, extraction_result)
+        
+        database.update_document_status(doc_id, "Ready")
+        print("🎉 Ingestion complete! Document is ready in terminal console.")
+        
+        # Output summary details
+        print(f"\nExtracted {len(extraction_result.entities)} entities:")
+        for ent in extraction_result.entities[:8]:
+            print(f"  - [{ent.type.upper()}] '{ent.normalized_value}' ({ent.description[:60]}...)")
+        if len(extraction_result.entities) > 8:
+            print(f"  - ... and {len(extraction_result.entities) - 8} more.")
+            
+    except Exception as e:
+        print(f"❌ Ingestion failed: {e}")
+        database.update_document_status(doc_id, "Error", str(e))
+
+def handle_sync_emails():
+    print("\n✉️ SYNC ARCHIVES (MOCK INBOX):")
+    confirm = input("  Sync simulated emergency emails into processing queue? (y/n): ").strip().lower()
+    if confirm != 'y':
+        print("❌ Canceled.")
+        return
+        
+    print("1. Pulling email headers & threads from mock repository...")
+    emails = gmail_service.fetch_gmail_emails(max_results=5, query="label:INBOX")
+    
+    print(f"2. Processing {len(emails)} email archives asynchronously in terminal...")
+    synced = 0
+    for email_item in emails:
+        doc_id = f"gmail_{email_item['id']}"
+        existing = database.get_document(doc_id)
+        if existing:
+            continue
+            
+        filename = f"Email: {email_item['subject']}"
+        database.add_document(doc_id=doc_id, source_type="gmail", filename=filename, uploaded_by="gmail_sync")
+        
+        try:
+            email_content = (
+                f"Subject: {email_item['subject']}\n"
+                f"Sender: {email_item['sender']}\n"
+                f"Date: {email_item['date']}\n\n"
+                f"Body:\n{email_item['body']}"
+            )
+            vector_service.index_document_text(doc_id, email_content, page_or_ref="Email Body")
+            extraction_result = gemini_service.extract_entities_and_relationships(email_content, "gmail")
+            gemini_service.resolve_and_save_graph(doc_id, extraction_result)
+            database.update_document_status(doc_id, "Ready")
+            synced += 1
+            print(f"   ✅ Ingested: '{email_item['subject']}'")
+        except Exception as e:
+            database.update_document_status(doc_id, "Error", str(e))
+            print(f"   ❌ Failed: '{email_item['subject']}' - {e}")
+            
+    print(f"🎉 Mock sync completed. Processed {synced} new messages.")
+
+def handle_qa():
+    print("\n🔍 GROUNDED Q&A AGENT:")
+    question = input("  Ask a question: ").strip()
+    if not question:
+        return
+        
+    print("\n1. Searching local vector index for relevant text blocks...")
+    chunks = vector_service.vector_search(question, top_k=4)
+    if not chunks:
+        print("⚠️ No matching document text found. Search context is empty.")
+        
+    print("2. Mapping Knowledge Graph subgraphs & citations...")
+    matched_doc_ids = list(set(ch["document_id"] for ch in chunks))
+    graph_context = {"nodes": [], "links": []}
+    seen_nodes = set()
+    for doc_id in matched_doc_ids:
+        sub = database.get_subgraph_by_document(doc_id)
+        for n in sub.get("nodes", []):
+            if n["id"] not in seen_nodes:
+                seen_nodes.add(n["id"])
+                graph_context["nodes"].append(n)
+        for l in sub.get("links", []):
+            graph_context["links"].append(l)
+            
+    print("3. Generating grounded answer from Groq Llama-3.3-70b...")
+    res = gemini_service.generate_grounded_answer(question, chunks, graph_context)
+    
+    # Save Query History
+    query_id = f"q_{uuid.uuid4().hex[:10]}"
+    sources_formatted = [{"filename": c.source_filename, "ref": c.page_or_ref} for c in res.citations]
+    database.add_query(
+        query_id=query_id,
+        question=question,
+        answer=res.answer,
+        sources=sources_formatted,
+        confidence=res.confidence
+    )
+    
+    # Save markdown output file
+    try:
+        q_file = config.QUERIES_DIR / f"{query_id}.md"
+        citations_str = "\n".join([f"- **{c['filename']}** (Location: *{c['ref']}*)" for c in sources_formatted])
+        md_content = (
+            f"# Grounded Q&A Session\n\n"
+            f"**Query ID**: `{query_id}`  \n"
+            f"**Timestamp**: `{datetime.now().isoformat()}`  \n"
+            f"**Confidence Level**: `{res.confidence * 100:.1f}%`  \n\n"
+            f"--- \n\n"
+            f"## Question\n"
+            f"> {question}\n\n"
+            f"## Grounded Answer\n"
+            f"{res.answer}\n\n"
+            f"## Source Citations\n"
+            f"{citations_str if sources_formatted else '*No citations retrieved.*'}\n"
+        )
+        with open(q_file, "w", encoding="utf-8") as f:
+            f.write(md_content)
+    except Exception as e:
+        logger.error(f"Failed to write query output file: {e}")
+        
+    print("\n" + "-" * 70)
+    print(f"🤖 GROUNDED ANSWER (Confidence: {res.confidence*100:.1f}%):")
+    print(res.answer)
+    print("-" * 70)
+    print("📚 SOURCE CITATIONS:")
+    if res.citations:
+        for idx, cit in enumerate(res.citations):
+            print(f"  [{idx + 1}] {cit.source_filename} ({cit.page_or_ref}) -> '{cit.matched_text}'")
+        print(f"💾 Output file written to: {q_file.resolve()}")
+    else:
+        print("  (No direct document citations found.)")
+
+def handle_mindmap():
+    print("\n🧠 GENERATE MINDMAP TREE:")
+    topic = input("  Enter node topic or keyword to center mindmap (or press enter for Global): ").strip()
+    
+    source_id = ""
+    topic_name = "Knowledge Graph Overview"
+    subgraph = {"nodes": [], "links": []}
+    
+    if topic:
+        source_id = f"node_{topic.lower()}"
+        topic_name = topic
+        conn = database.get_db_connection()
+        row = conn.execute("SELECT id FROM nodes WHERE name LIKE ? LIMIT 1", (f"%{topic}%",)).fetchone()
+        conn.close()
+        if row:
+            subgraph = database.get_subgraph_by_node(row["id"], depth=2)
+        else:
+            print(f"⚠️ Topic node '{topic}' not found in database. Generating fallback tree...")
+            subgraph = {"nodes": [], "links": []}
+    else:
+        source_id = "global"
+        subgraph = database.get_graph()
+        
+    if not subgraph["nodes"]:
+        subgraph = database.get_graph()
+        
+    print("1. Extracting mindmap hierarchy via Llama-3.3-70b...")
+    mindmap_data = gemini_service.generate_mindmap_structure(topic_name, subgraph)
+    
+    # Save outputs to filesystem
+    try:
+        m_json_file = config.MINDMAPS_DIR / f"{source_id}.json"
+        m_md_file = config.MINDMAPS_DIR / f"{source_id}.md"
+        with open(m_json_file, "w", encoding="utf-8") as f:
+            json.dump(mindmap_data, f, indent=2)
+            
+        def outline_node(node, depth=0):
+            lines = [f"{'  ' * depth}- **{node['name']}**" + (f" (*{node['description']}*)" if node.get('description') else "")]
+            if node.get('children'):
+                for child in node['children']:
+                    lines.extend(outline_node(child, depth + 1))
+            return lines
+            
+        root = mindmap_data.get("root", mindmap_data)
+        md_lines = [f"# Mindmap Outline: {topic_name}\n\n"] + outline_node(root)
+        with open(m_md_file, "w", encoding="utf-8") as f:
+            f.write("\n".join(md_lines))
+    except Exception as e:
+        logger.error(f"Failed to write mindmap outputs: {e}")
+        
+    print("\n" + "-" * 70)
+    print(f"🌿 MINDMAP INDENTED OUTLINE FOR: {topic_name.upper()}")
+    print("-" * 70)
+    
+    root_item = mindmap_data.get("root", mindmap_data)
+    def print_tree(node, indent=""):
+        desc = f" ({node['description']})" if node.get('description') else ""
+        print(f"{indent}• {node['name']}{desc}")
+        if node.get('children'):
+            for child in node['children']:
+                print_tree(child, indent + "    ")
+                
+    print_tree(root_item)
+    print("-" * 70)
+    print(f"💾 Outline file written to: {m_md_file.resolve()}")
+    print(f"💾 JSON tree file written to: {m_json_file.resolve()}")
+
+def handle_flowchart():
+    print("\n🌿 GENERATE FLOWCHART WORKFLOW:")
+    docs = list_ready_documents()
+    if not docs:
+        return
+        
+    sel = input(f"  Select document number (1-{len(docs)}): ").strip()
+    try:
+        idx = int(sel) - 1
+        if idx < 0 or idx >= len(docs):
+            raise ValueError()
+    except:
+        print("❌ Invalid selection.")
+        return
+        
+    selected_doc = docs[idx]
+    doc_id = selected_doc["id"]
+    
+    # Retrieve full text of document from chunks
+    conn = database.get_db_connection()
+    chunks = conn.execute("SELECT content FROM chunks WHERE document_id = ? ORDER BY id", (doc_id,)).fetchall()
+    conn.close()
+    
+    if not chunks:
+        print("❌ No text chunks found for this document.")
+        return
+        
+    full_text = "\n\n".join(ch["content"] for ch in chunks)
+    print("1. Examining document structure & compiling Mermaid process steps...")
+    mermaid_code = gemini_service.generate_flowchart_mermaid(selected_doc["filename"], full_text)
+    
+    # Save outputs to filesystem
+    try:
+        f_file = config.FLOWCHARTS_DIR / f"{doc_id}.mmd"
+        md_content = (
+            f"%% Mermaid Flowchart: {selected_doc['filename']}\n"
+            f"%% Document ID: {doc_id}\n\n"
+            f"{mermaid_code}\n"
+        )
+        with open(f_file, "w", encoding="utf-8") as f:
+            f.write(md_content)
+    except Exception as e:
+        logger.error(f"Failed to write flowchart file: {e}")
+        
+    print("\n" + "-" * 70)
+    print(f"📐 MERMAID FLOWCHART CODE:")
+    print("-" * 70)
+    print(mermaid_code)
+    print("-" * 70)
+    print(f"💾 Mermaid flowchart file written to: {f_file.resolve()}")
+
+def run_loop():
+    while True:
+        print_banner()
+        print("  [1] Ingest Local File (PDF, Image/Blueprint, Excel/CSV)")
+        print("  [2] Sync Simulated Emails (Mock Inbox)")
+        print("  [3] Ask Grounded RAG Question")
+        print("  [4] Generate Mindmap Hierarchy Outline")
+        print("  [5] Generate Procedural Flowchart Code (Mermaid)")
+        print("  [6] Database Statistics & Metrics")
+        print("  [7] Exit Console")
+        print("-" * 70)
+        
+        choice = input("👉 Enter choice (1-7): ").strip()
+        if choice == "1":
+            handle_ingestion()
+        elif choice == "2":
+            handle_sync_emails()
+        elif choice == "3":
+            handle_qa()
+        elif choice == "4":
+            handle_mindmap()
+        elif choice == "5":
+            handle_flowchart()
+        elif choice == "6":
+            show_stats()
+        elif choice == "7":
+            print("\n👋 Exiting console. Goodbye!")
+            sys.exit(0)
+        else:
+            print("❌ Invalid input. Please enter a number between 1 and 7.")
+            
+        input("\nPress Enter to return to main menu...")
+
+if __name__ == "__main__":
+    try:
+        run_loop()
+    except KeyboardInterrupt:
+        print("\n👋 Console interrupted. Exiting.")
+        sys.exit(0)
+
+--------------------------------------------------------------------------------
+FILE 2: ML MODELS/Md 2/cli_rag.py
+Explanation: Terminal interactive console for testing Module 2 RAG querying, 
+DocVQA/FUNSD/OSHA benchmark evaluations, and diagram generation.
+--------------------------------------------------------------------------------
+import os
+import sys
+import json
+import logging
+import uuid
+
+# Add current folder to Python path
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+import rag_core
+import visualization
+import evaluation
+
+# Set up clean logging
+logging.basicConfig(level=logging.WARNING, format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger("cli_rag")
+
+def print_banner():
+    print("\n" + "=" * 80)
+    print("      🚀 MODULE 2: GROQ-POWERED KNOWLEDGE GRAPH CO-PILOT CONSOLE 🚀")
+    print("=" * 80)
+
+def show_db_stats():
+    try:
+        conn = rag_core.get_db_connection()
+        doc_count = conn.execute("SELECT count(*) FROM documents").fetchone()[0]
+        node_count = conn.execute("SELECT count(*) FROM nodes").fetchone()[0]
+        edge_count = conn.execute("SELECT count(*) FROM edges").fetchone()[0]
+        chunk_count = conn.execute("SELECT count(*) FROM chunks").fetchone()[0]
+        query_count = conn.execute("SELECT count(*) FROM queries").fetchone()[0]
+        conn.close()
+    except Exception as e:
+        print(f"❌ Error reading database: {e}")
+        return
+        
+    print("\n📊 WORKSPACE DATABASE METRICS:")
+    print(f"  - Total Documents Ingested : {doc_count}")
+    print(f"  - Total Text Chunks Indexed: {chunk_count}")
+    print(f"  - Knowledge Graph Nodes    : {node_count}")
+    print(f"  - Knowledge Graph Edges    : {edge_count}")
+    print(f"  - Queries Logged in History: {query_count}")
+    
+    # Check status of local embedder
+    status = "Active" if rag_core.embedder.model is not None else "Active (Word-Overlap Fallback)"
+    print(f"  - Embedding Mode           : {status} ({rag_core.embedder.dimension} dimensions)")
+    print(f"  - LLM Provider             : Groq API (llama-3.3-70b & llama-3.1-8b)")
+
+def run_interactive_query():
+    print("\n💬 CO-PILOT QUERY MODE:")
+    question = input("  Enter your question: ").strip()
+    if not question:
+        print("❌ Canceled.")
+        return
+        
+    print("\n🔍 Running Hybrid Retrieval & Reranker...")
+    # Refresh cache
+    rag_core.corpus_cache.refresh()
+    
+    try:
+        result = rag_core.execute_rag_flow(question)
+        print("\n" + "-" * 60)
+        print(f"🤖 ANSWER (Routed to {result['model_used']}):")
+        print("-" * 60)
+        print(result["answer"])
+        print("-" * 60)
+        print(f"Confidence level: {result['confidence']}")
+        print("Sources Used:")
+        for src in result["sources"]:
+            print(f"  - {src['filename']} ({src['ref']})")
+        print("-" * 60)
+    except Exception as e:
+        print(f"❌ Query execution failed: {e}")
+
+def run_synthetic_benchmark():
+    print("\n🧪 RUNNING 10-QUESTION SYNTHETIC BENCHMARK...")
+    try:
+        res = evaluation.evaluate_synthetic_benchmark()
+        metrics = res["metrics"]
+        details = res["details"]
+        
+        print("\n📈 EVALUATION METRICS REPORT:")
+        print(f"  - Retrieval@5 Accuracy     : {metrics['retrieval_at_5']:.1f}%")
+        print(f"  - Citation Validity Rate   : {metrics['citation_validity_rate']:.1f}%")
+        print(f"  - Grounding Refusal Rate   : {metrics['grounding_refusal_rate']:.1f}%")
+        print(f"  - Cross-Doc Synthesis Rate : {metrics['synthesis_success_rate']:.1f}%")
+        
+        print("\n📜 Detailed Log:")
+        for case in details:
+            status = "✅ PASS" if case["retrieval_hit"] and case["citations_valid"] and (case["refusal_correct"] is None or case["refusal_correct"]) and (case["synthesis_pass"] is None or case["synthesis_pass"]) else "❌ FAIL"
+            print(f"  [{case['id']}] {status} | Conf: {case['confidence']} | Q: {case['question'][:50]}...")
+            if status == "❌ FAIL":
+                print(f"    - Answer: {case['answer'][:120]}...")
+                
+    except Exception as e:
+        print(f"❌ Benchmark execution failed: {e}")
+
+def run_datasets_evaluation():
+    print("\n🔬 RUNNING MULTI-LAYER DATASET BENCHMARK (DocVQA + FUNSD + OSHA)...")
+    
+    # 1. DocVQA
+    print("\n1. Running DocVQA Slice (Generalization test)...")
+    try:
+        docvqa_res = evaluation.evaluate_docvqa_slice()
+        if "error" in docvqa_res:
+            print(f"  ❌ DocVQA: {docvqa_res['error']}")
+        else:
+            print(f"  ✅ DocVQA Exact Match Accuracy : {docvqa_res['accuracy_em']:.1f}%")
+            print(f"  ✅ DocVQA Lenient Match Accuracy: {docvqa_res['accuracy_contains']:.1f}%")
+    except Exception as e:
+        print(f"  ❌ DocVQA Evaluation Failed: {e}")
+        
+    # 2. FUNSD
+    print("\n2. Running FUNSD Slice (Entity Extraction quality test)...")
+    try:
+        funsd_res = evaluation.evaluate_funsd_slice()
+        if "error" in funsd_res:
+            print(f"  ❌ FUNSD: {funsd_res['error']}")
+        else:
+            print(f"  ✅ Extraction Precision : {funsd_res['precision']:.1f}%")
+            print(f"  ✅ Extraction Recall    : {funsd_res['recall']:.1f}%")
+            print(f"  ✅ F1 Extraction Score  : {funsd_res['f1_score']:.1f}%")
+    except Exception as e:
+        print(f"  ❌ FUNSD Evaluation Failed: {e}")
+        
+    # 3. OSHA
+    print("\n3. Running OSHA Incident Narratives (Safety Reasoning test)...")
+    try:
+        osha_res = evaluation.evaluate_osha_slice()
+        if "error" in osha_res:
+            print(f"  ❌ OSHA: {osha_res['error']}")
+        else:
+            print(f"  ✅ Safety Incident Reasoning Success Rate: {osha_res['success_rate']:.1f}%")
+    except Exception as e:
+        print(f"  ❌ OSHA Evaluation Failed: {e}")
+
+def run_test_ingestion():
+    print("\n📥 INGEST TEST DOCUMENT (Groq-based resolution & structural chunking):")
+    filename = input("  Enter filename (e.g. SOP-112.txt): ").strip()
+    if not filename:
+        return
+    source_type = input("  Enter source type (pdf/image/xlsx/gmail): ").strip().lower()
+    if source_type not in ["pdf", "image", "xlsx", "gmail"]:
+        print("❌ Invalid type.")
+        return
+    print("  Paste document content text below (press Ctrl+Z or Enter twice when done):")
+    
+    content_lines = []
+    while True:
+        try:
+            line = input()
+            content_lines.append(line)
+        except EOFError:
+            break
+            
+    content = "\n".join(content_lines).strip()
+    if not content:
+        print("❌ Content is empty.")
+        return
+        
+    doc_id = f"doc_{uuid.uuid4().hex[:10]}"
+    print(f"\n⚡ Ingesting document ID: {doc_id}...")
+    
+    try:
+        from main import run_groq_ingestion_pipeline
+        run_groq_ingestion_pipeline(doc_id, content, filename, source_type, "Page 1")
+        print("🎉 Ingestion complete! Chunks created, embedded locally, and entities mapped to SQLite graph.")
+    except Exception as e:
+        print(f"❌ Ingestion failed: {e}")
+
+def run_visualizer():
+    print("\n🎨 DIAGRAM GENERATOR TEST:")
+    print("  [1] Generate Document Subgraph Mindmap")
+    print("  [2] Generate Procedure Flowchart (Mermaid)")
+    opt = input("  Select option: ").strip()
+    
+    if opt == "1":
+        doc_id = input("  Enter Document ID: ").strip()
+        if not doc_id:
+            return
+        subgraph = visualization.get_subgraph_for_document(doc_id)
+        print(f"  Found {len(subgraph['nodes'])} nodes and {len(subgraph['links'])} connections.")
+        mindmap = visualization.generate_mindmap(f"Doc: {doc_id}", subgraph)
+        print("\nGenerated Mindmap Hierarchical JSON:")
+        print(json.dumps(mindmap, indent=2))
+        
+    elif opt == "2":
+        doc_id = input("  Enter Document ID (e.g. doc_verify_test_001): ").strip()
+        if not doc_id:
+            return
+        print("  Generating process flowchart and validating syntax...")
+        res = visualization.generate_flowchart(doc_id)
+        if res.get("status") == "success":
+            print("\nMermaid Code:")
+            print("-" * 40)
+            print(res["mermaid_code"])
+            print("-" * 40)
+        else:
+            print(f"  ❌ Flowchart generation did not succeed: {res.get('message', 'Unknown error')}")
+
+def main():
+    while True:
+        print_banner()
+        show_db_stats()
+        print("\n📂 CHOOSE OPERATIONS:")
+        print("  [1] Query Copilot (Grounded Q&A)")
+        print("  [2] Run 10-Question Synthetic Benchmark (test-cases-pdf.md)")
+        print("  [3] Run Multi-Layer Dataset Evaluations (DocVQA + FUNSD + OSHA)")
+        print("  [4] Ingest Document via Groq Extraction Pipeline")
+        print("  [5] Test Mindmap & Flowchart Visualizers")
+        print("  [6] Exit")
+        
+        choice = input("\nEnter choice [1-6]: ").strip()
+        if choice == "1":
+            run_interactive_query()
+        elif choice == "2":
+            run_synthetic_benchmark()
+        elif choice == "3":
+            run_datasets_evaluation()
+        elif choice == "4":
+            run_test_ingestion()
+        elif choice == "5":
+            run_visualizer()
+        elif choice == "6":
+            print("\n👋 Goodbye!")
+            sys.exit(0)
+        else:
+            print("\n❌ Invalid choice. Try again.")
+            
+        input("\nPress Enter to return to main menu...")
+
+if __name__ == "__main__":
+    main()
+
+--------------------------------------------------------------------------------
+FILE 3: ML MODELS/Md 3/Mod 3/cli_agent.py
+Explanation: Terminal console for testing Module 3 MIRA RCA, guided 5-Why trees, 
+telemetry anomaly scans, and maintenance optimization solvers interactively.
+--------------------------------------------------------------------------------
+import sys
+import os
+import json
+from datetime import datetime
+
+# Setup path
+sys.path.append(os.path.dirname(__file__))
+
+import config
+from data_store import (
+    initialize_all_databases, ASSETS_TABLE, WORK_ORDERS_TABLE, 
+    SENSOR_TAGS_TABLE, INSPECTION_FINDINGS_TABLE, RCA_SESSIONS_TABLE, 
+    RCA_NODES_TABLE, RECOMMENDATIONS_TABLE, AUDIT_LOG_TABLE, FAILURES
+)
+from graph_db import graph_db
+from vector_db import vector_db
+from agents import supervisor_graph, rca_subgraph, predictive_scan_graph, schedule_optimizer_graph, RCAState, validate_citation_contract
+
+def clear_screen():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+def print_header(title):
+    print("=" * 70)
+    print(f" MIRA AGENT CONSOLE: {title.upper()}")
+    print("=" * 70)
+
+def print_status_dashboard():
+    from gemini_client import client
+    groq_ok = client.check_groq_connectivity()
+    groq_status = f"CONNECTED ({config.GROQ_MODEL})" if groq_ok else "NOT SET/INVALID"
+    qdrant_status = "ACTIVE (Fallback/Memory)" if vector_db.use_fallback else "ACTIVE (Qdrant Client)"
+    neo4j_status = "ACTIVE (Mock Fallback)" if graph_db.use_mock else "ACTIVE (Neo4j Connection)"
+    
+    print("-" * 70)
+    print(f"System Connectivity Status:")
+    print(f"  [Groq API]   : {groq_status}")
+    print(f"  [Vector DB]  : {qdrant_status}")
+    print(f"  [Graph DB]   : {neo4j_status}")
+    print("-" * 70)
+
+def run_predictive_scan():
+    clear_screen()
+    print_header("Predictive Scan & Anomaly Monitor")
+    
+    # Execute batch scan graph
+    scanner = predictive_scan_graph
+    flagged = scanner.run_scan()
+    
+    if not flagged:
+        print("\nAll assets running within normal OEM operating tolerance envelopes. No anomalies detected.")
+    else:
+        print(f"\nFlagged {len(flagged)} assets exceeding alert thresholds:")
+        print("-" * 70)
+        for rec in flagged:
+            print(f"Asset ID      : {rec['asset_id']}")
+            print(f"Failure Mode  : {rec['predicted_failure_mode']}")
+            print(f"Risk Score    : {rec['risk_score']}%")
+            print(f"Critical window: {rec['predicted_window_start']} to {rec['predicted_window_end']}")
+            print(f"Action Rec    : {rec['recommended_action']}")
+            print("\nEvidence Citations (Citation Contract Check):")
+            for ref in rec["evidence_refs"]:
+                print(f"  - [{ref['source_type'].upper()}] (ID: {ref['source_id']}): {ref['excerpt']}")
+            print("-" * 70)
+            
+            # Action Approval gate
+            print(f"\nReview Decision for Recommendation {rec['id']}:")
+            print("  [1] Approve & dispatch to CMMS")
+            print("  [2] Reject alert")
+            print("  [0] Skip/Defer review")
+            choice = input("Select decision: ").strip()
+            
+            if choice == "1":
+                rec["status"] = "approved"
+                print(f"CMMS Hook: Action approved! Pushed Work Order back to CMMS.")
+            elif choice == "2":
+                rec["status"] = "rejected"
+                print("Alert rejected by Engineer.")
+                
+    input("\nPress Enter to return...")
+
+def run_guided_rca():
+    clear_screen()
+    print_header("Guided Multi-Turn RCA Workbench")
+    
+    print("Select failure event to initiate guided analysis:")
+    for idx, f in enumerate(FAILURES):
+        print(f"  [{idx + 1}] {f['failure_id']} - {f['asset_tag']}: {f['failure_mode']} ({f['date']})")
+        
+    choice_idx = input("\nSelect Case (Number) or enter to return: ").strip()
+    if not choice_idx:
+        return
+        
+    try:
+        idx = int(choice_idx) - 1
+        fail = FAILURES[idx]
+        fail_id = fail["failure_id"]
+        wo_id = "WO-9872" if fail["asset_tag"] == "Pump-14" else "WO-8874"
+    except Exception:
+        print("Invalid choice. Returning...")
+        return
+        
+    sess_id = f"SESS-{wo_id.split('-')[-1]}"
+    
+    # Initialize RCAState (gathering state)
+    state: RCAState = {
+        "session_id": sess_id,
+        "asset_id": fail["asset_tag"],
+        "work_order_id": wo_id,
+        "evidence": [],
+        "current_node_id": None,
+        "tree": [],
+        "pending_question": None,
+        "status": "gathering"
+    }
+    
+    # Execute guided graph loops
+    while state["status"] != "complete":
+        state = rca_subgraph.step(state)
+        
+        # Check if graph is interrupted for human-in-the-loop validation
+        if state["status"] == "waiting_on_human":
+            clear_screen()
+            print_header(f"RCA Guided Session: {state['session_id']}")
+            print("\nAccumulated Hypothesis Tree:")
+            for node in state["tree"]:
+                print(f"  - [{node['status'].upper()}] Node {node['id']}: {node['hypothesis_text']}")
+                
+            print(f"\nGUIDED CLARIFYING QUESTION (Interrupt node active):\n{state['pending_question']}")
+            ans = input("\nTechnician Response >> ").strip()
+            
+            # Feed input back and resume
+            state["evidence"].append({
+                "source_type": "inspection",
+                "source_id": "technician_input",
+                "excerpt": ans
+            })
+            state["status"] = "reasoning"
+            state["pending_question"] = None
+            
+    # Session complete
+    clear_screen()
+    print_header(f"Guided RCA Session Complete: {state['session_id']}")
+    print("\nFinal Root Cause Tree:")
+    for node in state["tree"]:
+        print(f"  - [{node['status'].upper()}] Node {node['id']}: {node['hypothesis_text']} (Confidence: {node['confidence']})")
+        print("    Citations:")
+        for ref in node["evidence_refs"]:
+            print(f"      * [{ref['source_type'].upper()}] {ref['source_id']}: {ref['excerpt']}")
+            
+    print("\nLocks root cause into EAM Graph database.")
+    confirm = input("Confirm root cause? (y/n): ").strip().lower()
+    if confirm == 'y':
+        final_hypo = state["tree"][-1]["hypothesis_text"]
+        for f in FAILURES:
+            if f["failure_id"] == fail_id:
+                f["root_cause"] = final_hypo
+                f["status"] = "Confirmed"
+                break
+        print("RCA finalized and saved.")
+        
+    input("\nPress Enter to return...")
+
+def run_schedule_solver():
+    forced_defers = []
+    
+    while True:
+        clear_screen()
+        print_header("Maintenance Constraints Optimizer")
+        
+        # Run optimized solver allocations
+        solver_output = schedule_optimizer_graph.run_optimization(forced_defers=forced_defers)
+        
+        print("WEEK 1 SCHEDULED TASKS:")
+        for t in solver_output["week1_schedule"]:
+            print(f"  - [{t['task_id']}] {t['title']} ({t['asset_tag']}) | Duration: {t['hours']}h | Cost: ${t['cost']}")
+            
+        print("\nWEEK 2 DEFERRED BACKLOG:")
+        for t in solver_output["week2_schedule"]:
+            parts_alert = " [NO PARTS]" if not t["parts_available"] else ""
+            print(f"  - [{t['task_id']}] {t['title']} ({t['asset_tag']}){parts_alert} | Duration: {t['hours']}h | Cost: ${t['cost']}")
+            
+        c = solver_output["constraints"]
+        m = solver_output["metrics"]
+        print("-" * 70)
+        print("RESOURCE CONSTRAINTS GAUGES:")
+        print(f"  Technician Labor  : {c['used_hours']} / {c['max_hours']} hrs")
+        print(f"  Maintenance Budget: ${c['used_budget']} / ${c['max_budget']}")
+        print(f"  Deferred Risk Cost: ${m['risk_penalty_cost']:,}")
+        print(f"  Total Cost Profile: ${m['total_combined_cost']:,}")
+        print("-" * 70)
+        print(f"\nSystem Rationale: {solver_output['optimizer_rationale']}\n")
+        
+        print("Options:")
+        print("  [1] Force Defer a Task to Week 2")
+        print("  [2] Force Schedule a Task to Week 1")
+        print("  [3] Reset Overrides")
+        print("  [0] Return to main menu")
+        
+        choice = input("Select Option: ").strip()
+        if choice == "0":
+            break
+        elif choice == "1":
+            tid = input("Enter Task ID to defer: ").strip().upper()
+            if tid and tid not in forced_defers:
+                forced_defers.append(tid)
+        elif choice == "2":
+            tid = input("Enter Task ID to schedule: ").strip().upper()
+            forced_defers = [id for id in forced_defers if id != tid]
+        elif choice == "3":
+            forced_defers = []
+
+def run_copilot_chat():
+    clear_screen()
+    print_header("Conversational Copilot (RAG Chat)")
+    print("Welcome to Copilot Mode. Ask technical queries or type 'exit' to return.")
+    print("Try asking:")
+    print("  - 'Show history of Pump-14'")
+    print("  - 'What is the torque spec for Pump-14?'")
+    print("  - 'Predictive status of Generator-3'")
+    
+    while True:
+        query = input("\nUser >> ").strip()
+        if not query or query.lower() == 'exit':
+            break
+            
+        # Call Supervisor Graph execute route
+        print("MIRA Agent thinking...")
+        response = supervisor_graph.execute_route(query)
+        print(f"\nMIRA >> {response}")
+        print("-" * 70)
+
+def main_loop():
+    initialize_all_databases()
+    while True:
+        clear_screen()
+        print("*" * 70)
+        print("  MIRA: MAINTENANCE INTELLIGENCE & RCA AGENT - TERMINAL CONSOLE")
+        print("*" * 70)
+        print_status_dashboard()
+        
+        print("Select System Action:")
+        print("  [1] Fleet Health & Anomaly Monitoring")
+        print("  [2] Stateful Guided RCA Workbench")
+        print("  [3] Schedule Constraints Solver")
+        print("  [4] Conversational Copilot (RAG Chat)")
+        print("  [5] Reset databases")
+        print("  [0] Exit")
+        
+        choice = input("\n>> ").strip()
+        
+        if choice == "0":
+            print("Exiting MIRA Console...")
+            break
+        elif choice == "1":
+            run_predictive_scan()
+        elif choice == "2":
+            run_guided_rca()
+        elif choice == "3":
+            run_schedule_solver()
+        elif choice == "4":
+            run_copilot_chat()
+        elif choice == "5":
+            confirm = input("Reset all databases? (y/n): ").strip().lower()
+            if confirm == "y":
+                # Clear mock files
+                if os.path.exists(config.MOCK_GRAPH_PATH):
+                    os.remove(config.MOCK_GRAPH_PATH)
+                graph_db._save_mock_graph({"nodes": [], "relationships": []})
+                initialize_all_databases()
+                print("System database reset completed.")
+                input("Press enter...")
+
+if __name__ == "__main__":
+    main_loop()
+
+--------------------------------------------------------------------------------
+FILE 4: ML MODELS/Md 4/Mod 4/cli_agent.py
+Explanation: Terminal console for testing Module 4 QRCI compliance scans, 
+evidence package generation, telemetry ingestion, and amendment impact sandboxing.
+--------------------------------------------------------------------------------
+import sys
+import os
+import json
+from datetime import datetime
+from typing import List, Dict, Any, Optional
+
+# Setup path
+sys.path.append(os.path.dirname(__file__))
+
+import config
+import data_store
+from vector_db import vector_db
+from graph_db import graph_db
+from agents import (
+    gap_analysis_graph, evidence_package_graph, 
+    deviation_detection_graph, impact_analysis_graph, copilot_agent,
+    validate_citation_contract
+)
+
+def clear_screen():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+def print_header(title: str):
+    print("=" * 80)
+    print(f" QRCI WORKBENCH CONSOLE: {title.upper()}")
+    print("=" * 80)
+
+def print_status_dashboard():
+    from gemini_client import SDK_AVAILABLE
+    from vector_db import QDRANT_AVAILABLE
+    
+    gemini_status = "OK (SDK Client)" if SDK_AVAILABLE else "OK (Direct REST HTTP Fallback)"
+    vector_status = "ACTIVE (Local Qdrant)" if not vector_db.use_fallback else "ACTIVE (In-Memory Key Search Fallback)"
+    graph_status = "ACTIVE (Neo4j)" if not graph_db.use_mock else "ACTIVE (JSON File Mock Graph)"
+    
+    conn = data_store.get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM assets;")
+    assets_count = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) FROM requirements;")
+    reqs_count = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) FROM gap_analyses;")
+    gaps_count = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) FROM deviations;")
+    dev_count = cursor.fetchone()[0]
+    conn.close()
+    
+    print("-" * 80)
+    print("System Health & Connection Topology:")
+    print(f"  [LLM Interface]   : {gemini_status}")
+    print(f"  [Vector DB]       : {vector_status}")
+    print(f"  [Graph DB]        : {graph_status}")
+    print(f"  [SQLite Storage]  : ACTIVE ({assets_count} assets, {reqs_count} clauses, {gaps_count} scans, {dev_count} alerts)")
+    print("-" * 80)
+
+# UC-1 CLI Node
+def run_compliance_scan_cli():
+    clear_screen()
+    print_header("Continuous Compliance Scan & Verification")
+    print("Triggering continuous mapping scan across active regulations...")
+    
+    results = gap_analysis_graph.run_compliance_scan(actor="EHS_Officer")
+    
+    print("\nScan complete. Compliance Findings:")
+    print("-" * 80)
+    print(f"{'GAP ID':<10} | {'CLAUSE':<14} | {'ASSET ID':<10} | {'RATING':<22} | {'CONFIDENCE':<10}")
+    print("-" * 80)
+    for r in results:
+        asset_str = r["asset_id"] if r["asset_id"] else "Plant-Level"
+        # Color coding simulation
+        rating = r["status"].upper()
+        if rating == "GAP":
+            rating = "GAP (⚠️ ACTIONS REQ)"
+        elif rating == "COMPLIANT":
+            rating = "COMPLIANT (✅)"
+        elif rating == "PARTIAL":
+            rating = "PARTIAL COMPLIANT (⚠️)"
+            
+        print(f"{r['id']:<10} | {r['clause_id']:<14} | {asset_str:<10} | {rating:<22} | {r['confidence']:<10}")
+    print("-" * 80)
+    print("\n*Slight alert: SPCBs variations or SPCB local guidelines are not preloaded (FR-13 warning).")
+    
+    print("\nReview and Sign-off Draft Analysis Findings (FR-10):")
+    print("  [1] Review details and Approve a draft")
+    print("  [0] Return to main menu")
+    choice = input("\nSelect choice: ").strip()
+    
+    if choice == "1":
+        gap_id = input("Enter GAP ID to review: ").strip().upper()
+        match = next((r for r in results if r["id"] == gap_id), None)
+        if not match:
+            print("GAP ID not found.")
+            input("Press Enter...")
+            return
+            
+        clear_screen()
+        print_header(f"Gap Analysis Details: {gap_id}")
+        print(f"Requirement  : {match['clause_id']}")
+        print(f"Asset ID     : {match['asset_id'] if match['asset_id'] else 'Plant-Level'}")
+        print(f"Compliance   : {match['status'].upper()}")
+        print(f"Confidence   : {match['confidence']}")
+        print(f"\nExplanation Narrative:\n{match['explanation']}")
+        print("\nSupporting Records (Citations Contract):")
+        for idx, citation in enumerate(match["evidence_refs"]):
+            print(f"  {idx+1}. [{citation['source_type'].upper()} ID: {citation['source_id']}] Excerpt: \"{citation['excerpt']}\"")
+            
+        print("\nAction Decision:")
+        print("  [1] Sign-off and Approve (Mark Finalized)")
+        print("  [2] Reject and log technical dispute")
+        print("  [0] Skip")
+        dec = input("\nSelect decision: ").strip()
+        
+        if dec in ["1", "2"]:
+            officer = input("Enter Compliance Officer Name: ").strip() or "EHS Officer"
+            decision = "approve" if dec == "1" else "reject"
+            note = input("Add review annotation notes: ").strip()
+            
+            data_store.update_gap_analysis_review(
+                gap_id=gap_id,
+                reviewed_by=officer,
+                reviewed_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                review_status="finalized" if decision == "approve" else "disputed"
+            )
+            data_store.log_audit(
+                action="review_gap_analysis",
+                actor=officer,
+                payload={"gap_id": gap_id, "decision": decision, "note": note}
+            )
+            print(f"\nSign-off registered successfully! Marked status as: {decision}d.")
+            input("\nPress Enter to return...")
+
+# UC-2 CLI Node
+def run_evidence_packaging_cli():
+    clear_screen()
+    print_header("Audit Evidence Package Compiler")
+    print("Configure scope parameters to assemble compliant archives (or leave blank to match all):")
+    
+    regulator = input("Filter by Regulator Body (Factories_Act/PESO/OISD/CPCB): ").strip()
+    standard = input("Filter by Regulation Document ID (e.g. REG-PESO-2002): ").strip()
+    area = input("Filter by Facility Area location (e.g. CDU-1 / LPG-Terminal): ").strip()
+    
+    scope = {}
+    if regulator: scope["regulator"] = regulator
+    if standard: scope["standard"] = standard
+    if area: scope["facility_area"] = area
+    
+    officer = input("\nEnter Compliance Manager name: ").strip() or "Lead EHS Manager"
+    
+    print("\nCompiling package and fetching LLM executive summary...")
+    pkg = evidence_package_graph.generate_package(scope, requested_by=officer)
+    
+    clear_screen()
+    print_header(f"Compiled Evidence Package: {pkg['id']}")
+    print(f"Generated at : {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"Requested by : {officer}")
+    print(f"Scope configuration: {json.dumps(pkg['scope'])}")
+    print(f"Status       : {pkg['status'].upper()} (Pending Review)")
+    print("-" * 80)
+    print(f"Executive Summary Report:\n{pkg['summary']}")
+    print("-" * 80)
+    print("Assembled Traceable Evidence Records:")
+    for idx, item in enumerate(pkg["contents"]):
+        print(f"\n{idx+1}. Requirement ID: {item['requirement_id']} (Clause {item['clause_id']})")
+        print(f"   Obligation text: {item['obligation_text'][:90]}...")
+        print(f"   Compliance status: {item['status'].upper()}")
+        print("   Supporting logs:")
+        for ref in item["evidence_record_refs"]:
+            print(f"     - [{ref['source_type'].upper()} ID: {ref['source_id']}] Excerpt: \"{ref['excerpt'][:120]}\"")
+            
+    print("\nAction Decision:")
+    print("  [1] Sign-off and Finalize package for Audit Submission")
+    print("  [0] Keep as draft and return")
+    choice = input("\nSelect choice: ").strip()
+    if choice == "1":
+        data_store.update_evidence_package_status(pkg["id"], "finalized")
+        data_store.log_audit(
+            action="finalize_evidence_package",
+            actor=officer,
+            payload={"package_id": pkg["id"]}
+        )
+        print(f"\nPackage {pkg['id']} has been signed off and finalized.")
+        input("\nPress Enter to return...")
+
+# UC-3 CLI Node
+def run_telemetry_simulation_cli():
+    clear_screen()
+    print_header("Quality Deviation & Alerting Simulator")
+    print("Select simulated telemetry event to feed into the monitoring pipeline:")
+    print("  [1] ETP Discharge Point (ETP-01) Effluent pH sensor = 9.8 (Exceeds CPCB limit 9.0)")
+    print("  [2] Stack Monitor (Stack-01) SO2 gas sensor = 62.0 mg/Nm3 (Exceeds CPCB limit 50)")
+    print("  [3] Pump-14 Coupling Safeguard Check = MISSING (Safety guard fence removed)")
+    print("  [4] Motor-14 FLP Junction Box Check = COMPROMISED (Loose terminal cover bolts)")
+    print("  [5] LPG Mounded Storage (LPG-Storage) safety valves check = FAILED (Expired test cert)")
+    print("  [6] Enter Custom Telemetry values manually")
+    print("  [0] Return")
+    
+    choice = input("\nSelect simulated event: ").strip()
+    
+    asset_id, parameter, value = "", "", ""
+    if choice == "1":
+        asset_id, parameter, value = "ETP-01", "ph", 9.8
+    elif choice == "2":
+        asset_id, parameter, value = "Stack-01", "so2", 62.0
+    elif choice == "3":
+        asset_id, parameter, value = "Pump-14", "coupling_guard", "MISSING"
+    elif choice == "4":
+        asset_id, parameter, value = "Motor-14", "flp_casing", "COMPROMISED"
+    elif choice == "5":
+        asset_id, parameter, value = "LPG-Storage", "safety_valve_check", "FAILED"
+    elif choice == "6":
+        asset_id = input("Enter Asset ID (e.g. ETP-01): ").strip()
+        parameter = input("Enter Parameter Name (e.g. ph, so2, coupling_guard): ").strip()
+        value = input("Enter Telemetry Value: ").strip()
+        # Convert numeric values if applicable
+        try:
+            value = float(value)
+        except ValueError:
+            pass
+    else:
+        return
+        
+    print(f"\nIngesting telemetry parameter: {parameter} = {value} for asset {asset_id}...")
+    
+    # Insert inspection finding representing telemetry trigger
+    finding_id = f"INSP-{datetime.now().strftime('%M%S')}"
+    data_store.add_inspection_finding(
+        finding_id=finding_id,
+        asset_id=asset_id,
+        inspected_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        inspector_id="SensorMonitor",
+        structured_fields={parameter: value},
+        free_text_notes=f"Simulated telemetry trigger. Parameter: {parameter} = {value}"
+    )
+    
+    # Run deviation checking subgraph
+    dev = deviation_detection_graph.check_and_alert_deviation(
+        source_type="inspection",
+        record_id=finding_id,
+        asset_id=asset_id,
+        parameter=parameter,
+        value=value
+    )
+    
+    print("\nIngest Result:")
+    if dev:
+        print("\n" + "!" * 80)
+        print(f"⚠️ QUALITY/REGULATORY DEVIATION DETECTED: {dev['id']}")
+        print(f"⚠️ SEVERITY RATING : {dev['severity'].upper()}")
+        print(f"⚠️ AFFECTED ASSET  : {dev['asset_id']}")
+        print(f"⚠️ DETAIL ANALYSIS  : {dev['description']}")
+        print("!" * 80)
+    else:
+        print("✅ Telemetry ingested successfully. Parameter is within allowed compliance limits.")
+        
+    input("\nPress Enter to return...")
+
+# UC-4 CLI Node
+def run_impact_analysis_cli():
+    clear_screen()
+    print_header("Regulatory Amendment Impact Simulator")
+    print("Select a requirement clause rule to simulate an amendment:")
+    requirements = data_store.get_requirements()
+    
+    for idx, req in enumerate(requirements):
+        print(f"  [{idx+1}] {req['id']} ({req['clause_id']}): {req['obligation_text'][:70]}...")
+        
+    choice_idx = input("\nSelect requirement number: ").strip()
+    if not choice_idx:
+        return
+        
+    try:
+        req = requirements[int(choice_idx)-1]
+    except Exception:
+        print("Invalid choice.")
+        input("Press Enter...")
+        return
+        
+    print(f"\nSelected: {req['id']} ({req['clause_id']})")
+    print(f"Current Obligation: {req['obligation_text']}")
+    print(f"Current Threshold : {json.dumps(req['numeric_threshold'])}")
+    
+    new_obligation = input("\nEnter amended obligation text (leave empty to keep current): ").strip() or req["obligation_text"]
+    
+    new_val = input("Enter new numeric threshold value (leave empty to keep current): ").strip()
+    new_threshold = req["numeric_threshold"]
+    if new_val and req["numeric_threshold"]:
+        new_threshold = dict(req["numeric_threshold"])
+        try:
+            # Handle float or range
+            if isinstance(new_threshold["value"], list):
+                new_threshold["value"] = json.loads(new_val)
+            else:
+                new_threshold["value"] = float(new_val)
+        except Exception:
+            new_threshold["value"] = new_val
+            
+    print("\nRunning impact analysis diff and resolving graph linkages...")
+    report = impact_analysis_graph.analyze_amendment_impact(
+        requirement_id=req["id"],
+        new_obligation=new_obligation,
+        new_threshold=new_threshold
+    )
+    
+    clear_screen()
+    print_header("Regulatory Change Delta Impact Report")
+    print(f"Requirement Clause: {report['clause_id']} (ID: {report['requirement_id']})")
+    print("-" * 80)
+    print("Obligation Diff:")
+    print(f"  [-] Old: {report['diff']['old_obligation']}")
+    print(f"  [+] New: {report['diff']['new_obligation']}")
+    if report['diff']['threshold_change']:
+        print("Threshold Change:")
+        print(f"  [-] Old: {json.dumps(report['diff']['threshold_change']['old_limit'])}")
+        print(f"  [+] New: {json.dumps(report['diff']['threshold_change']['new_limit'])}")
+    print("-" * 80)
+    print(f"Affected Plant Assets (KG-linked): {', '.join(report['affected_assets'])}")
+    print(f"\nLLM Operational Rationale & Mitigation Action:\n{report['operational_impact']}")
+    print("-" * 80)
+    
+    input("\nPress Enter to return...")
+
+# Copilot CLI Node
+def run_copilot_chat_cli():
+    clear_screen()
+    print_header("Conversational Compliance Copilot (RAG Chat)")
+    print("Welcome to Copilot Mode. Ask regulatory Q&A queries. Type 'exit' to return.")
+    print("Try asking:")
+    print("  - 'Is Motor-14 compliant with PESO flameproof requirements?'")
+    print("  - 'What are the CPCB general effluent limits for pH and BOD?'")
+    print("  - 'What OISD safety work permit rules apply to crude centrifugal pump Pump-14?'")
+    
+    while True:
+        query = input("\nUser >> ").strip()
+        if not query or query.lower() == 'exit':
+            break
+            
+        print("Thinking...")
+        res = copilot_agent.answer_question(query)
+        
+        print(f"\nQRCI >> {res['answer']}")
+        print("\nGrounding Citations:")
+        for idx, citation in enumerate(res["citations"]):
+            print(f"  [{idx+1}] Source: {citation['source_type'].upper()} ID: {citation['source_id']}. Content: \"{citation['excerpt'][:120]}...\"")
+        print("-" * 80)
+
+def run_dynamic_registration_cli():
+    clear_screen()
+    print_header("Dynamic Registration Portal")
+    print("Select dynamic registration entity:")
+    print("  [1] Register New Plant Asset")
+    print("  [2] Register New Regulation & Requirement clause")
+    print("  [0] Return")
+    
+    choice = input("\n>> ").strip()
+    if choice == "1":
+        print("\n--- Register Asset ---")
+        asset_id = input("Asset ID (e.g. Pump-99): ").strip()
+        if not asset_id: return
+        name = input("Asset Name (e.g. Crude Transfer Pump 99): ").strip()
+        asset_class = input("Asset Class (e.g. Pump/Motor/PressureVessel): ").strip()
+        location = input("Location Area (e.g. CDU-1 / Tank-Farm): ").strip()
+        criticality = input("Criticality (High/Medium/Low): ").strip() or "Medium"
+        parent_asset_id = input("Parent Asset ID (Optional): ").strip() or None
+        
+        data_store.insert_asset(
+            asset_id=asset_id,
+            name=name,
+            asset_class=asset_class,
+            location=location,
+            criticality=criticality,
+            oem_manual_ref=None,
+            parent_asset_id=parent_asset_id
+        )
+        print(f"\nAsset {asset_id} successfully registered and dynamically linked in the compliance graph.")
+        input("\nPress Enter to return...")
+    elif choice == "2":
+        print("\n--- Register Regulation & Clause ---")
+        reg_id = input("Regulation ID (e.g. REG-SPCB-2026): ").strip()
+        if not reg_id: return
+        source_body = input("Regulatory Body (e.g. SPCB/Factories_Act/PESO): ").strip()
+        title = input("Regulation Title: ").strip()
+        version = input("Version (e.g. v1.0): ").strip() or "v1.0"
+        effective_date = input("Effective Date (YYYY-MM-DD): ").strip() or "2026-07-16"
+        status = "active"
+        full_text = input("Regulation reference manual excerpt text (for Vector grounding): ").strip() or None
+        
+        data_store.insert_regulation(
+            reg_id=reg_id,
+            source_body=source_body,
+            title=title,
+            document_ref=None,
+            version=version,
+            effective_date=effective_date,
+            superseded_by=None,
+            status=status,
+            full_text=full_text
+        )
+        
+        print("\n--- Register Associated Requirement Clause ---")
+        req_id = input("Requirement ID (e.g. REQ-SPCB-NOX-NEW): ").strip()
+        clause_id = input("Clause Number/ID (e.g. Clause 15.2): ").strip()
+        obligation_text = input("Obligation Text: ").strip()
+        
+        # Optional numeric threshold
+        thresh_param = input("Numeric Threshold parameter name (e.g. ph, nox, temperature) or leave empty if qualitative: ").strip()
+        numeric_threshold = None
+        if thresh_param:
+            operator = input("Operator (<= / >= / between): ").strip()
+            val_str = input("Value (e.g. 50 or [5.5, 9.0]): ").strip()
+            unit = input("Unit (e.g. mg/l, pH, C): ").strip()
+            try:
+                if val_str.startswith("["):
+                    value = json.loads(val_str)
+                else:
+                    value = float(val_str)
+                numeric_threshold = {
+                    "parameter": thresh_param,
+                    "operator": operator,
+                    "value": value,
+                    "unit": unit
+                }
+            except Exception as e:
+                print(f"Error parsing threshold: {e}. Requirement will have no numeric threshold.")
+                
+        # Optional applicability rules
+        app_class = input("Applicability asset class (e.g. Pump/EmissionStack) or leave empty: ").strip()
+        app_area = input("Applicability facility area (e.g. CDU-1) or leave empty: ").strip()
+        applicability_rules = None
+        if app_class or app_area:
+            applicability_rules = {}
+            if app_class: applicability_rules["asset_class"] = app_class
+            if app_area: applicability_rules["facility_area"] = app_area
+            
+        data_store.insert_requirement(
+            req_id=req_id,
+            reg_id=reg_id,
+            clause_id=clause_id,
+            obligation_text=obligation_text,
+            numeric_threshold=numeric_threshold,
+            applicability_rules=applicability_rules
+        )
+        
+        print(f"\nRegulation {reg_id} and requirement clause {clause_id} registered, indexed in Vector DB, and dynamically linked in the Graph.")
+        input("\nPress Enter to return...")
+
+def main_loop():
+    # lifespan initialize
+    data_store.initialize_database()
+    while True:
+        clear_screen()
+        print("*" * 80)
+        print("  QRCI: QUALITY & REGULATORY COMPLIANCE INTELLIGENCE - TERMINAL CONSOLE")
+        print("*" * 80)
+        print_status_dashboard()
+        
+        print("Select Compliance Action:")
+        print("  [1] Trigger Continuous Compliance Scan & Reviews")
+        print("  [2] Compile Audit Evidence Packages")
+        print("  [3] Ingest simulated Telemetry logs (Deviation checking)")
+        print("  [4] Run Regulatory Change Impact Sandbox")
+        print("  [5] Conversational Compliance Copilot (RAG Chat)")
+        print("  [6] Reset system databases & Seeding")
+        print("  [7] Dynamically Register Assets or Regulations")
+        print("  [0] Exit")
+        
+        choice = input("\n>> ").strip()
+        
+        if choice == "0":
+            print("Exiting QRCI Workbench...")
+            break
+        elif choice == "1":
+            run_compliance_scan_cli()
+        elif choice == "2":
+            run_evidence_packaging_cli()
+        elif choice == "3":
+            run_telemetry_simulation_cli()
+        elif choice == "4":
+            run_impact_analysis_cli()
+        elif choice == "5":
+            run_copilot_chat_cli()
+        elif choice == "6":
+            confirm = input("Reset all databases? (y/n): ").strip().lower()
+            if confirm == "y":
+                # Clear SQLite and seed
+                if os.path.exists(config.DB_PATH):
+                    try:
+                        os.remove(config.DB_PATH)
+                    except Exception:
+                        pass
+                data_store.initialize_database()
+                print("All databases reset and re-seeded successfully.")
+                input("Press enter...")
+        elif choice == "7":
+            run_dynamic_registration_cli()
+
+if __name__ == "__main__":
+    main_loop()
+
+================================================================================
+SECTION 2: VERIFICATION SCRIPTS & UNIT TEST RUNNERS
+================================================================================
+
+--------------------------------------------------------------------------------
+FILE 5: ML MODELS/Md 1/backend/verify_backend.py
+Explanation: Test runner for validating Module 1 SQLite database initialization, 
+Gemini API connection, text embeddings, and RAG Q&A output.
+--------------------------------------------------------------------------------
+import sys
+import os
+import json
+import logging
+from datetime import datetime
+
+# Set up logging to stdout
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger(__name__)
+
+# Ensure current folder is in Python path
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+try:
+    import config
+    import database
+    import parser_service
+    import vector_service
+    import gemini_service
+    import gmail_service
+except ImportError as e:
+    logger.error(f"Failed to import core modules: {e}")
+    sys.exit(1)
+
+def run_verification():
+    logger.info("====================================================")
+    logger.info("      STARTING BACKEND VERIFICATION TESTING         ")
+    logger.info("====================================================")
+    
+    # 1. DB Init
+    logger.info("1. Initializing SQLite Database (Resetting first)...")
+    try:
+        if os.path.exists(config.DB_PATH):
+            os.remove(config.DB_PATH)
+            logger.info("   Removed existing database file to ensure clean test run.")
+        database.init_db()
+        logger.info("   DB initialized successfully.")
+    except Exception as e:
+        logger.error(f"   DB Init Failed: {e}")
+        return False
+
+    # 2. API Key Check
+    logger.info(f"2. Checking Gemini API Key Configuration...")
+    if not config.GEMINI_API_KEY:
+        logger.error("   Gemini API Key is not set! Set GEMINI_API_KEY in backend/.env file.")
+        return False
+    logger.info("   Gemini API Key detected.")
+
+    # 3. Test Embedding Call
+    logger.info("3. Testing text embedding model ('text-embedding-004')...")
+    test_text = "Standard Operating Procedure for Valve V-102 isolation."
+    try:
+        emb = vector_service.get_embedding(test_text)
+        logger.info(f"   Embedding retrieved. Dimensions: {len(emb)}")
+        if len(emb) != 768:
+            logger.warning(f"   Warning: Expected 768 dimensions, got {len(emb)}")
+    except Exception as e:
+        logger.error(f"   Embedding API Call Failed: {e}")
+        return False
+
+    # 4. Ingest and Process Mock Document (Programmatic Slice)
+    logger.info("4. Testing Entity Extraction & Graph Building on mock document content...")
+    mock_doc_id = "doc_verify_test_001"
+    mock_text = (
+        "PROCEDURE: Valve V-102 Isolation and Maintenance.\n"
+        "Date: 2026-07-14. Author: John Engineer.\n"
+        "1. Turn Valve V-102 clockwise to isolate the downstream piping.\n"
+        "2. Keep the inlet pressure below 150 PSI to avoid pressure shocks.\n"
+        "3. This procedure complies with standard ASME B31.3 piping regulations.\n"
+        "4. Notify Supervisor Dave Miller once isolation is verified."
+    )
+    
+    try:
+        # Save document record
+        database.add_document(
+            doc_id=mock_doc_id,
+            source_type="pdf",
+            filename="Verify_Test_Procedure.pdf",
+            uploaded_by="verifier"
+        )
+        
+        # Index document text
+        vector_service.index_document_text(mock_doc_id, mock_text, page_or_ref="Page 1")
+        
+        # Test extraction
+        logger.info("   Calling Gemini structured entity extraction...")
+        extraction = gemini_service.extract_entities_and_relationships(mock_text, "pdf")
+        
+        logger.info(f"   Extracted {len(extraction.entities)} entities and {len(extraction.relationships)} relationships.")
+        for ent in extraction.entities:
+            logger.info(f"     - Entity: [{ent.type}] Value: '{ent.value}' -> Normalized: '{ent.normalized_value}'")
+        for rel in extraction.relationships:
+            logger.info(f"     - Relation: {rel.source_value} --({rel.relationship_type})--> {rel.target_value}")
+            
+        # Resolve and write to graph
+        gemini_service.resolve_and_save_graph(mock_doc_id, extraction)
+        database.update_document_status(mock_doc_id, "Ready")
+        logger.info("   Entity extraction and Graph building complete.")
+        
+    except Exception as e:
+        logger.error(f"   Extraction or Graph Resolution Failed: {e}")
+        return False
+
+    # 5. Check Graph Queries
+    logger.info("5. Fetching Knowledge Graph representation from SQLite...")
+    try:
+        graph = database.get_graph()
+        logger.info(f"   Graph contains {len(graph['nodes'])} nodes and {len(graph['links'])} edges.")
+        if not graph['nodes']:
+            logger.error("   Error: Knowledge Graph has 0 nodes after insertion!")
+            return False
+    except Exception as e:
+        logger.error(f"   Graph Fetch Failed: {e}")
+        return False
+
+    # 6. Test RAG Q&A
+    logger.info("6. Testing Grounded RAG Query endpoint...")
+    question = "Who should I notify after isolating Valve V-102 and what is the limit?"
+    try:
+        # Search vector
+        chunks = vector_service.vector_search(question, top_k=2)
+        logger.info(f"   Vector search retrieved {len(chunks)} chunks.")
+        
+        # Fetch subgraph
+        subgraph = database.get_subgraph_by_document(mock_doc_id)
+        
+        # Generate Answer
+        grounded_res = gemini_service.generate_grounded_answer(question, chunks, subgraph)
+        logger.info(f"   Answer: {grounded_res.answer}")
+        logger.info(f"   Citations: {[c.source_filename + ' (' + c.page_or_ref + ')' for c in grounded_res.citations]}")
+        logger.info(f"   Confidence Score: {grounded_res.confidence}")
+        
+    except Exception as e:
+        logger.error(f"   RAG Query Failed: {e}")
+        return False
+
+    # 7. Test Mindmap & Flowchart Visualizer Generator
+    logger.info("7. Testing Mindmap & Flowchart generator...")
+    try:
+        # Mindmap
+        mindmap_data = gemini_service.generate_mindmap_structure("Valve V-102 Isolation", subgraph)
+        logger.info(f"   Mindmap root node: {mindmap_data['root']['name']} with {len(mindmap_data['root']['children'])} branches.")
+        
+        # Flowchart
+        flowchart_code = gemini_service.generate_flowchart_mermaid("Verify_Test_Procedure.pdf", mock_text)
+        logger.info("   Mermaid Flowchart Code Generated:")
+        print(flowchart_code)
+        
+    except Exception as e:
+        logger.error(f"   Visualization Generation Failed: {e}")
+        return False
+
+    logger.info("====================================================")
+    logger.info("   ALL VERIFICATION TESTS COMPLETED SUCCESSFULLY!    ")
+    logger.info("====================================================")
+    return True
+
+if __name__ == "__main__":
+    success = run_verification()
+    sys.exit(0 if success else 1)
+
+--------------------------------------------------------------------------------
+FILE 6: ML MODELS/Md 3/Mod 3/test_agent.py
+Explanation: Unit test suite for Module 3 state graphs, 5-Why RCA transitions, 
+citation contract validation, predictive scans, and scheduling solver.
+--------------------------------------------------------------------------------
+import sys
+import os
+import unittest
+from datetime import datetime
+
+# Set Python Path
+sys.path.append(os.path.dirname(__file__))
+
+import config
+from data_store import (
+    ASSETS_TABLE, WORK_ORDERS_TABLE, SENSOR_TAGS_TABLE, 
+    INSPECTION_FINDINGS_TABLE, RCA_SESSIONS_TABLE, RCA_NODES_TABLE, 
+    RECOMMENDATIONS_TABLE, AUDIT_LOG_TABLE, generate_sensor_data, initialize_all_databases
+)
+from vector_db import vector_db
+from graph_db import graph_db
+from agents import (
+    data_fusion_agent, predictive_agent, rca_agent, scheduling_agent, 
+    orchestrator_graph, rca_subgraph, predictive_scan_graph, 
+    schedule_optimizer_graph, RCAState, validate_citation_contract
+)
+
+class TestStatefulMIRAAgent(unittest.TestCase):
+    
+    @classmethod
+    def setUpClass(cls):
+        print("\n=== Seeding Relational Databases & Testing Hooks ===")
+        initialize_all_databases()
+
+    def test_01_relational_schema(self):
+        print("\nTesting: Relational Table Schemas...")
+        
+        # Assets Table Checks
+        self.assertTrue(len(ASSETS_TABLE) > 0)
+        sample_asset = ASSETS_TABLE[0]
+        self.assertIn("id", sample_asset)
+        self.assertIn("name", sample_asset)
+        self.assertIn("asset_class", sample_asset)
+        self.assertIn("location", sample_asset)
+        
+        # Work Orders Table Checks
+        self.assertTrue(len(WORK_ORDERS_TABLE) > 0)
+        sample_wo = WORK_ORDERS_TABLE[0]
+        self.assertIn("id", sample_wo)
+        self.assertIn("asset_id", sample_wo)
+        self.assertIn("type", sample_wo)
+        self.assertIn("status", sample_wo)
+        self.assertIn("cost", sample_wo)
+
+    def test_02_citation_contract_validator(self):
+        print("\nTesting: Strict Citation Contract Enforcement...")
+        
+        valid_citations = [
+            {"source_type": "work_order", "source_id": "WO-4019", "excerpt": "Lubrication PM deferred"}
+        ]
+        invalid_citations_1 = []
+        invalid_citations_2 = [
+            {"source_type": "work_order", "source_id": ""} # missing excerpt
+        ]
+        invalid_citations_3 = [
+            {"source_type": "work_order", "excerpt": "No source id"} # missing source_id
+        ]
+        
+        self.assertTrue(validate_citation_contract(valid_citations))
+        self.assertFalse(validate_citation_contract(invalid_citations_1))
+        self.assertFalse(validate_citation_contract(invalid_citations_2))
+        self.assertFalse(validate_citation_contract(invalid_citations_3))
+
+    def test_03_stateful_rca_graph_transitions(self):
+        print("\nTesting: Guided RCA Subgraph Stateful Transitions & Interrupts...")
+        
+        # 1. Initialize State
+        state: RCAState = {
+            "session_id": "SESS-TEST",
+            "asset_id": "Pump-14",
+            "work_order_id": "WO-9872",
+            "evidence": [],
+            "current_node_id": None,
+            "tree": [],
+            "pending_question": None,
+            "status": "gathering"
+        }
+        
+        # Step 1: Execute gathering -> transitions to reasoning
+        state = rca_subgraph.step(state)
+        self.assertEqual(state["status"], "reasoning")
+        self.assertTrue(len(state["evidence"]) > 0)
+        
+        # Step 2: Propose first hypothesis -> tree gets proposed node
+        state = rca_subgraph.step(state)
+        self.assertEqual(state["status"], "reasoning")
+        self.assertEqual(len(state["tree"]), 1)
+        self.assertEqual(state["tree"][-1]["status"], "proposed")
+        
+        # Run loops to reach the interrupt state
+        for _ in range(10):
+            if state["status"] == "waiting_on_human":
+                break
+            state = rca_subgraph.step(state)
+            
+        # Should now be waiting on human clarifying questions (Insuffient evidence interrupt)
+        self.assertEqual(state["status"], "waiting_on_human")
+        self.assertIsNotNone(state["pending_question"])
+        
+        # Resume session: provide human input
+        state["evidence"].append({
+            "source_type": "inspection",
+            "source_id": "technician_input",
+            "excerpt": "Short staff reported on shift"
+        })
+        state["status"] = "reasoning"
+        state["pending_question"] = None
+        
+        # Finish execution
+        while state["status"] != "complete":
+            state = rca_subgraph.step(state)
+            
+        self.assertEqual(state["status"], "complete")
+        self.assertTrue(len(state["tree"]) >= 3)
+        self.assertEqual(state["tree"][-1]["status"], "confirmed")
+
+    def test_04_predictive_scan_subgraph(self):
+        print("\nTesting: Predictive Scan & Citation Integration...")
+        
+        # Clear table
+        RECOMMENDATIONS_TABLE.clear()
+        
+        # Run scan graph
+        scanner = predictive_scan_graph
+        flagged = scanner.run_scan()
+        
+        self.assertTrue(len(flagged) > 0)
+        self.assertEqual(len(RECOMMENDATIONS_TABLE), len(flagged))
+        
+        # Verify recommendation has structured citations
+        rec = RECOMMENDATIONS_TABLE[0]
+        self.assertIn("id", rec)
+        self.assertIn("risk_score", rec)
+        self.assertTrue(validate_citation_contract(rec["evidence_refs"]))
+
+    def test_05_schedule_optimizer_rationales(self):
+        print("\nTesting: Schedule Optimizer & solver Rationale...")
+        
+        opt = schedule_optimizer_graph
+        out = opt.run_optimization()
+        
+        self.assertIn("week1_schedule", out)
+        self.assertIn("week2_schedule", out)
+        self.assertIn("optimizer_rationale", out)
+        
+        # Ensure rationale is non-empty
+        self.assertTrue(len(out["optimizer_rationale"]) > 0)
+
+    def test_06_rca_session_cli_vs_web_consistency(self):
+        print("\nTesting: CLI vs. Web UI Session Consistency...")
+        sess_id = "SESS-9872"
+        from data_store import RCA_SESSIONS_TABLE, RCA_NODES_TABLE
+        
+        # Clear existing entries for this session
+        RCA_SESSIONS_TABLE[:] = [s for s in RCA_SESSIONS_TABLE if s["id"] != sess_id]
+        RCA_NODES_TABLE[:] = [n for n in RCA_NODES_TABLE if n["session_id"] != sess_id]
+        
+        # CLI path simulation
+        state: RCAState = {
+            "session_id": sess_id,
+            "asset_id": "Pump-14",
+            "work_order_id": "WO-9872",
+            "evidence": [],
+            "current_node_id": None,
+            "tree": [],
+            "pending_question": None,
+            "status": "gathering"
+        }
+        
+        # Step through graph loops (reproducing CLI flow)
+        while state["status"] != "complete":
+            if state["status"] == "waiting_on_human":
+                state["evidence"].append({
+                    "source_type": "inspection",
+                    "source_id": "technician_input",
+                    "excerpt": "Short staff reported on shift"
+                })
+                state["status"] = "reasoning"
+                state["pending_question"] = None
+            state = rca_subgraph.step(state)
+            
+        cli_nodes = state["tree"]
+        
+        # Web UI path simulation via start_rca_session_by_id
+        from main import start_rca_session_by_id
+        web_res = start_rca_session_by_id(sess_id, force_rescan=False)
+        web_nodes = web_res["tree_nodes"]
+        web_status = web_res["status"]
+        
+        # Verify consistency
+        self.assertEqual(web_status, "complete")
+        self.assertEqual(len(web_nodes), len(cli_nodes))
+        for i in range(len(cli_nodes)):
+            self.assertEqual(web_nodes[i]["id"], cli_nodes[i]["id"])
+            self.assertEqual(web_nodes[i]["why_statement"], cli_nodes[i]["hypothesis_text"])
+
+if __name__ == "__main__":
+    unittest.main()
+
+--------------------------------------------------------------------------------
+FILE 7: ML MODELS/Md 4/Mod 4/test_agent.py
+Explanation: Unit test suite for Module 4 QRCI compliance scans, threshold evaluation, 
+telemetry quality deviations, and regulatory impact sandbox.
+--------------------------------------------------------------------------------
+import sys
+import os
+import unittest
+import json
+from datetime import datetime
+
+# Set Python Path
+sys.path.append(os.path.dirname(__file__))
+
+import config
+import data_store
+from vector_db import vector_db
+from graph_db import graph_db
+from agents import (
+    gap_analysis_graph, evidence_package_graph, 
+    deviation_detection_graph, impact_analysis_graph,
+    validate_citation_contract
+)
+
+class TestQRCIComplianceAgent(unittest.TestCase):
+    
+    @classmethod
+    def setUpClass(cls):
+        print("\n=== Seeding Relational, Vector & Graph Databases for testing ===")
+        # Re-initialize SQLite and mock stores
+        if os.path.exists(config.DB_PATH):
+            try:
+                os.remove(config.DB_PATH)
+            except Exception:
+                pass
+        data_store.initialize_database()
+
+    def test_01_relational_schema(self):
+        print("\nTesting: SQLite Database Schemas...")
+        conn = data_store.get_db_connection()
+        cursor = conn.cursor()
+        
+        # Verify tables exist
+        tables = [
+            "assets", "work_orders", "sensor_tags", "inspection_findings",
+            "regulations", "requirements", "gap_analyses", "evidence_packages",
+            "deviations", "audit_logs"
+        ]
+        
+        for table in tables:
+            cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table}';")
+            self.assertIsNotNone(cursor.fetchone(), f"Table {table} does not exist in schema.")
+            
+        conn.close()
+        
+        # Asset seeding verification
+        assets = data_store.get_all_assets()
+        self.assertTrue(len(assets) >= 9)
+        sample_asset = next(a for a in assets if a["id"] == "Pump-14")
+        self.assertEqual(sample_asset["asset_class"], "Pump")
+        
+        # Environmental assets verification
+        etp = next(a for a in assets if a["id"] == "ETP-01")
+        self.assertEqual(etp["asset_class"], "EffluentDischarge")
+
+    def test_02_citation_contract_validator(self):
+        print("\nTesting: Citation Contract Validator...")
+        
+        # Valid citation structure
+        valid = [
+            {"source_type": "work_order", "source_id": "WO-9872", "excerpt": "bearing housing dry"},
+            {"source_type": "inspection", "source_id": "INSP-109", "excerpt": "Vibration casing hot"}
+        ]
+        
+        # Invalid citation structures
+        invalid_1 = [] # Empty list
+        invalid_2 = [{"source_type": "work_order", "source_id": ""}] # Missing excerpt
+        invalid_3 = [{"source_type": "inspection", "excerpt": "No ID"}] # Missing source_id
+        invalid_4 = [{"source_type": "", "source_id": "INSP-101", "excerpt": "No type"}] # Missing type
+        
+        self.assertTrue(validate_citation_contract(valid))
+        self.assertFalse(validate_citation_contract(invalid_1))
+        self.assertFalse(validate_citation_contract(invalid_2))
+        self.assertFalse(validate_citation_contract(invalid_3))
+        self.assertFalse(validate_citation_contract(invalid_4))
+
+    def test_03_deterministic_rules_evaluation(self):
+        print("\nTesting: Deterministic Threshold Rules Comparison Engine...")
+        
+        # 1. CPCB pH Limit: Between 5.5 and 9.0
+        ph_thresh = {"parameter": "ph", "operator": "between", "value": [5.5, 9.0], "unit": "pH"}
+        
+        # Compliant test (7.2 pH)
+        status_c, exp_c = gap_analysis_graph.evaluate_numeric_threshold(7.2, ph_thresh)
+        self.assertEqual(status_c, "compliant")
+        
+        # Gap test (9.8 pH)
+        status_g, exp_g = gap_analysis_graph.evaluate_numeric_threshold(9.8, ph_thresh)
+        self.assertEqual(status_g, "gap")
+        self.assertIn("falls outside allowed range", exp_g)
+        
+        # 2. CPCB BOD Limit: <= 30 mg/l
+        bod_thresh = {"parameter": "bod", "operator": "<=", "value": 30.0, "unit": "mg/l"}
+        
+        # Compliant test (22 mg/l)
+        status_b1, exp_b1 = gap_analysis_graph.evaluate_numeric_threshold(22.0, bod_thresh)
+        self.assertEqual(status_b1, "compliant")
+        
+        # Gap test (42 mg/l)
+        status_b2, exp_b2 = gap_analysis_graph.evaluate_numeric_threshold(42.0, bod_thresh)
+        self.assertEqual(status_b2, "gap")
+        self.assertIn("exceeds maximum limit", exp_b2)
+
+    def test_04_continuous_scan_execution(self):
+        print("\nTesting: Continuous Compliance Scan Graph Execution...")
+        
+        # Reset gap analyses
+        conn = data_store.get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM gap_analyses;")
+        conn.commit()
+        conn.close()
+        
+        # Run scan
+        results = gap_analysis_graph.run_compliance_scan(actor="automated_test")
+        
+        self.assertTrue(len(results) > 0)
+        
+        # Verify gaps are recorded in SQLite
+        recorded_gaps = data_store.get_gap_analyses()
+        self.assertEqual(len(recorded_gaps), len(results))
+        
+        # Verify citation contract is satisfied on all recorded gaps
+        for g in recorded_gaps:
+            self.assertTrue(validate_citation_contract(g["evidence_refs"]), f"Citation contract failed for GAP: {g['id']}")
+
+    def test_05_quality_deviation_alerting(self):
+        print("\nTesting: Quality Telemetry Ingestion and Deviation Alerting...")
+        
+        # Simulate off-spec stack emission: SO2 = 62.0 mg/Nm3 (Limit = 50 mg/Nm3)
+        dev = deviation_detection_graph.check_and_alert_deviation(
+            source_type="inspection",
+            record_id="INSP-TEST-99",
+            asset_id="Stack-01",
+            parameter="so2",
+            value=62.0
+        )
+        
+        self.assertIsNotNone(dev)
+        self.assertEqual(dev["asset_id"], "Stack-01")
+        self.assertIn(dev["severity"], ["critical", "major"]) # CPCB deviations classified high severity
+        
+        # Check that deviation is recorded in DB
+        db_devs = data_store.get_deviations()
+        self.assertTrue(any(d["id"] == dev["id"] for d in db_devs))
+
+    def test_06_regulatory_change_impact(self):
+        print("\nTesting: Regulatory Change Impact Diff Sandbox...")
+        
+        report = impact_analysis_graph.analyze_amendment_impact(
+            requirement_id="REQ-CPCB-SO2",
+            new_obligation="Flue gas SO2 emissions must not exceed 30 mg/Nm3 due to SPCB air clean act standards.",
+            new_threshold={"parameter": "so2", "operator": "<=", "value": 30.0, "unit": "mg/Nm3"}
+        )
+        
+        self.assertNotIn("error", report)
+        self.assertEqual(report["requirement_id"], "REQ-CPCB-SO2")
+        self.assertIn("Stack-01", report["affected_assets"])
+        self.assertEqual(report["diff"]["threshold_change"]["new_limit"]["value"], 30.0)
+        self.assertTrue(len(report["operational_impact"]) > 0)
+
+    def test_07_dynamic_ingestion(self):
+        print("\nTesting: Dynamic Registration and Graph/Vector Mapping...")
+        
+        # 1. Dynamically insert a new asset
+        data_store.insert_asset(
+            asset_id="Pump-99",
+            name="Crude Transfer Pump 99",
+            asset_class="Pump",
+            location="CDU-1",
+            criticality="Medium"
+        )
+        
+        # Check SQLite
+        asset = data_store.get_asset_by_id("Pump-99")
+        self.assertIsNotNone(asset)
+        self.assertEqual(asset["name"], "Crude Transfer Pump 99")
+        
+        # Check Graph links (REQ-FAC-21 applies to Pumps)
+        connected = graph_db.get_connected_nodes(node_label="Requirement", key_prop="id", key_val="REQ-FAC-21")
+        connected_tags = [n["properties"].get("tag") for n in connected["nodes"] if n["label"] == "Asset"]
+        self.assertIn("Pump-99", connected_tags, "Newly registered asset was not dynamically linked to matching requirement in Graph DB.")
+
+        # 2. Dynamically insert a new regulation and requirement
+        data_store.insert_regulation(
+            reg_id="REG-SPCB-2026",
+            source_body="SPCB",
+            title="State Pollution Control Board Clean Air Rules",
+            document_ref="SPCB Notification 101",
+            version="v1.0",
+            effective_date="2026-07-16",
+            superseded_by=None,
+            status="active",
+            full_text="The State Pollution Control Board mandates stack combustion limits. Rule 15: Sulfur oxides (SOx) and NOx emissions from process heating stack combustion chimneys must not exceed 200 mg/Nm3."
+        )
+        
+        data_store.insert_requirement(
+            req_id="REQ-SPCB-NOX-NEW",
+            reg_id="REG-SPCB-2026",
+            clause_id="Rule 15",
+            obligation_text="Chimney emissions from process stacks must not exceed 200 mg/Nm3.",
+            numeric_threshold={"parameter": "nox", "operator": "<=", "value": 200.0, "unit": "mg/Nm3"},
+            applicability_rules={"asset_class": "EmissionStack"}
+        )
+        
+        # Check Vector search
+        chunks = vector_db.search_similar_chunks("stack combustion chimney emission limits")
+        self.assertTrue(len(chunks) > 0)
+        self.assertTrue(any(c["document_id"] == "REG-SPCB-2026" for c in chunks), "New regulation text not indexed in Vector DB.")
+        
+        # Check Graph links (REQ-SPCB-NOX-NEW applies to EmissionStack, which Stack-01 belongs to)
+        connected_req = graph_db.get_connected_nodes(node_label="Requirement", key_prop="id", key_val="REQ-SPCB-NOX-NEW")
+        connected_assets = [n["properties"].get("tag") for n in connected_req["nodes"] if n["label"] == "Asset"]
+        self.assertIn("Stack-01", connected_assets, "Newly registered requirement was not dynamically linked to matching assets in Graph DB.")
+
+if __name__ == "__main__":
+    unittest.main()
+
+--------------------------------------------------------------------------------
+FILE 8: ML MODELS/Md 1/backend/reset_data.py
+Explanation: Utility script to safely wipe SQLite tables, uploaded files, and output logs 
+during manual testing iteration cycles.
+--------------------------------------------------------------------------------
+import os
+import shutil
+import sqlite3
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent
+DB_PATH = BASE_DIR / "knowledge_graph.db"
+UPLOAD_DIR = BASE_DIR / "uploads"
+OUTPUTS_DIR = BASE_DIR / "outputs"
+
+print("CLEARING ALL PIPELINE DATA & DATABASE RECORDS...")
+
+# 1. Clear Database Tables via SQL (safe for Windows sharing locks)
+if DB_PATH.exists():
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        
+        # Get all table names in the database
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        tables = [row[0] for row in cursor.fetchall()]
+        
+        for t in tables:
+            try:
+                cursor.execute(f"DELETE FROM {t};")
+                print(f"  [DB] Cleared SQLite table: {t}")
+            except Exception as e:
+                print(f"  [DB] Warning: Could not clear table {t}: {e}")
+                
+        cursor.execute("VACUUM;")
+        conn.commit()
+        conn.close()
+        print("  [DB] SQLite database vacuumed and compacted.")
+    except Exception as e:
+        print(f"  [DB] Database connection error: {e}")
+
+# 2. Clear Uploaded Documents
+if UPLOAD_DIR.exists():
+    for f in UPLOAD_DIR.iterdir():
+        if f.is_file():
+            try:
+                f.unlink()
+                print(f"  [File] Deleted upload file: {f.name}")
+            except Exception as e:
+                print(f"  [File] Failed to delete upload {f.name}: {e}")
+
+# 3. Clear Outputs Logs
+for sub in ["queries", "mindmaps", "flowcharts"]:
+    sub_dir = OUTPUTS_DIR / sub
+    if sub_dir.exists():
+        for f in sub_dir.iterdir():
+            if f.is_file():
+                try:
+                    f.unlink()
+                    print(f"  [File] Deleted output log: outputs/{sub}/{f.name}")
+                except Exception as e:
+                    print(f"  [File] Failed to delete output {sub}/{f.name}: {e}")
+
+print("RESET COMPLETE! ALL DATA CLEARED SUCCESSFULLY.")
+
+================================================================================
+SECTION 3: WINDOWS BATCH LAUNCHERS FOR MANUAL TESTING
+================================================================================
+
+--------------------------------------------------------------------------------
+FILE 9: ML MODELS/Md 2/run.bat
+Explanation: Windows batch script to launch Module 2 FastAPI subservice on port 8001 
+and open python cli_rag.py in terminal.
+--------------------------------------------------------------------------------
+@echo off
+title Module 2 - RAG Subsystem Controller
+echo ==============================================================
+echo Starting Module 2 RAG FastAPI Subservice in Background...
+echo ==============================================================
+start "" uvicorn main:app --host 127.0.0.1 --port 8001
+echo.
+echo ==============================================================
+echo Launching Interactive CLI Console...
+echo ==============================================================
+python cli_rag.py
+
+--------------------------------------------------------------------------------
+FILE 10: ML MODELS/Md 3/Mod 3/run.bat
+Explanation: Windows batch script to launch Module 3 MIRA terminal console (cli_agent.py).
+--------------------------------------------------------------------------------
+@echo off
+echo Starting Maintenance Intelligence & RCA Terminal Agent (MIRA)...
+python cli_agent.py
+pause
+
+--------------------------------------------------------------------------------
+FILE 11: ML MODELS/Md 3/Mod 3/run_tests.bat
+Explanation: Windows batch script to run test_agent.py unit tests for Module 3.
+--------------------------------------------------------------------------------
+@echo off
+echo Running verification tests...
+python test_agent.py
+pause
+
+--------------------------------------------------------------------------------
+FILE 12: ML MODELS/Md 4/Mod 4/run.bat
+Explanation: Windows batch script to launch Module 4 QRCI terminal console (cli_agent.py).
+--------------------------------------------------------------------------------
+@echo off
+python cli_agent.py
+pause
+
+--------------------------------------------------------------------------------
+FILE 13: ML MODELS/Md 4/Mod 4/run_tests.bat
+Explanation: Windows batch script to run test_agent.py unit tests for Module 4.
+--------------------------------------------------------------------------------
+@echo off
+python test_agent.py
+pause
+
+================================================================================
+SECTION 4: TEMPORARY / SCRATCH DOCUMENTATION & TEST CASES
+================================================================================
+
+--------------------------------------------------------------------------------
+FILE 14: ML MODELS/Md 2/test-cases-pdf.md
+Explanation: Ground-truth test suite specification document defining 10 evaluation 
+benchmark questions and linkage test cases for Module 2 RAG evaluation.
+--------------------------------------------------------------------------------
+# RAG Evaluation Benchmark — test-cases-pdf.md
+
+This file defines the 10-question evaluation benchmark and cross-document linkage tests used to verify the performance, accuracy, and reliability of the RAG system.
+
+---
+
+## 1. Ground-Truth Documents Corpus
+
+The evaluation is run against the following integrated documents:
+1. **Document 1 (PDF)**: `REG-MEMO_OISD-STD-118_Reference_Note.pdf` (Standard Operating Guidelines for layouts and safety limits)
+2. **Document 2 (Email 1)**: `gmail_mock_101` (Emergency inspection on P-204 due to high vibration)
+3. **Document 3 (Email 2)**: `gmail_mock_102` (OSHA compliance calibration reminder for P-204)
+4. **Document 4 (PDF Procedure)**: `Verify_Test_Procedure.pdf` (Valve V-102 isolation steps and limits)
+
+---
+
+## 2. The 10-Question Benchmark
+
+Below are the 10 questions, their expected categories, and ground-truth answer details:
+
+### Q1: Vibration Limit (OISD)
+* **Question**: "What is the vibration limit for centrifugal pumps in continuous service under OISD-STD-118?"
+* **Type**: Single-Document Lookup (Document 1)
+* **Expected Answer**: 4.5 mm/s RMS.
+* **Expected Citation**: `REG-MEMO_OISD-STD-118_Reference_Note.pdf`
+
+### Q2: Valve V-102 Notification
+* **Question**: "Who should be notified once Valve V-102 isolation is verified?"
+* **Type**: Single-Document Lookup (Document 4)
+* **Expected Answer**: Dave Miller (Supervisor).
+* **Expected Citation**: `Verify_Test_Procedure.pdf`
+
+### Q3: Pump P-204 Inspection Alert (Cross-Doc)
+* **Question**: "What is the safety regulation and vibration threshold for Pump P-204 based on the maintenance supervisor's email?"
+* **Type**: Multi-Document Synthesis (Document 2)
+* **Expected Answer**: Vibration limit of 5.0 mm/s (current vibration is 8.5 mm/s) under standard API-610 regulations.
+* **Expected Citation**: `Email: Work Order WO-9942 - Emergency pump inspection`
+
+### Q4: Inspection Frequency (OISD)
+* **Question**: "How often must critical rotating equipment be inspected according to OISD-STD-118?"
+* **Type**: Single-Document Lookup (Document 1)
+* **Expected Answer**: Monthly (at least monthly).
+* **Expected Citation**: `REG-MEMO_OISD-STD-118_Reference_Note.pdf`
+
+### Q5: Valve V-102 Pressure limit
+* **Question**: "What is the inlet pressure limit to maintain for Valve V-102 isolation?"
+* **Type**: Single-Document Lookup (Document 4)
+* **Expected Answer**: Below 150 PSI (to avoid pressure shocks).
+* **Expected Citation**: `Verify_Test_Procedure.pdf`
+
+### Q6: Pump P-204 Calibration Standard
+* **Question**: "Which standard governs pressure safety calibration for Pump P-204, and who is the safety officer?"
+* **Type**: Multi-Document Synthesis (Document 3)
+* **Expected Answer**: Standard OSHA-1910.119 process safety management rules, and the safety officer is Sarah Connor.
+* **Expected Citation**: `Email: Regulatory compliance alert for P-204`
+
+### Q7: Permit-to-Work SOP
+* **Question**: "What are the required permit-to-work and isolation procedures for seal or coupling work under OISD-STD-118?"
+* **Type**: Single-Document Lookup (Document 1)
+* **Expected Answer**: Requires a documented permit-to-work and lock-out tag-out procedure per SOP-112 or equivalent.
+* **Expected Citation**: `REG-MEMO_OISD-STD-118_Reference_Note.pdf`
+
+### Q8: Vibration Limits Comparison (Cross-Doc)
+* **Question**: "Compare the vibration limits mentioned in the OISD-STD-118 reference note and the emergency pump inspection email for P-204."
+* **Type**: Multi-Document Synthesis (Document 1 & Document 2)
+* **Expected Answer**: OISD-STD-118 sets a vibration limit of 4.5 mm/s RMS for centrifugal pumps, whereas the emergency inspection email for Pump P-204 mentions an operating limit of 5.0 mm/s (and current vibration is at 8.5 mm/s).
+* **Expected Citation**: `REG-MEMO_OISD-STD-118_Reference_Note.pdf` & `Email: Work Order WO-9942 - Emergency pump inspection`
+
+### Q9: Off-Topic Control (Grounding Refusal)
+* **Question**: "What is the capital of France?"
+* **Type**: Grounding Refusal (Off-topic control)
+* **Expected Answer**: Refusal to answer. The system must state that the information is "not found in documents" or similar, and not generate an answer from external knowledge.
+* **Expected Citation**: None
+
+### Q10: Engineer Assignment for P-204
+* **Question**: "Who is John Doe and what was his assignment regarding Pump P-204?"
+* **Type**: Single-Document Lookup (Document 2)
+* **Expected Answer**: John Doe is the engineer assigned to perform vibration analysis on Pump P-204.
+* **Expected Citation**: `Email: Work Order WO-9942 - Emergency pump inspection`
+
+---
+
+## 3. Linkage Test: P-204 and OISD-STD-118
+
+* **Description**: Verify that the Knowledge Graph successfully links the entity `Pump P-204` (which appears in the emails) and `OISD-STD-118` (which covers rotating equipment layouts and separation distances).
+* **Ground-Truth Connections**:
+  - `P-204` is an `equipment` node.
+  - `OISD-STD-118` is a `regulation` node.
+  - `P-204` is rotating equipment, which falls under `OISD-STD-118` regulatory standards.
+
+================================================================================

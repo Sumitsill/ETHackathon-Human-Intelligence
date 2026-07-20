@@ -1,0 +1,6 @@
+1. Verify power supply is ON at the main breaker.
+2. Open suction valve fully.
+3. Ensure discharge valve is at 25% open position.
+4. Start the motor and observe for unusual noise.
+5. Gradually open discharge valve to 100%.
+6. Monitor vibration and temperature for 15 minutes before leaving area.

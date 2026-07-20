@@ -1,0 +1,10 @@
+{
+  "event_id": "EVT-88492",
+  "equipment_tag": "P-204",
+  "event_time": "2026-07-20T08:15:00Z",
+  "symptom": "Sudden rotor seizure and motor trip",
+  "telemetry_context": {
+    "vibration_mm_s": 18.5,
+    "temperature_c": 95
+  }
+}

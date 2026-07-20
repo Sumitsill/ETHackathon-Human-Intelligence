@@ -1,0 +1,168 @@
+================================================================================
+          ET UNIFIED OPERATIONS BRAIN 2026 - ARCHITECTURE, ROUTING & CONSTRAINTS
+================================================================================
+Generated: 2026-07-20
+Location: Root / PROJECT_FUNCTIONALITIES_AND_CONSTRAINTS.txt
+
+--------------------------------------------------------------------------------
+1. SYSTEM OVERVIEW & FUNCTIONALITIES
+--------------------------------------------------------------------------------
+The ET Unified Operations Brain is an enterprise-grade, multi-agent AI system 
+for oil refineries and industrial plants. It integrates multi-modal document 
+ingestion, grounded knowledge graph retrieval, root cause analysis (RCA), and 
+regulatory compliance monitoring into a single concurrent platform.
+
+The application consists of 4 distinct backend Python services orchestrated 
+concurrently, alongside a Next.js 14 App Router frontend.
+
+--------------------------------------------------------------------------------
+MODULE 1: Universal Document Ingestion & Knowledge Graph Agent
+- Path: ML MODELS/Md 1/backend
+- Default Port: 8000
+- Functionalities:
+  * Multi-Format Processing: Ingests PDFs, images, Excel sheets (.xlsx), and Gmail 
+    export records.
+  * Structural Chunking: Uses OCR and structural parsing to chunk manuals, P&IDs, 
+    and inspection logs.
+  * Hybrid Ingestion Engine: Extracts entities (equipment tags, process metrics, 
+    standards) and populates vector embeddings (Qdrant) and graph nodes (Neo4j).
+  * Status & Inspection Tracking: Registers document status and metadata.
+
+--------------------------------------------------------------------------------
+MODULE 2: Grounded Expert Knowledge Copilot & Evaluation Engine
+- Path: ML MODELS/Md 2
+- Default Port: 8001
+- Functionalities:
+  * Grounded RAG Querying (/query): Answers operational questions using Groq 
+    (Llama-3.3-70b) combined with local sentence-transformers vector retrieval.
+  * Multi-Layer Evaluation (/evaluation): Performs hallucination checking, 
+    citation validation, and semantic relevance scoring on generated responses.
+  * Mindmap & Flowchart Generation (/mindmap, /flowchart): Automatically generates 
+    Mermaid.js mindmaps and process flowcharts from ingested asset manuals.
+  * Background Ingestion Pipeline (/ingest): Performs background entity resolution 
+    and structural chunking.
+  * System Health Monitoring (/status): Exposes real-time status of embedder models, 
+    cache state, and Groq LLM availability.
+
+--------------------------------------------------------------------------------
+MODULE 3: Maintenance Intelligence & RCA Agent (MIRA)
+- Path: ML MODELS/Md 3/Mod 3
+- Default Port: 8002
+- Functionalities:
+  * Root Cause Analysis (/rca): Generates 5-Why root cause analysis trees for 
+    equipment failures (e.g. Pump seizures, Compressor trips, Heat exchanger leaks).
+  * Fault Tree Analysis: Constructs hierarchical fault trees identifying primary 
+    and secondary failure modes.
+  * Predictive Maintenance Anomaly Alerts: Scans operational telemetry to flag 
+    vibration, thermal, or pressure anomalies.
+  * Historical Work Order Integration: Cross-references asset telemetry against 
+    past maintenance logs.
+
+--------------------------------------------------------------------------------
+MODULE 4: Quality & Regulatory Compliance Intelligence (QRCI)
+- Path: ML MODELS/Md 4/Mod 4
+- Default Port: 8003
+- Functionalities:
+  * Continuous Compliance Scans (/scan): Runs deterministic numeric rules (pH, 
+    emissions, pressure) and LLM-assisted qualitative evaluations against 
+    Factory Act, OISD, PESO, and IBR (Boiler Act) requirements.
+  * Audit Evidence Package Compiler (/evidence): Assembles audit-ready evidence 
+    packages linking asset history, thickness/thermography inspection logs, SOP 
+    proofs, and statutory clause citations.
+  * Quality Deviation Detection (/deviations): Ingests real-time telemetry, 
+    classifies deviation severity (critical/major/minor), and generates remedial actions.
+  * Regulatory Amendment Sandbox (/amendment-impact): Analyzes regulation changes 
+    and traces graph edges to identify affected machinery.
+  * Compliance Copilot (/copilot): Answers compliance questions with mandatory 
+    citation validation.
+
+--------------------------------------------------------------------------------
+FRONTEND COMMAND CENTER
+- Path: frontend/
+- Default Port: 3000 (Next.js App Router)
+- Key Pages:
+  * /app                     - Operations Command Center Dashboard
+  * /app/ingestion           - Multi-Modal Document & Data Ingestion Portal
+  * /app/copilot             - Grounded RAG Copilot with Citation Verification
+  * /app/maintenance         - MIRA Root Cause Analysis & Anomaly Dashboard
+  * /app/compliance          - QRCI Compliance Scan & Audit Evidence Hub
+  * /app/settings            - API Keys, Server Status & System Configuration
+
+================================================================================
+2. DYNAMIC ROUTING ARCHITECTURE (BFF PROXY)
+================================================================================
+The frontend uses a Backend-for-Frontend (BFF) proxy pattern located at:
+frontend/src/app/api/proxy/[...path]/route.ts
+
+All client requests from the browser hit `/api/proxy/<module_name>/<endpoint>` 
+and are dynamically routed to the respective backend microservice.
+
+Mapping Contract:
+--------------------------------------------------------------------------------
+Frontend Proxy Path          Backend Service             Target Base URL
+--------------------------------------------------------------------------------
+/api/proxy/knowledge/*    -> Module 1 (Ingestion)     -> http://localhost:8000/*
+/api/proxy/copilot/*      -> Module 2 (RAG & Eval)    -> http://localhost:8001/*
+/api/proxy/maintenance/*  -> Module 3 (MIRA & RCA)    -> http://localhost:8002/*
+/api/proxy/compliance/*   -> Module 4 (QRCI)          -> http://localhost:8003/*
+--------------------------------------------------------------------------------
+
+Dynamic Proxy Headers & Stream Handling:
+- Injected Security Header: `X-API-Key` (set to `GLOBAL_API_KEY` environment variable).
+- Host Header Stripping: Prevents target host mismatch issues on proxying.
+- Duplex Streaming: For `multipart/form-data` uploads (e.g. document ingestion), 
+  the proxy streams the raw request body with `duplex: 'half'` to prevent buffering.
+
+================================================================================
+3. STRICT CONDITIONS & NON-ALTERABLE CONSTRAINTS
+================================================================================
+To ensure the codebase operates without runtime failures or build errors, the 
+following constraints MUST NOT BE ALTERED:
+
+1. ORCHESTRATOR WORKING DIRECTORY PATHS (run_servers.py)
+   - The launcher script `run_servers.py` relies on exact folder names:
+     * `ML MODELS/Md 1/backend`
+     * `ML MODELS/Md 2`
+     * `ML MODELS/Md 3/Mod 3`
+     * `ML MODELS/Md 4/Mod 4`
+   - DO NOT rename these directories back to their full descriptive titles.
+
+2. PORT ALLOCATION CONTRACT
+   - Module 1 -> Port 8000
+   - Module 2 -> Port 8001
+   - Module 3 -> Port 8002
+   - Module 4 -> Port 8003
+   - Frontend Proxy route map (`route.ts`) and `run_servers.py` MUST maintain 
+     these exact port mappings. Changing a port in one file without updating 
+     `route.ts` and `run_servers.py` will break communication.
+
+3. GLOBAL AUTHORIZATION API KEY CONTRACT
+   - FastAPI backends enforce middleware authentication checking `X-API-Key`.
+   - The default authorization key `et_brain_secure_key_2026_xyz` must match 
+     between `run_servers.py`, the backend middleware, and `frontend/src/app/api/proxy/[...path]/route.ts`.
+
+4. MODULE 2 IMPORTS & RAG_CORE NAMESPACE ACCESS
+   - In `ML MODELS/Md 2/main.py`, the Groq client MUST be referenced via 
+     `rag_core.groq_client`. Do NOT import `groq_client` from a non-existent 
+     `gemini_service` module.
+
+5. NEO4J FALLBACK & EMPTY URI CONTRACT
+   - `run_servers.py` explicitly sets `os.environ["NEO4J_URI"] = ""` on startup.
+   - Backends are designed with graceful fallbacks (e.g., local JSON graph in 
+     Module 4 `graph_db.py`, local keyword search in `vector_db.py`). 
+   - DO NOT remove or modify fallback conditionals (`if not self.driver:`) in 
+     `graph_db.py` files.
+
+6. DATASET SEEDING DIRECTORY STRUCTURE
+   - Module 4 depends on the relative dataset path:
+     `ML MODELS/Md 4/Mod 4/Datasets/OneDrive_1_7-16-2026`
+   - The JSON files (`equipment_master.json`, `compliance_requirements.json`, 
+     `inspection_reports.json`, `incident_reports.json`, `maintenance_work_orders.json`, 
+     `safety_procedures.json`) MUST remain in this path for automated DB seeding.
+
+7. PROXY DUPLEX STREAMING RULE
+   - In `frontend/src/app/api/proxy/[...path]/route.ts`, the `duplex: 'half'` property 
+     MUST be retained for `multipart/form-data` requests. Removing it will cause 
+     Node.js native `fetch` to crash during file upload streams.
+
+================================================================================
