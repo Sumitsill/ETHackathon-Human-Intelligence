@@ -109,12 +109,7 @@ export default function KnowledgeCockpit() {
       setDocuments(res || []);
     } catch (e) {
       console.warn("Docs fetch failed: ", e);
-      // Fallback mocks
-      setDocuments([
-        { id: 'doc_1', source_type: 'pdf', filename: 'P-204_SOP.pdf', uploaded_at: new Date().toISOString(), status: 'Ready' },
-        { id: 'doc_2', source_type: 'xlsx', filename: 'Refinery_Specs_Sheet.xlsx', uploaded_at: new Date().toISOString(), status: 'Ready' },
-        { id: 'doc_3', source_type: 'image', filename: 'TK-102_Blueprint.png', uploaded_at: new Date().toISOString(), status: 'Ready' }
-      ]);
+      setDocuments([]);
     } finally {
       setLoading(false);
     }

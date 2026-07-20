@@ -458,7 +458,7 @@ def seed_synthetic_datasets():
         print(f"Mod 4 Seeding: Error loading incident_reports.json: {e}")
 
 def initialize_database():
-    """Triggers table creation and data seeding."""
+    """Triggers table creation without pre-seeded mock data."""
     print("Mod 4 Relational Layer: Initializing database...")
     db_dir = Path(config.DB_PATH).parent
     db_dir.mkdir(parents=True, exist_ok=True)
@@ -466,23 +466,13 @@ def initialize_database():
     conn = get_db_connection()
     try:
         create_tables(conn)
-        seed_data(conn)
-        print("Mod 4 Relational Layer: SQLite Database initialized and seeded successfully.")
+        print("Mod 4 Relational Layer: SQLite Database schema initialized cleanly.")
     except Exception as e:
         print(f"Mod 4 Relational Layer Error: {e}")
         raise e
     finally:
         conn.close()
-        
-    try:
-        seed_synthetic_datasets()
-    except Exception as e:
-        print(f"Mod 4 DB Seeding: Synthetic datasets seeding failed: {e}")
-    
-    try:
-        seed_vector_and_graph_db()
-    except Exception as e:
-        print(f"Mod 4 DB Seeding: Vector and Graph DB seeding failed/warning: {e}")
+
 
 def seed_vector_and_graph_db():
     print("Mod 4: Seeding Graph and Vector Databases...")

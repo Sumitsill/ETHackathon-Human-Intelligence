@@ -1,0 +1,46 @@
+[
+  {
+    "rel_path": "test_data",
+    "type": "dir"
+  },
+  {
+    "rel_path": "populate-data.py",
+    "type": "file"
+  },
+  {
+    "rel_path": "ML MODELS\\Md 1\\backend\\knowledge_graph.db",
+    "type": "sqlite"
+  },
+  {
+    "rel_path": "ML MODELS\\Md 1\\backend\\uploads",
+    "type": "dir"
+  },
+  {
+    "rel_path": "ML MODELS\\Md 2\\data",
+    "type": "dir"
+  },
+  {
+    "rel_path": "ML MODELS\\Md 3\\Mod 3\\mock_graph.json",
+    "type": "file"
+  },
+  {
+    "rel_path": "ML MODELS\\Md 3\\Mod 3\\qdrant_db",
+    "type": "dir"
+  },
+  {
+    "rel_path": "ML MODELS\\Md 4\\Mod 4\\compliance.db",
+    "type": "sqlite"
+  },
+  {
+    "rel_path": "ML MODELS\\Md 4\\Mod 4\\mock_graph_compliance.json",
+    "type": "file"
+  },
+  {
+    "rel_path": "ML MODELS\\Md 4\\Mod 4\\qdrant_db",
+    "type": "dir"
+  },
+  {
+    "rel_path": "ML MODELS\\Md 4\\Mod 4\\Datasets",
+    "type": "dir"
+  }
+]

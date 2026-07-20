@@ -6,6 +6,34 @@ import { User } from '@supabase/supabase-js';
 
 export type UserRole = 'technician' | 'engineer' | 'compliance_officer' | 'knowledge_admin' | 'plant_admin';
 
+export const ROLE_DETAILS: Record<UserRole, { label: string; defaultRoute: string; description: string }> = {
+  plant_admin: {
+    label: 'Plant Manager (All features)',
+    defaultRoute: '/app',
+    description: 'Macro visibility, Brain Sync alerts, and full cross-module access.',
+  },
+  engineer: {
+    label: 'Reliability Maintenance Engineer',
+    defaultRoute: '/app/maintenance',
+    description: 'Deep analytical troubleshooting, 5-Why RCA workbench, and telemetry graphs.',
+  },
+  compliance_officer: {
+    label: 'Quality Compliance Officer',
+    defaultRoute: '/app/compliance',
+    description: 'Rule scans, Traffic Light compliance grid, and audit package compilation.',
+  },
+  knowledge_admin: {
+    label: 'Knowledge Engineer',
+    defaultRoute: '/app/knowledge/ingest',
+    description: 'Multi-format document ingestion, Vision OCR tuning, and Knowledge Graph management.',
+  },
+  technician: {
+    label: 'Field Operator / Technician',
+    defaultRoute: '/app/tasks',
+    description: 'Glove-friendly, voice-guided task execution and low-bandwidth Copilot.',
+  },
+};
+
 interface AuthContextType {
   user: User | null;
   loading: boolean;

@@ -11,22 +11,25 @@ os.environ["GLOBAL_API_KEY"] = GLOBAL_API_KEY
 # Set NEO4J_URI to empty by default to avoid long socket timeouts on startup lifespans
 os.environ["NEO4J_URI"] = ""
 
-# Load environment variables from root .env if it exists
-env_path = os.path.join(os.getcwd(), ".env")
-if os.path.exists(env_path):
-    print(f"[Orchestrator] Loading environment variables from {env_path}")
-    with open(env_path, "r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if not line or line.startswith("#"):
-                continue
-            parts = line.split("=", 1)
-            if len(parts) == 2:
-                key = parts[0].strip()
-                # Remove quotes if present
-                val = parts[1].strip().strip("'\"")
-                os.environ[key] = val
-                print(f"  Loaded: {key}")
+# Load environment variables from root or ML MODELS .env if existing
+env_paths = [
+    os.path.join(os.getcwd(), ".env"),
+    os.path.join(os.getcwd(), "ML MODELS", ".env")
+]
+for env_path in env_paths:
+    if os.path.exists(env_path):
+        print(f"[Orchestrator] Loading environment variables from {env_path}")
+        with open(env_path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                parts = line.split("=", 1)
+                if len(parts) == 2:
+                    key = parts[0].strip()
+                    val = parts[1].strip().strip("'\"")
+                    os.environ[key] = val
+                    print(f"  Loaded: {key}")
 
 processes = []
 log_files = []

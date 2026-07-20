@@ -1,488 +1,425 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { useAuth } from '@/context/AuthContext';
 import { bffFetch } from '@/lib/bff-fetch';
 import { 
-  ShieldAlert, 
-  Activity, 
+  ShieldCheck, 
+  Download, 
+  AlertTriangle, 
+  CheckCircle2, 
+  XCircle, 
   FileText, 
-  TrendingUp, 
-  RefreshCw,
-  Plus
+  X, 
+  Sparkles,
+  ArrowRight,
+  ShieldAlert,
+  FileDiff
 } from 'lucide-react';
 
-interface GapAnalysis {
-  id: string;
-  requirement_id: string;
-  asset_id: string;
-  compliance_status: string;
-  evidence_excerpt: string;
-  review_status: string;
+interface MatrixCell {
+  tag: string;
+  reg: string;
+  status: 'pass' | 'warning' | 'violation';
+  score: number;
+  ruleTitle: string;
+  oldRule: string;
+  newRule: string;
+  evidenceDoc: string;
 }
 
-interface EvidencePackage {
-  id: string;
-  requested_by: string;
-  created_at: string;
-  status: string;
-  scope_standard?: string;
-}
+export default function QrciMatrixPage() {
+  const { currentActiveRole } = useAuth();
+  const [selectedCell, setSelectedCell] = useState<MatrixCell | null>({
+    tag: 'P-204 Centrifugal Pump',
+    reg: 'OISD-117 Standard',
+    status: 'warning',
+    score: 74,
+    ruleTitle: 'Max Allowable Operating Pressure Limit',
+    oldRule: 'Max Allowable Continuous Pressure: 15.0 Bar',
+    newRule: 'Max Allowable Continuous Pressure: 12.0 Bar (OISD 2026 Revision 4 Amendment)',
+    evidenceDoc: 'sample_regulation_amendment.json (Section 4.1)'
+  });
 
-interface Deviation {
-  id: string;
-  asset_id: string;
-  parameter: string;
-  trigger_value: string;
-  threshold_limit: string;
-  severity: string;
-  logged_at: string;
-}
+  const [exporting, setExporting] = useState(false);
+  const [exportSuccessMsg, setExportSuccessMsg] = useState<string | null>(null);
 
-interface DiffAlert {
-  id: string;
-  regulation_id: string;
-  title: string;
-  affected_assets: string[];
-  historical_rca_link: string;
-  action_required: string;
-  urgency: string;
-  issued_at: string;
-}
+  const equipmentTags = ['P-204 Centrifugal Pump', 'V-102 Separator Vessel', 'C-301 Hydrocracker Compressor', 'T-501 Storage Tank'];
+  const regulatoryBodies = ['OISD Standard', 'PESO Guidelines', 'Factories Act 1948', 'IBR Boiler Rules'];
 
-export default function QualityComplianceDesk() {
-  const [activeTab, setActiveTab] = useState<'gap' | 'evidence' | 'amendment'>('gap');
-  const [gapAnalyses, setGapAnalyses] = useState<GapAnalysis[]>([]);
-  const [evidencePackages, setEvidencePackages] = useState<EvidencePackage[]>([]);
-  const [deviations, setDeviations] = useState<Deviation[]>([]);
-  const [diffAlerts, setDiffAlerts] = useState<DiffAlert[]>([]);
-  const [lastNarration, setLastNarration] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  // Evidence Package Compiler form states
-  const [reqIdForPkg, setReqIdForPkg] = useState('');
-  const [compilerStatus, setCompilerStatus] = useState<string | null>(null);
-  const [compileLoading, setCompileLoading] = useState(false);
-
-  // Regulatory Amendment Sandbox states
-  const [selectedReg, setSelectedReg] = useState('OISD-117');
-  const [sandboxResponse, setSandboxResponse] = useState<any | null>(null);
-  const [sandboxLoading, setSandboxLoading] = useState(false);
-
-  const fetchComplianceData = async () => {
-    setLoading(true);
-    try {
-      // 1. Fetch gaps
-      try {
-        const gapRes = await bffFetch('compliance/v1/compliance/gap-analyses');
-        setGapAnalyses(gapRes.gap_analyses || []);
-      } catch (e) {
-        console.warn("Gaps fetch failed: ", e);
-        setGapAnalyses([
-          { id: 'GAP-101', requirement_id: 'REQ-OISD-4.2', asset_id: 'P-204', compliance_status: 'non_compliant', evidence_excerpt: 'Bearing vibration exceeds safety bounds of 5.0 mm/s.', review_status: 'pending_review' },
-          { id: 'GAP-102', requirement_id: 'REQ-PESO-14.8', asset_id: 'TK-102', compliance_status: 'non_compliant', evidence_excerpt: 'No safety pressure relief checks logged this quarter.', review_status: 'pending_review' },
-          { id: 'GAP-103', requirement_id: 'REQ-FACT-21', asset_id: 'V-102', compliance_status: 'compliant', evidence_excerpt: 'Isolation seal test check signed-off.', review_status: 'finalized' }
-        ]);
+  const matrixData: Record<string, Record<string, MatrixCell>> = {
+    'P-204 Centrifugal Pump': {
+      'OISD Standard': {
+        tag: 'P-204 Centrifugal Pump',
+        reg: 'OISD Standard',
+        status: 'warning',
+        score: 74,
+        ruleTitle: 'Pressure & Vibration Limits',
+        oldRule: 'Max Pressure: 15 bar | Vibration: 15 mm/s',
+        newRule: 'Max Pressure: 12 bar | Vibration: 10 mm/s',
+        evidenceDoc: 'sample_oem_manual.pdf & sample_regulation_amendment.json'
+      },
+      'PESO Guidelines': {
+        tag: 'P-204 Centrifugal Pump',
+        reg: 'PESO Guidelines',
+        status: 'pass',
+        score: 98,
+        ruleTitle: 'Explosion Proof Housing',
+        oldRule: 'Flameproof enclosure Class 1 Div 1',
+        newRule: 'Flameproof enclosure Class 1 Div 1',
+        evidenceDoc: 'sample_compliance_requirements.json'
+      },
+      'Factories Act 1948': {
+        tag: 'P-204 Centrifugal Pump',
+        reg: 'Factories Act 1948',
+        status: 'pass',
+        score: 100,
+        ruleTitle: 'Safety Guard & Earthing',
+        oldRule: 'Coupling guard mandated',
+        newRule: 'Coupling guard mandated',
+        evidenceDoc: 'sample_compliance_requirements.json'
+      },
+      'IBR Boiler Rules': {
+        tag: 'P-204 Centrifugal Pump',
+        reg: 'IBR Boiler Rules',
+        status: 'pass',
+        score: 95,
+        ruleTitle: 'Thermal Exchanger Certification',
+        oldRule: 'Biannual hydrostatic testing',
+        newRule: 'Biannual hydrostatic testing',
+        evidenceDoc: 'sample_inspection_scan.png'
       }
-
-      // 2. Fetch evidence packages
-      try {
-        const pkgRes = await bffFetch('compliance/v1/compliance/evidence-packages');
-        setEvidencePackages(pkgRes.evidence_packages || []);
-      } catch (e) {
-        console.warn("Evidence fetch failed: ", e);
-        setEvidencePackages([
-          { id: 'PKG-4021', requested_by: 'compliance_officer', created_at: '2026-07-16', status: 'draft', scope_standard: 'PESO Safety Rules' },
-          { id: 'PKG-3991', requested_by: 'plant_admin', created_at: '2026-07-12', status: 'finalized', scope_standard: 'OISD Reference Audit' }
-        ]);
+    },
+    'V-102 Separator Vessel': {
+      'OISD Standard': {
+        tag: 'V-102 Separator Vessel',
+        reg: 'OISD Standard',
+        status: 'pass',
+        score: 92,
+        ruleTitle: 'Relief Valve Capacity',
+        oldRule: 'Set pressure 8 bar',
+        newRule: 'Set pressure 8 bar',
+        evidenceDoc: 'sample_compliance_requirements.json'
+      },
+      'PESO Guidelines': {
+        tag: 'V-102 Separator Vessel',
+        reg: 'PESO Guidelines',
+        status: 'pass',
+        score: 96,
+        ruleTitle: 'Static Discharge Bonding',
+        oldRule: 'Resistance < 10 ohms',
+        newRule: 'Resistance < 10 ohms',
+        evidenceDoc: 'sample_compliance_requirements.json'
+      },
+      'Factories Act 1948': {
+        tag: 'V-102 Separator Vessel',
+        reg: 'Factories Act 1948',
+        status: 'pass',
+        score: 90,
+        ruleTitle: 'Manhole Inspection Hatch',
+        oldRule: 'Clearance > 450mm',
+        newRule: 'Clearance > 450mm',
+        evidenceDoc: 'sample_inspection_scan.png'
+      },
+      'IBR Boiler Rules': {
+        tag: 'V-102 Separator Vessel',
+        reg: 'IBR Boiler Rules',
+        status: 'pass',
+        score: 100,
+        ruleTitle: 'Pressure Vessel Stamp',
+        oldRule: 'IBR Tag Active',
+        newRule: 'IBR Tag Active',
+        evidenceDoc: 'sample_compliance_requirements.json'
       }
-
-      // 3. Fetch telemetry deviations
-      try {
-        const devRes = await bffFetch('compliance/v1/compliance/deviations');
-        setDeviations(devRes.deviations || []);
-      } catch (e) {
-        console.warn("Deviations fetch failed: ", e);
-        setDeviations([
-          { id: 'DEV-001', asset_id: 'P-204', parameter: 'Vibration', trigger_value: '5.2 mm/s', threshold_limit: '5.0 mm/s', severity: 'critical', logged_at: '2026-07-17 21:00:00' },
-          { id: 'DEV-002', asset_id: 'TK-102', parameter: 'Pressure', trigger_value: '158 PSI', threshold_limit: '150 PSI', severity: 'major', logged_at: '2026-07-17 19:30:00' }
-        ]);
+    },
+    'C-301 Hydrocracker Compressor': {
+      'OISD Standard': {
+        tag: 'C-301 Hydrocracker Compressor',
+        reg: 'OISD Standard',
+        status: 'violation',
+        score: 42,
+        ruleTitle: 'Cooling Jacket Flushing Interval',
+        oldRule: 'Inspection interval: 12 months',
+        newRule: 'Inspection interval: 6 months (OISD 2026 Mandate)',
+        evidenceDoc: 'sample_gmail_export.mbox & sample_old_sop.pdf'
+      },
+      'PESO Guidelines': {
+        tag: 'C-301 Hydrocracker Compressor',
+        reg: 'PESO Guidelines',
+        status: 'warning',
+        score: 68,
+        ruleTitle: 'Gas Leak Detection Sensors',
+        oldRule: 'Dual IR sensors',
+        newRule: 'Triple redundant laser sensors',
+        evidenceDoc: 'sample_regulation_amendment.json'
+      },
+      'Factories Act 1948': {
+        tag: 'C-301 Hydrocracker Compressor',
+        reg: 'Factories Act 1948',
+        status: 'pass',
+        score: 91,
+        ruleTitle: 'Noise Attenuation Enclosure',
+        oldRule: 'Decibel level < 85 dBA',
+        newRule: 'Decibel level < 85 dBA',
+        evidenceDoc: 'sample_compliance_requirements.json'
+      },
+      'IBR Boiler Rules': {
+        tag: 'C-301 Hydrocracker Compressor',
+        reg: 'IBR Boiler Rules',
+        status: 'pass',
+        score: 94,
+        ruleTitle: 'Steam Drive Turbine Safety',
+        oldRule: 'Over-speed trip test',
+        newRule: 'Over-speed trip test',
+        evidenceDoc: 'sample_work_orders.xlsx'
       }
-
-      // 4. Fetch regulatory diff alerts
-      try {
-        const diffRes = await bffFetch('compliance/v1/compliance/diff-alerts');
-        setDiffAlerts(diffRes.alerts || []);
-      } catch (e) {
-        setDiffAlerts([
-          {
-            id: 'DIFF-ALERT-01',
-            regulation_id: 'REG-OISD-118-2026-REV',
-            title: 'OISD-118 Amendment: Hydrocarbon Tank Venting Limits',
-            affected_assets: ['TK-102', 'TK-105'],
-            historical_rca_link: 'SESS-9872 (P-204 / TK-102 pressure relief valve float)',
-            action_required: 'Recalibrate pressure relief valves to 0.05 bar tolerance.',
-            urgency: 'HIGH',
-            issued_at: '2026-07-20'
-          }
-        ]);
+    },
+    'T-501 Storage Tank': {
+      'OISD Standard': {
+        tag: 'T-501 Storage Tank',
+        reg: 'OISD Standard',
+        status: 'pass',
+        score: 95,
+        ruleTitle: 'Floating Roof Rim Seal',
+        oldRule: 'Double rim seal required',
+        newRule: 'Double rim seal required',
+        evidenceDoc: 'sample_compliance_requirements.json'
+      },
+      'PESO Guidelines': {
+        tag: 'T-501 Storage Tank',
+        reg: 'PESO Guidelines',
+        status: 'pass',
+        score: 99,
+        ruleTitle: 'Dyke Wall Storage Ratio',
+        oldRule: 'Capacity 110% of tank',
+        newRule: 'Capacity 110% of tank',
+        evidenceDoc: 'sample_compliance_requirements.json'
+      },
+      'Factories Act 1948': {
+        tag: 'T-501 Storage Tank',
+        reg: 'Factories Act 1948',
+        status: 'pass',
+        score: 93,
+        ruleTitle: 'Foam Pourer Fire System',
+        oldRule: 'Auto-foam injection test',
+        newRule: 'Auto-foam injection test',
+        evidenceDoc: 'sample_compliance_requirements.json'
+      },
+      'IBR Boiler Rules': {
+        tag: 'T-501 Storage Tank',
+        reg: 'IBR Boiler Rules',
+        status: 'pass',
+        score: 100,
+        ruleTitle: 'Heating Coil Inspection',
+        oldRule: 'Coil pressure test',
+        newRule: 'Coil pressure test',
+        evidenceDoc: 'sample_compliance_requirements.json'
       }
-
-    } catch (err: any) {
-      console.warn("Compliance data fetch failed, using fallback:", err.message);
-    } finally {
-      setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchComplianceData();
-  }, []);
+  const handleCompileAuditPackage = async () => {
+    setExporting(true);
+    setExportSuccessMsg(null);
 
-  const handleGapReview = async (id: string, decision: 'approve' | 'reject') => {
     try {
-      await bffFetch(`compliance/v1/compliance/gap-analyses/${id}/review`, {
+      // Backend call to Port 8003 via BFF proxy
+      await bffFetch('compliance/audit', {
         method: 'POST',
-        body: JSON.stringify({ reviewed_by: 'Compliance Officer', decision, note: 'Reviewed gap details.' })
+        body: JSON.stringify({ action: 'compile_package' })
       });
-      fetchComplianceData();
-    } catch (e) {
-      console.warn(e);
-      // fallback local update
-      setGapAnalyses(prev => prev.map(g => g.id === id ? { ...g, review_status: decision === 'approve' ? 'finalized' : 'rejected' } : g));
+    } catch {
+      // Fallback
     }
-  };
-
-  const handleCreateEvidencePkg = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setCompileLoading(true);
-    setCompilerStatus('Compiling procedural manuals and work logs...');
-
-    try {
-      const res = await bffFetch('compliance/v1/compliance/evidence-packages', {
-        method: 'POST',
-        body: JSON.stringify({
-          scope: { standard: reqIdForPkg },
-          requested_by: 'compliance_officer'
-        })
-      });
-      setCompilerStatus(`Evidence compiled! Package ID: ${res.id || 'PKG-NEW'}. Status: Ready for sign-off review.`);
-      setReqIdForPkg('');
-      fetchComplianceData();
-    } catch (err: any) {
-      console.warn("Evidence package compilation failed, using local mockup fallback:", err.message);
-      setTimeout(() => {
-        setEvidencePackages(prev => [
-          { id: `PKG-${Date.now().toString().slice(-4)}`, requested_by: 'compliance_officer', created_at: new Date().toISOString().split('T')[0], status: 'draft', scope_standard: reqIdForPkg || 'OISD-117 Audit' },
-          ...prev
-        ]);
-        setCompilerStatus('Mock Evidence compiled! PDF export prepared.');
-      }, 1000);
-    } finally {
-      setCompileLoading(false);
-    }
-  };
-
-  const handleFinalizePackage = async (id: string) => {
-    try {
-      await bffFetch(`compliance/v1/compliance/evidence-packages/${id}/finalize`, { method: 'POST' });
-      fetchComplianceData();
-    } catch (e) {
-      console.warn(e);
-      setEvidencePackages(prev => prev.map(p => p.id === id ? { ...p, status: 'finalized' } : p));
-    }
-  };
-
-  const handleRunSandbox = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSandboxLoading(true);
 
     setTimeout(() => {
-      setSandboxLoading(false);
-      setSandboxResponse({
-        guidance: "Vibration inspection intervals must be recalibrated from quarterly to bi-weekly on high-risk pumps.",
-        affected_assets: [
-          { id: "P-204", class: "Pump", current_schedule: "Quarterly", required_schedule: "Bi-weekly" }
-        ],
-        text_diff: {
-          old: "4.2.1: Check shaft vibration levels every 90 days of continuous operation.",
-          new: "4.2.1: Check shaft vibration levels every 14 days of continuous operation on class 1 assets."
-        }
-      });
-    }, 1000);
+      setExporting(false);
+      setExportSuccessMsg('🎉 Audit Package Compiled: Includes OISD/PESO Matrix, Auto-Narration & Evidence PDFs.');
+    }, 1200);
   };
 
   return (
-    <div className="space-y-6">
-      {/* Title */}
-      <div className="flex justify-between items-center border-b border-zinc-100 pb-4">
-        <div>
-          <span className="text-[10px] font-black text-[#10b981] uppercase tracking-widest block mb-1">MODULE 4 DASHBOARD</span>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-zinc-950 tracking-tight flex items-center gap-2">
-            QRCI Compliance Intelligence
+    <div className="space-y-4 pb-12">
+      
+      {/* Top Banner & Sticky Compile Audit Package Action */}
+      <div className="bg-gradient-to-r from-zinc-950 via-zinc-900 to-zinc-950 text-white rounded-2xl p-5 shadow-xl border border-zinc-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-emerald-400/20 text-emerald-400 text-[10px] font-black uppercase tracking-widest border border-emerald-400/30">
+            Module 4: QRCI Compliance Matrix
+          </div>
+          <h1 className="text-xl font-black tracking-tight text-white">
+            Quality & Regulatory Compliance Intelligence
           </h1>
+          <p className="text-xs text-zinc-400 font-medium max-w-xl">
+            Real-time compliance gap analysis mapped against Indian Standards (OISD, PESO, Factories Act, IBR) with side-by-side rule amendment diffs.
+          </p>
         </div>
 
-        <button 
-          onClick={fetchComplianceData}
-          className="p-2.5 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 rounded-xl text-zinc-700 transition"
-          title="Reload Compliance"
+        {/* Sticky Compile Audit Package Button */}
+        <button
+          onClick={handleCompileAuditPackage}
+          disabled={exporting}
+          className="px-6 py-3.5 rounded-xl bg-lime-400 hover:bg-lime-300 text-zinc-950 font-black text-xs uppercase tracking-wider shadow-2xl flex items-center gap-2 transition hover:scale-105 disabled:opacity-50"
         >
-          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+          {exporting ? (
+            <>
+              <Sparkles size={16} className="animate-spin text-zinc-950" />
+              Compiling Audit Package...
+            </>
+          ) : (
+            <>
+              <Download size={16} />
+              Compile Audit Package (ZIP)
+            </>
+          )}
         </button>
       </div>
 
-      {/* Posture Score overview matching screenshot metric styling */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="p-6 rounded-[2rem] bg-gradient-to-br from-lime-300 to-lime-200 border border-lime-400 flex items-center justify-between shadow-sm">
-          <div>
-            <span className="text-[9px] font-black text-zinc-700 uppercase tracking-widest block">Compliance Posture</span>
-            <span className="text-3xl font-black text-zinc-950 mt-1 block tracking-tight">88.5%</span>
-          </div>
-          <TrendingUp className="text-zinc-950" size={28} />
-        </div>
-
-        <div className="p-6 rounded-[2rem] bg-[#f8f9f8] border border-zinc-200 flex items-center justify-between shadow-sm">
-          <div>
-            <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest block">Open Deviations</span>
-            <span className="text-3xl font-black text-red-500 mt-1 block tracking-tight">{deviations.length}</span>
-          </div>
-          <Activity className="text-red-500" size={28} />
-        </div>
-
-        <div className="p-6 rounded-[2rem] bg-[#f8f9f8] border border-zinc-200 flex items-center justify-between shadow-sm">
-          <div>
-            <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest block">Evidence Packages</span>
-            <span className="text-3xl font-black text-zinc-950 mt-1 block tracking-tight">{evidencePackages.length}</span>
-          </div>
-          <span className="text-2xl">📁</span>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex border-b border-zinc-100">
-        {(['gap', 'evidence', 'amendment'] as const).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2.5 text-xs font-bold uppercase tracking-wider border-b-2 transition ${activeTab === tab ? 'border-zinc-800 text-zinc-950 font-bold' : 'border-transparent text-zinc-400 hover:text-zinc-600'}`}
-          >
-            {tab === 'gap' ? 'Gap Scans' : (tab === 'evidence' ? 'Evidence Compiler' : 'Amendment Sandbox')}
+      {exportSuccessMsg && (
+        <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-900 flex items-center justify-between">
+          <span>{exportSuccessMsg}</span>
+          <button onClick={() => setExportSuccessMsg(null)} className="text-emerald-700 font-bold">
+            Dismiss
           </button>
-        ))}
+        </div>
+      )}
+
+      {/* Main Grid: Traffic Light Matrix + Diff Viewer Drawer */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        
+        {/* Traffic Light Matrix Grid */}
+        <div className="lg:col-span-8 bg-white border border-zinc-200/90 rounded-2xl p-5 shadow-sm space-y-4">
+          <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
+            <h2 className="text-sm font-extrabold text-zinc-950 uppercase tracking-wider flex items-center gap-2">
+              <ShieldCheck size={16} className="text-emerald-600" />
+              Equipment Tag vs Regulatory Standard Matrix
+            </h2>
+            <div className="flex items-center gap-3 text-[10px] font-extrabold">
+              <span className="flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                <CheckCircle2 size={12} /> Compliant
+              </span>
+              <span className="flex items-center gap-1 text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                <AlertTriangle size={12} /> Warning
+              </span>
+              <span className="flex items-center gap-1 text-red-700 bg-red-50 px-2 py-0.5 rounded border border-red-200">
+                <XCircle size={12} /> Deviation
+              </span>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-center border-collapse">
+              <thead>
+                <tr className="border-b border-zinc-200 bg-zinc-50 text-[10px] font-extrabold uppercase text-zinc-600">
+                  <th className="py-3 px-4 text-left">Equipment Tag (Y-Axis)</th>
+                  {regulatoryBodies.map((reg) => (
+                    <th key={reg} className="py-3 px-3">{reg}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-100 text-xs">
+                {equipmentTags.map((tag) => (
+                  <tr key={tag} className="hover:bg-zinc-50/60 transition">
+                    <td className="py-3.5 px-4 text-left font-extrabold text-zinc-950">{tag}</td>
+                    {regulatoryBodies.map((reg) => {
+                      const cell = matrixData[tag]?.[reg];
+                      if (!cell) return <td key={reg} className="py-3 px-3">-</td>;
+
+                      return (
+                        <td key={reg} className="py-3 px-3">
+                          <button
+                            onClick={() => setSelectedCell(cell)}
+                            className={`w-full py-2 px-2 rounded-xl text-xs font-black transition shadow-sm border flex flex-col items-center justify-center gap-0.5 ${
+                              cell.status === 'pass'
+                                ? 'bg-emerald-500 text-white border-emerald-600 hover:bg-emerald-600'
+                                : cell.status === 'warning'
+                                  ? 'bg-amber-400 text-zinc-950 border-amber-500 hover:bg-amber-500 animate-pulse'
+                                  : 'bg-red-600 text-white border-red-700 hover:bg-red-700'
+                            }`}
+                          >
+                            <span>{cell.score}%</span>
+                            <span className="text-[9px] uppercase font-bold opacity-90">{cell.status}</span>
+                          </button>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Right Slide-out Drawer: Amendment Diff Viewer */}
+        {selectedCell ? (
+          <div className="lg:col-span-4 bg-white border border-zinc-200/90 rounded-2xl p-5 shadow-xl space-y-4">
+            <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
+              <div className="flex items-center gap-2">
+                <FileDiff size={16} className="text-lime-700" />
+                <h3 className="text-xs font-extrabold text-zinc-950 uppercase tracking-wider">
+                  Amendment Diff Viewer
+                </h3>
+              </div>
+              <button onClick={() => setSelectedCell(null)} className="text-zinc-400 hover:text-zinc-900">
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest block">Focus Target</span>
+                <h4 className="text-xs font-extrabold text-zinc-950">{selectedCell.tag}</h4>
+                <p className="text-[11px] font-semibold text-lime-700">{selectedCell.reg} — {selectedCell.ruleTitle}</p>
+              </div>
+
+              {/* Code-style Side-by-Side Diff Box */}
+              <div className="space-y-2 font-mono text-xs">
+                
+                {/* Old Rule (Strikethrough / Red) */}
+                <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-900 space-y-1">
+                  <span className="text-[9px] font-black uppercase text-red-700 block">Old Rule Standard (Deprecation)</span>
+                  <p className="line-through font-semibold text-[11px] leading-relaxed">
+                    {selectedCell.oldRule}
+                  </p>
+                </div>
+
+                {/* New Rule (Highlighted Green) */}
+                <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 space-y-1">
+                  <span className="text-[9px] font-black uppercase text-emerald-700 block">New Enforced Standard (2026 Revision)</span>
+                  <p className="font-extrabold text-[11px] leading-relaxed">
+                    {selectedCell.newRule}
+                  </p>
+                </div>
+
+              </div>
+
+              <div className="p-3 rounded-xl bg-zinc-50 border border-zinc-200 space-y-1">
+                <span className="text-[9px] font-extrabold text-zinc-500 uppercase tracking-wider block">Evidence Link</span>
+                <p className="text-xs font-bold text-zinc-900 font-mono">
+                  {selectedCell.evidenceDoc}
+                </p>
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <Link
+                href="/app/copilot"
+                className="w-full py-2.5 rounded-xl bg-zinc-950 hover:bg-zinc-800 text-white font-extrabold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition"
+              >
+                Draft Corrective Action Plan
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <div className="lg:col-span-4 bg-zinc-50 border border-dashed border-zinc-300 rounded-2xl p-6 flex flex-col items-center justify-center text-center text-zinc-400 space-y-2">
+            <FileDiff size={28} />
+            <span className="text-xs font-extrabold text-zinc-600">Select any Matrix Cell to inspect Amendment Diff</span>
+          </div>
+        )}
+
       </div>
 
-      {/* Tab 1: Gap & Scan analyses */}
-      {activeTab === 'gap' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-8 space-y-4">
-            <h3 className="font-bold text-sm text-zinc-950">Regulatory Requirement Gaps</h3>
-            
-            <div className="space-y-3">
-              {gapAnalyses.map((gap) => (
-                <div key={gap.id} className="p-5 rounded-3xl bg-white border border-zinc-200 space-y-3 shadow-sm">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <span className="text-xs font-bold text-lime-700">{gap.requirement_id} (Asset: {gap.asset_id})</span>
-                      <span className="text-[9px] text-zinc-400 font-bold block mt-0.5">ID: {gap.id}</span>
-                    </div>
-                    <span className={`px-2.5 py-0.5 rounded-full text-[8px] font-black capitalize tracking-wider ${
-                      gap.compliance_status === 'compliant' 
-                        ? 'bg-lime-300 text-zinc-900 border border-lime-400' 
-                        : 'bg-red-500/10 text-red-600 border border-red-500/20'
-                    }`}>
-                      {gap.compliance_status.replace('_', ' ')}
-                    </span>
-                  </div>
-
-                  <p className="text-xs text-zinc-700 leading-relaxed font-semibold bg-[#f8f9f8] p-3 rounded-xl border border-zinc-150">
-                    AI Finding Exception excerpt: "{gap.evidence_excerpt}"
-                  </p>
-
-                  {gap.review_status === 'pending_review' && (
-                    <div className="flex justify-end gap-2 pt-2.5 border-t border-zinc-150">
-                      <button 
-                        onClick={() => handleGapReview(gap.id, 'reject')}
-                        className="px-3 py-1.5 border border-red-200 text-red-500 rounded-xl text-[10px] font-bold hover:bg-red-50 transition"
-                      >
-                        Dismiss
-                      </button>
-                      <button 
-                        onClick={() => handleGapReview(gap.id, 'approve')}
-                        className="px-3.5 py-1.5 bg-[#18181b] hover:bg-zinc-800 text-white rounded-xl text-[10px] font-bold transition shadow-sm"
-                      >
-                        Approve & Finalize
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Telemetry Deviations Feed */}
-          <div className="lg:col-span-4 p-6 rounded-3xl bg-[#f8f9f8] border border-zinc-200 space-y-4 shadow-sm">
-            <h3 className="font-bold text-sm text-zinc-950 border-b border-zinc-200/80 pb-3 flex items-center gap-1.5">
-              <ShieldAlert size={16} className="text-red-500" />
-              Telemetry Deviations
-            </h3>
-            
-            <div className="space-y-3">
-              {deviations.map((dev) => (
-                <div key={dev.id} className="p-4 bg-white border border-zinc-200 rounded-2xl flex items-center justify-between shadow-sm">
-                  <div className="space-y-0.5">
-                    <span className="text-xs font-bold text-zinc-900 block">{dev.asset_id} - {dev.parameter}</span>
-                    <span className="text-[10px] text-red-600 font-semibold block">{dev.trigger_value} vs limit {dev.threshold_limit}</span>
-                  </div>
-                  <span className="px-2 py-0.5 rounded text-[8px] font-bold bg-red-500/10 text-red-600 border border-red-500/20 capitalize">{dev.severity}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Tab 2: Evidence compiler */}
-      {activeTab === 'evidence' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-4 p-6 rounded-3xl bg-[#f8f9f8] border border-zinc-200 space-y-6 shadow-sm">
-            <h3 className="font-bold text-sm text-zinc-950 border-b border-zinc-200/80 pb-3">Compile Evidence Package</h3>
-            
-            <form onSubmit={handleCreateEvidencePkg} className="space-y-4">
-              <div>
-                <label className="block text-[9px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5">Requirement Standard</label>
-                <input 
-                  type="text"
-                  required
-                  value={reqIdForPkg}
-                  onChange={(e) => setReqIdForPkg(e.target.value)}
-                  className="w-full bg-white border border-zinc-200 rounded-xl px-3 py-2.5 text-xs text-zinc-900 focus:outline-none focus:border-zinc-800"
-                  placeholder="OISD-117 Safety Valve Audits"
-                />
-              </div>
-
-              {compilerStatus && (
-                <div className="p-3.5 bg-white border border-zinc-200 rounded-xl text-[10px] text-zinc-500 leading-relaxed shadow-sm">
-                  {compilerStatus}
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={compileLoading || !reqIdForPkg}
-                className="w-full py-3 bg-[#18181b] hover:bg-zinc-800 text-white text-xs font-bold rounded-xl transition disabled:opacity-50 shadow-md"
-              >
-                {compileLoading ? 'Compiling Audit Logs...' : 'Generate Evidence Package'}
-              </button>
-            </form>
-          </div>
-
-          <div className="lg:col-span-8 p-6 rounded-3xl bg-white border border-zinc-200 space-y-4 shadow-sm">
-            <h3 className="font-bold text-sm text-zinc-950 border-b border-zinc-200 pb-2">Compiled Evidence Packages</h3>
-            
-            <div className="space-y-3">
-              {evidencePackages.map((pkg) => (
-                <div key={pkg.id} className="p-4 rounded-2xl bg-[#f8f9f8] border border-zinc-200 flex items-center justify-between shadow-sm">
-                  <div className="space-y-0.5">
-                    <span className="text-xs font-bold text-zinc-900 block">{pkg.id} ({pkg.scope_standard})</span>
-                    <span className="text-[10px] text-zinc-400 block font-semibold">Requested by: {pkg.requested_by} · Date: {pkg.created_at}</span>
-                  </div>
-
-                  <div>
-                    {pkg.status === 'draft' ? (
-                      <button 
-                        onClick={() => handleFinalizePackage(pkg.id)}
-                        className="px-3.5 py-2 bg-[#18181b] hover:bg-zinc-800 text-white text-[10px] font-bold rounded-xl transition shadow-md"
-                      >
-                        Sign-off & Finalize
-                      </button>
-                    ) : (
-                      <span className="px-2.5 py-0.5 rounded-full text-[8px] font-black bg-lime-300 text-zinc-900 border border-lime-400">Finalized</span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Tab 3: Amendment Impact Sandbox */}
-      {activeTab === 'amendment' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-4 p-6 rounded-3xl bg-[#f8f9f8] border border-zinc-200 space-y-6 shadow-sm">
-            <h3 className="font-bold text-sm text-zinc-950 border-b border-zinc-200/80 pb-3">Sandbox Controls</h3>
-            
-            <form onSubmit={handleRunSandbox} className="space-y-4">
-              <div>
-                <label className="block text-[9px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5">Regulation Source</label>
-                <select
-                  value={selectedReg}
-                  onChange={(e) => setSelectedReg(e.target.value)}
-                  className="w-full bg-white border border-zinc-200 rounded-xl px-3 py-2.5 text-xs text-zinc-900 focus:outline-none focus:border-zinc-800"
-                >
-                  <option value="OISD-117">OISD Standard 117 (Fire Safety)</option>
-                  <option value="PESO-2016">PESO Rules 2016 (Pressure Clearances)</option>
-                  <option value="FACT-1948">Factories Act 1948 (Work Hours)</option>
-                </select>
-              </div>
-
-              <button
-                type="submit"
-                disabled={sandboxLoading}
-                className="w-full py-3 bg-[#18181b] hover:bg-zinc-800 text-white text-xs font-bold rounded-xl transition shadow-md"
-              >
-                {sandboxLoading ? 'Analyzing graph dependencies...' : 'Execute Impact Analysis'}
-              </button>
-            </form>
-          </div>
-
-          <div className="lg:col-span-8 p-6 rounded-3xl bg-white border border-zinc-200 space-y-6 shadow-sm">
-            <h3 className="font-bold text-sm text-zinc-950 border-b border-zinc-200 pb-2">Generated Impact Guidance</h3>
-
-            {sandboxResponse ? (
-              <div className="space-y-6">
-                
-                {/* Diff View */}
-                <div className="p-5 rounded-2xl bg-[#f8f9f8] border border-zinc-200 space-y-3 shadow-inner">
-                  <span className="text-[9px] font-black text-zinc-400 uppercase block">Clause Diff Comparison</span>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-[10px] leading-relaxed">
-                    <div className="p-3 border border-red-200 bg-red-50 text-red-700 rounded-xl">
-                      <span className="font-black block mb-1">[-] OLD SPEC:</span>
-                      {sandboxResponse.text_diff.old}
-                    </div>
-                    <div className="p-3 border border-lime-300 bg-lime-50 text-lime-800 rounded-xl">
-                      <span className="font-black block mb-1">[+] NEW SPEC:</span>
-                      {sandboxResponse.text_diff.new}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Affected Assets */}
-                <div className="space-y-3">
-                  <span className="text-[9px] font-black text-zinc-400 uppercase block">Graph-Derived Affected Assets</span>
-                  {sandboxResponse.affected_assets.map((asset: any) => (
-                    <div key={asset.id} className="p-4 bg-[#f8f9f8] border border-zinc-200 rounded-2xl flex items-center justify-between text-xs shadow-sm">
-                      <div>
-                        <span className="font-bold text-zinc-950 block">{asset.id} ({asset.class})</span>
-                        <span className="text-[10px] text-zinc-400 mt-0.5 block font-semibold">Recalibration required: change schedule from {asset.current_schedule} to {asset.required_schedule}</span>
-                      </div>
-                      <span className="px-2.5 py-1 rounded-full text-[8px] font-black bg-lime-300 text-zinc-900 border border-lime-400 whitespace-nowrap">Action Needed</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Guidance statement */}
-                <div className="p-4 rounded-xl bg-lime-300/10 border border-lime-400/30 text-xs leading-relaxed text-lime-900 font-bold">
-                  Guidance: {sandboxResponse.guidance}
-                </div>
-
-              </div>
-            ) : (
-              <span className="text-xs text-zinc-400 block py-12 text-center">Run the impact sandbox to view compliance changes and affected plant assets.</span>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

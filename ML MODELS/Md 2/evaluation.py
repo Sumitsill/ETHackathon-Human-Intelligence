@@ -121,73 +121,9 @@ def cleanup_temporary_document(doc_id: str, chunk_ids: List[str]):
 
 
 def seed_evaluation_data():
-    """Seeds the SQLite database with the standard corpus if not already populated."""
-    conn = get_db_connection()
-    doc_ids = [r['id'] for r in conn.execute("SELECT id FROM documents").fetchall()]
-    
-    # 1. Seed doc_verify_test_001 if missing
-    if "doc_verify_test_001" not in doc_ids:
-        logger.info("Seeding doc_verify_test_001...")
-        from main import run_groq_ingestion_pipeline
-        run_groq_ingestion_pipeline(
-            "doc_verify_test_001",
-            "PROCEDURE: Valve V-102 Isolation and Maintenance.\nDate: 2026-07-14. Author: John Engineer.\n1. Turn Valve V-102 clockwise to isolate the downstream piping.\n2. Keep the inlet pressure below 150 PSI to avoid pressure shocks.\n3. This procedure complies with standard ASME B31.3 piping regulations.\n4. Notify Supervisor Dave Miller once isolation is verified.",
-            "Verify_Test_Procedure.pdf",
-            "pdf",
-            "Page 1"
-        )
-        
-    # 2. Seed gmail_mock_101 if missing
-    if "gmail_mock_101" not in doc_ids:
-        logger.info("Seeding gmail_mock_101...")
-        from main import run_groq_ingestion_pipeline
-        run_groq_ingestion_pipeline(
-            "gmail_mock_101",
-            "Subject: Work Order WO-9942 - Emergency pump inspection\nSender: maintenance-supervisor@refinery.com\nDate: 2026-07-10T14:30:00Z\n\nBody:\nHi Team,\n\nWe need to execute an emergency safety inspection on Pump P-204 due to high vibration alarms. The vibration levels hit 8.5 mm/s, exceeding our operating limit of 5.0 mm/s. Please assign Engineer John Doe to perform the vibration analysis and report back as per standard API-610 regulations.\n\nThanks,\nDave Miller\nMaintenance Supervisor",
-            "Email: Work Order WO-9942 - Emergency pump inspection",
-            "gmail",
-            "Email Body"
-        )
-        
-    # 3. Seed gmail_mock_102 if missing
-    if "gmail_mock_102" not in doc_ids:
-        logger.info("Seeding gmail_mock_102...")
-        from main import run_groq_ingestion_pipeline
-        run_groq_ingestion_pipeline(
-            "gmail_mock_102",
-            "Subject: Regulatory compliance alert for P-204\nSender: safety-officer@refinery.com\nDate: 2026-07-12T09:15:00Z\n\nBody:\nHello,\n\nThis is a reminder that Pump P-204 is overdue for its annual pressure safety calibration. Under standard OSHA-1910.119 process safety management rules, all core equipment must be calibrated and logged. Let's make sure we log this under the equipment tags correctly.\n\nRegards,\nSarah Connor\nLead Safety Officer",
-            "Email: Regulatory compliance alert for P-204",
-            "gmail",
-            "Email Body"
-        )
-        
-    # 4. Seed regulatory memo if missing
-    has_oisd = False
-    for did in doc_ids:
-        doc = conn.execute("SELECT filename FROM documents WHERE id = ?", (did,)).fetchone()
-        if doc and "OISD-STD-118" in doc["filename"]:
-            has_oisd = True
-            break
-            
-    if not has_oisd:
-        pdf_path = "d:/OneDrive/Music/Desktop/ET-Hackathon-Models/Module 1/backend/uploads/REG-MEMO_OISD-STD-118_Reference_Note.pdf"
-        if os.path.exists(pdf_path):
-            logger.info("Seeding OISD-STD-118 pdf reference memo...")
-            import pypdf
-            reader = pypdf.PdfReader(pdf_path)
-            text = ""
-            for page in reader.pages:
-                text += page.extract_text() or ""
-                
-            from main import run_groq_ingestion_pipeline
-            run_groq_ingestion_pipeline(
-                "doc_regulatory_memo",
-                text,
-                "REG-MEMO_OISD-STD-118_Reference_Note.pdf",
-                "pdf",
-                "Page 1"
-            )
-    conn.close()
+    """No-op: pre-seeded evaluation data generation disabled."""
+    pass
+
 
 
 # -------------------------------------------------------------

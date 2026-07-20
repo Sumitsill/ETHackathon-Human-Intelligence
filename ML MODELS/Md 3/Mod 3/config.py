@@ -6,7 +6,7 @@ BASE_DIR = Path(__file__).resolve().parent
 
 # Gemini API Configurations
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "YOUR_GEMINI_API_KEY")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.1-flash")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
 
 # Groq API Configurations
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")

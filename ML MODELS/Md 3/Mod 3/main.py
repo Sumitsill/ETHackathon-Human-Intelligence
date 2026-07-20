@@ -1,4 +1,5 @@
 import os
+import json
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Query, HTTPException, Body, Request
 from fastapi.responses import JSONResponse
@@ -80,6 +81,21 @@ class OptimizeRequest(BaseModel):
     labor_hours_limit: int
     budget_limit: float
     safety_weight: float
+
+class IncidentRecord(BaseModel):
+    """Represents a single incident/near-miss/audit/non-conformance record for the Lessons Learned engine."""
+    type: str              # "incident", "near_miss", "audit_finding", "non_conformance"
+    department: str        # e.g. "CDU-1", "Utilities", "Safety"
+    date: str              # ISO date string: YYYY-MM-DD
+    description: str       # Free-text description of the event
+    asset_tag: Optional[str] = None
+    severity: Optional[str] = "medium"  # "low", "medium", "high", "critical"
+
+class LessonsLearnedScanRequest(BaseModel):
+    """Optional filters for a scan request."""
+    department_filter: Optional[str] = None
+    severity_filter: Optional[str] = None
+    include_external: bool = True   # Pull in external industry failure database
 
 # -------------------------------------------------------------
 # API Route Implementations (Section 5 Contracts)
@@ -483,6 +499,359 @@ def get_brain_sync_correlation(asset_id: str):
             "statutory_safety_margin": "84%" if not matching_rcas else "62% (WARNING)",
             "recommended_sync_action": "Trigger immediate Module 4 /scan check before closing maintenance ticket."
         }
+    }
+
+# ------------------------------------------------------------------
+# Lessons Learned & Failure Intelligence Engine  (NEW)
+# ------------------------------------------------------------------
+
+# In-memory store for submitted incident/near-miss/audit records.
+# In production this would be persisted to a relational table.
+LESSONS_RECORDS_STORE: List[Dict[str, Any]] = [
+    {
+        "id": "LL-001",
+        "type": "incident",
+        "department": "CDU-1",
+        "date": "2026-01-14",
+        "description": "Pump-14 bearing seizure due to deferred lubrication PM. Oil film depleted causing rapid thermal seizure. 18-hour shutdown.",
+        "asset_tag": "Pump-14",
+        "severity": "critical",
+        "tags": ["lubrication", "bearing", "deferred_maintenance"]
+    },
+    {
+        "id": "LL-002",
+        "type": "near_miss",
+        "department": "Utility-Line-2",
+        "date": "2026-03-22",
+        "description": "Compressor-8 discharge valve clearance drifted to 0.08mm (above 0.05mm limit). Caught during routine inspection before failure. No production loss.",
+        "asset_tag": "Compressor-8",
+        "severity": "high",
+        "tags": ["valve_clearance", "compressor", "near_miss"]
+    },
+    {
+        "id": "LL-003",
+        "type": "audit_finding",
+        "department": "Powerhouse-A",
+        "date": "2026-04-11",
+        "description": "Generator-3 stator insulation resistance found at 12 Megaohms during OISD-117 audit. Below 20 Megaohm safe startup threshold. Corrective WO raised but deferred twice.",
+        "asset_tag": "Generator-3",
+        "severity": "high",
+        "tags": ["insulation", "generator", "audit", "deferred"]
+    },
+    {
+        "id": "LL-004",
+        "type": "non_conformance",
+        "department": "CDU-1",
+        "date": "2026-05-15",
+        "description": "Quarterly lubrication PM for Pump-14 skipped again. Technician noted warm bearing housing. Ops coordinator overruled maintenance schedule citing throughput demands.",
+        "asset_tag": "Pump-14",
+        "severity": "medium",
+        "tags": ["lubrication", "bearing", "deferred_maintenance", "operations_pressure"]
+    },
+    {
+        "id": "LL-005",
+        "type": "near_miss",
+        "department": "CDU-1",
+        "date": "2026-06-28",
+        "description": "High-pitch whistling near P-204 bearing housing noted by patrol operator. Vibration at 2.15 G-s — within bounds but rising trend. No immediate action taken due to shift handover gap.",
+        "asset_tag": "P-204",
+        "severity": "medium",
+        "tags": ["vibration", "bearing", "trend", "shift_handover"]
+    },
+    {
+        "id": "LL-006",
+        "type": "incident",
+        "department": "Powerhouse-A",
+        "date": "2025-11-05",
+        "description": "Generator-3 emergency shutdown due to overheating. Cooling fan belt snapped from fatigue. 4.5-hour power loss to non-essential loads.",
+        "asset_tag": "Generator-3",
+        "severity": "high",
+        "tags": ["cooling", "belt_failure", "overheating", "deferred_inspection"]
+    },
+]
+
+# External industry failure intelligence database (read-only reference benchmarks)
+EXTERNAL_INDUSTRY_FAILURES = [
+    {
+        "source": "OREDA Handbook 2021",
+        "failure_mode": "Centrifugal pump bearing failure (lubrication starvation)",
+        "industry_frequency": "HIGH — 3rd most common pump failure globally",
+        "contributing_factors": ["Deferred PM scheduling", "Operations production pressure", "Poor oil level monitoring"],
+        "industry_recommendation": "Install auto-lube systems and mandate PM sign-off at supervisor level.",
+        "relevance_tags": ["lubrication", "bearing", "deferred_maintenance"]
+    },
+    {
+        "source": "HSE UK Offshore Incident Database 2023",
+        "failure_mode": "Rotating machinery failure due to shift handover communication gaps",
+        "industry_frequency": "MEDIUM — Accounts for 12% of all near-miss events in process industries",
+        "contributing_factors": ["Incomplete handover checklists", "Verbal-only communication", "Night shift fatigue"],
+        "industry_recommendation": "Standardise digital shift handover logs with mandatory anomaly sign-off.",
+        "relevance_tags": ["shift_handover", "communication", "near_miss"]
+    },
+    {
+        "source": "API RP 686 (2022) — Machinery Installation",
+        "failure_mode": "Compressor valve clearance drift and seal leakage",
+        "industry_frequency": "MEDIUM — Commonly missed in operations-driven PM deferrals",
+        "contributing_factors": ["Extended run times beyond inspection intervals", "Thermal cycling fatigue"],
+        "industry_recommendation": "Implement vibration spectrum trending and mandatory valve inspection every 4000 running hours.",
+        "relevance_tags": ["valve_clearance", "compressor", "inspection_interval"]
+    },
+]
+
+@app.get("/v1/lessons-learned/records")
+def get_lessons_records(type_filter: Optional[str] = Query(None), department_filter: Optional[str] = Query(None), severity_filter: Optional[str] = Query(None)):
+    """Returns the full library of incident/near-miss/audit/non-conformance records with optional filters."""
+    records = LESSONS_RECORDS_STORE
+    if type_filter:
+        records = [r for r in records if r["type"] == type_filter]
+    if department_filter:
+        records = [r for r in records if department_filter.lower() in r["department"].lower()]
+    if severity_filter:
+        records = [r for r in records if r["severity"] == severity_filter]
+    return {
+        "total": len(records),
+        "records": records
+    }
+
+@app.post("/v1/lessons-learned/records")
+def add_lessons_record(req: IncidentRecord):
+    """Submits a new incident/near-miss/audit/non-conformance record to the Failure Intelligence Engine."""
+    new_id = f"LL-{str(len(LESSONS_RECORDS_STORE) + 1).zfill(3)}"
+    # Auto-tag based on keywords in description
+    auto_tags = []
+    desc_lower = req.description.lower()
+    keyword_map = {
+        "lubric": "lubrication", "bearing": "bearing", "deferred": "deferred_maintenance",
+        "vibrat": "vibration", "temperature": "temperature", "seal": "seal",
+        "valve": "valve_clearance", "insul": "insulation", "cool": "cooling",
+        "handover": "shift_handover", "audit": "audit", "near miss": "near_miss",
+        "compressor": "compressor", "generator": "generator", "pump": "pump"
+    }
+    for keyword, tag in keyword_map.items():
+        if keyword in desc_lower:
+            auto_tags.append(tag)
+
+    record = {
+        "id": new_id,
+        "type": req.type,
+        "department": req.department,
+        "date": req.date,
+        "description": req.description,
+        "asset_tag": req.asset_tag,
+        "severity": req.severity or "medium",
+        "tags": list(set(auto_tags))
+    }
+    LESSONS_RECORDS_STORE.append(record)
+    return {"status": "created", "record_id": new_id, "auto_tags": auto_tags}
+
+@app.post("/v1/lessons-learned/scan")
+def scan_for_systemic_patterns(req: LessonsLearnedScanRequest):
+    """
+    Lessons Learned AI Scan: Analyses the full library of incident/near-miss/audit records
+    using the Gemini Intelligence Client to identify cross-cutting systemic patterns and
+    push proactive warnings to operations teams BEFORE similar conditions recur.
+    """
+    records = LESSONS_RECORDS_STORE
+    if req.department_filter:
+        records = [r for r in records if req.department_filter.lower() in r["department"].lower()]
+    if req.severity_filter:
+        records = [r for r in records if r["severity"] == req.severity_filter]
+
+    if not records:
+        raise HTTPException(status_code=400, detail="No records found matching the given filters. Add at least 2 records before scanning.")
+
+    # Pull external industry benchmarks relevant to current record tags
+    all_tags = []
+    for r in records:
+        all_tags.extend(r.get("tags", []))
+    unique_tags = list(set(all_tags))
+
+    relevant_external = []
+    if req.include_external:
+        for ext in EXTERNAL_INDUSTRY_FAILURES:
+            if any(tag in ext.get("relevance_tags", []) for tag in unique_tags):
+                relevant_external.append(ext)
+
+    # Determine systemic patterns via rule-based heuristics (fallback if Gemini not available)
+    tag_freq: Dict[str, int] = {}
+    dept_freq: Dict[str, int] = {}
+    asset_freq: Dict[str, int] = {}
+    severity_scores = {"low": 1, "medium": 2, "high": 3, "critical": 4}
+    total_severity = 0
+
+    for r in records:
+        for tag in r.get("tags", []):
+            tag_freq[tag] = tag_freq.get(tag, 0) + 1
+        dept_freq[r["department"]] = dept_freq.get(r["department"], 0) + 1
+        if r.get("asset_tag"):
+            asset_freq[r["asset_tag"]] = asset_freq.get(r["asset_tag"], 0) + 1
+        total_severity += severity_scores.get(r.get("severity", "medium"), 2)
+
+    top_tags = sorted(tag_freq.items(), key=lambda x: x[1], reverse=True)[:5]
+    top_depts = sorted(dept_freq.items(), key=lambda x: x[1], reverse=True)[:3]
+    top_assets = sorted(asset_freq.items(), key=lambda x: x[1], reverse=True)[:3]
+    avg_severity = total_severity / len(records) if records else 0
+
+    # Attempt Gemini LLM pattern analysis
+    llm_analysis = None
+    try:
+        from gemini_client import client as gemini_client
+        records_json = json.dumps([{k: v for k, v in r.items()} for r in records], indent=2)
+        external_json = json.dumps(relevant_external, indent=2) if relevant_external else "[]"
+        prompt = f"""You are a Failure Intelligence Analyst for an industrial operations organisation.
+
+Analyse the following internal incident/near-miss/audit/non-conformance records and external industry failure benchmarks to identify systemic patterns invisible to individual review.
+
+INTERNAL RECORDS:
+{records_json}
+
+EXTERNAL INDUSTRY BENCHMARKS:
+{external_json}
+
+Return a JSON array of pattern objects. Each pattern object must have:
+- pattern_id (string, e.g. SYSTEMIC-01)
+- title (string, short descriptive title)
+- description (string, explaining the systemic pattern)
+- contributing_factors (list of strings)
+- affected_departments (list of strings)
+- affected_assets (list of strings)
+- recurrence_risk (string: "high", "medium", "low")
+- proactive_warning (string, the warning message to push to operations teams NOW)
+- recommended_actions (list of strings)
+- matched_external_source (string or null, the external reference if applicable)
+
+Return ONLY valid JSON, no markdown fencing."""
+        result = gemini_client.generate_structured_response(prompt)
+        if result and isinstance(result, list):
+            llm_analysis = result
+    except Exception as e:
+        print(f"Lessons Learned LLM scan failed, using heuristic fallback: {e}")
+
+    # Heuristic fallback patterns if Gemini unavailable
+    heuristic_patterns = []
+    if tag_freq.get("deferred_maintenance", 0) >= 2:
+        heuristic_patterns.append({
+            "pattern_id": "SYSTEMIC-01",
+            "title": "Systemic Deferred Maintenance Cycle",
+            "description": f"Deferred maintenance appears in {tag_freq.get('deferred_maintenance', 0)} separate records across {len(top_depts)} departments. This is a repeating organisational behaviour that historically leads to catastrophic failures.",
+            "contributing_factors": ["Production pressure overriding PM schedules", "Lack of mandatory supervisor sign-off for deferrals", "Absent escalation mechanism"],
+            "affected_departments": [d for d, _ in top_depts],
+            "affected_assets": [a for a, _ in top_assets],
+            "recurrence_risk": "high",
+            "proactive_warning": "⚠️ PROACTIVE WARNING: Deferred maintenance pattern detected across multiple events. Current conditions match pre-failure signature of FAIL-091 (Pump-14 bearing seizure, $45,000 loss). Immediate PM execution required on all deferred work orders before next shift.",
+            "recommended_actions": [
+                "Mandatory supervisor sign-off for any PM deferral exceeding 48 hours",
+                "Auto-escalation alert to Plant Manager if 2+ deferrals on same asset",
+                "Implement auto-lube systems to reduce manual dependency"
+            ],
+            "matched_external_source": "OREDA Handbook 2021 — Lubrication Starvation Failure Pattern"
+        })
+    if tag_freq.get("bearing", 0) >= 2:
+        heuristic_patterns.append({
+            "pattern_id": "SYSTEMIC-02",
+            "title": "Recurring Bearing Health Degradation Trend",
+            "description": f"Bearing-related events appear {tag_freq.get('bearing', 0)} times. Cross-event analysis reveals a progressive degradation pattern starting with vibration warnings that are not acted upon in time.",
+            "contributing_factors": ["Vibration trending not reviewed between inspections", "Shift handover anomalies not escalated", "PM deferrals accumulating on same component"],
+            "affected_departments": [d for d, _ in top_depts],
+            "affected_assets": [a for a, _ in top_assets if "pump" in a.lower() or "P-" in a],
+            "recurrence_risk": "high",
+            "proactive_warning": "⚠️ PROACTIVE WARNING: Bearing health events are repeating on the same assets. Without intervention, the vibration trend signature matches conditions 9 days before the Pump-14 bearing seizure (FAIL-091). Trigger immediate OEM-spec inspection.",
+            "recommended_actions": [
+                "Implement continuous vibration trending with automatic threshold alerts",
+                "Mandate bearing temperature log at each shift handover",
+                "Convert monthly lubrication checks to weekly for high-criticality bearings"
+            ],
+            "matched_external_source": None
+        })
+    if tag_freq.get("shift_handover", 0) >= 1:
+        heuristic_patterns.append({
+            "pattern_id": "SYSTEMIC-03",
+            "title": "Shift Handover Communication Failure",
+            "description": "Anomalies observed during one shift are not being formally handed over to the next team, creating a period of zero-awareness during which developing failures cross into critical territory.",
+            "contributing_factors": ["Verbal-only handover culture", "No structured digital anomaly log requirement", "Night shift fatigue reducing diligence"],
+            "affected_departments": [d for d, _ in top_depts],
+            "affected_assets": [a for a, _ in top_assets],
+            "recurrence_risk": "medium",
+            "proactive_warning": "📋 OPERATIONAL NOTICE: Shift handover gaps have been identified as a contributing factor in recent near-miss events. Operations teams must complete digital anomaly sign-off at every shift change until formal process update.",
+            "recommended_actions": [
+                "Standardise digital shift handover log with mandatory anomaly section",
+                "Use Copilot to auto-generate shift summary from sensor data",
+                "Install visual anomaly alert board at each handover station"
+            ],
+            "matched_external_source": "HSE UK Offshore Incident Database 2023 — Handover Gap Failure Mode"
+        })
+
+    final_patterns = llm_analysis if llm_analysis else heuristic_patterns
+    if not final_patterns:
+        final_patterns = [{
+            "pattern_id": "SYSTEMIC-INFO",
+            "title": "No Cross-Cutting Systemic Patterns Detected",
+            "description": "Current record set shows no statistically significant repeating failure signatures. Continue monitoring and adding records.",
+            "contributing_factors": [],
+            "affected_departments": [],
+            "affected_assets": [],
+            "recurrence_risk": "low",
+            "proactive_warning": None,
+            "recommended_actions": ["Add more diverse incident records to improve pattern detection coverage."],
+            "matched_external_source": None
+        }]
+
+    return {
+        "scan_timestamp": datetime.utcnow().isoformat(),
+        "records_analysed": len(records),
+        "analysis_mode": "gemini_llm" if llm_analysis else "heuristic_rule_engine",
+        "top_recurring_tags": [{"tag": t, "frequency": f} for t, f in top_tags],
+        "top_affected_departments": [{"department": d, "events": c} for d, c in top_depts],
+        "top_affected_assets": [{"asset": a, "events": c} for a, c in top_assets],
+        "average_severity_score": round(avg_severity, 2),
+        "external_benchmarks_matched": len(relevant_external),
+        "systemic_patterns": final_patterns
+    }
+
+@app.get("/v1/lessons-learned/proactive-warnings")
+def get_proactive_warnings():
+    """
+    Returns pre-computed proactive warnings based on current record state.
+    These are pushed to dashboards without requiring an explicit scan trigger.
+    """
+    warnings = []
+    tag_freq: Dict[str, int] = {}
+    for r in LESSONS_RECORDS_STORE:
+        for tag in r.get("tags", []):
+            tag_freq[tag] = tag_freq.get(tag, 0) + 1
+
+    if tag_freq.get("deferred_maintenance", 0) >= 2:
+        warnings.append({
+            "warning_id": "WARN-DM-001",
+            "severity": "critical",
+            "title": "Deferred Maintenance Pattern Active",
+            "message": f"Deferred maintenance has been recorded {tag_freq['deferred_maintenance']} times. Historical data shows this pattern directly preceded the Pump-14 catastrophic seizure (FAIL-091, $45,000). Immediate PM execution required.",
+            "affected_assets": [r["asset_tag"] for r in LESSONS_RECORDS_STORE if "deferred_maintenance" in r.get("tags", []) and r.get("asset_tag")],
+            "action_required": "Execute all deferred PM work orders before end of current shift."
+        })
+    if tag_freq.get("bearing", 0) >= 2:
+        warnings.append({
+            "warning_id": "WARN-BRG-001",
+            "severity": "high",
+            "title": "Bearing Degradation Signature Recurring",
+            "message": f"Bearing-related events appear {tag_freq['bearing']} times in the failure intelligence database. This matches the 9-day pre-failure vibration signature of the Pump-14 bearing seizure event.",
+            "affected_assets": [r["asset_tag"] for r in LESSONS_RECORDS_STORE if "bearing" in r.get("tags", []) and r.get("asset_tag")],
+            "action_required": "Trigger OEM-spec vibration inspection on all affected bearing assemblies within 24 hours."
+        })
+    if tag_freq.get("deferred", 0) >= 1 and tag_freq.get("audit", 0) >= 1:
+        warnings.append({
+            "warning_id": "WARN-AUD-001",
+            "severity": "high",
+            "title": "Audit Finding Corrective Action Deferred",
+            "message": "An audit finding with a deferred corrective work order has been identified. Deferred audit CAs create regulatory non-compliance risk under OISD-117.",
+            "affected_assets": [r["asset_tag"] for r in LESSONS_RECORDS_STORE if "audit" in r.get("tags", []) and r.get("asset_tag")],
+            "action_required": "Close deferred audit corrective actions and file updated OISD compliance documentation with Quality Officer."
+        })
+
+    return {
+        "generated_at": datetime.utcnow().isoformat(),
+        "total_warnings": len(warnings),
+        "warnings": warnings
     }
 
 @app.get("/api/status")
