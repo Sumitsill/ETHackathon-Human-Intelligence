@@ -80,6 +80,45 @@ export default function CommandCenterDashboard() {
   ]);
   const [syncAlerts, setSyncAlerts] = useState<AlertItem[]>(DEFAULT_SYNC_ALERTS);
 
+  const [serverHealth, setServerHealth] = useState<{
+    knowledge: boolean;
+    copilot: boolean;
+    maintenance: boolean;
+    compliance: boolean;
+  }>({
+    knowledge: false,
+    copilot: false,
+    maintenance: false,
+    compliance: false,
+  });
+  const [checkingHealth, setCheckingHealth] = useState(true);
+
+  const checkPortHealth = async () => {
+    setCheckingHealth(true);
+    const checkModule = async (module: string) => {
+      try {
+        const res = await fetch(`/api/proxy/${module}/docs`, { method: 'HEAD', cache: 'no-store' });
+        return res.ok || res.status === 404 || res.status === 200 || res.status === 405;
+      } catch {
+        return false;
+      }
+    };
+    const [m1, m2, m3, m4] = await Promise.all([
+      checkModule('knowledge'),
+      checkModule('copilot'),
+      checkModule('maintenance'),
+      checkModule('compliance'),
+    ]);
+    setServerHealth({ knowledge: m1, copilot: m2, maintenance: m3, compliance: m4 });
+    setCheckingHealth(false);
+  };
+
+  useEffect(() => {
+    checkPortHealth();
+    const interval = setInterval(checkPortHealth, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
   const fetchDashboardData = async () => {
     setLoading(true);
     try {
@@ -284,28 +323,51 @@ export default function CommandCenterDashboard() {
                 <h3 className="text-xs font-extrabold uppercase tracking-wider text-white">
                   Orchestrator Backend Status
                 </h3>
+                <button 
+                  onClick={checkPortHealth} 
+                  disabled={checkingHealth}
+                  className="text-zinc-400 hover:text-white transition p-1 disabled:opacity-50"
+                  title="Manual Health Check"
+                >
+                  <RefreshCw size={12} className={checkingHealth ? "animate-spin text-lime-400" : ""} />
+                </button>
               </div>
-              <span className="text-[10px] font-bold text-emerald-400 bg-emerald-950 border border-emerald-800 px-2 py-0.5 rounded-full">
-                4/4 Ports Online
-              </span>
+              {(() => {
+                const onlineCount = [serverHealth.knowledge, serverHealth.copilot, serverHealth.maintenance, serverHealth.compliance].filter(Boolean).length;
+                if (onlineCount === 4) {
+                  return <span className="text-[10px] font-bold text-emerald-400 bg-emerald-950 border border-emerald-800 px-2.5 py-0.5 rounded-full flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />4/4 Ports Online</span>;
+                } else if (onlineCount > 0) {
+                  return <span className="text-[10px] font-bold text-amber-400 bg-amber-950 border border-amber-800 px-2.5 py-0.5 rounded-full flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />{onlineCount}/4 Ports Online</span>;
+                } else {
+                  return <span className="text-[10px] font-bold text-rose-400 bg-rose-950 border border-rose-800 px-2.5 py-0.5 rounded-full flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-rose-500" />0/4 Ports Online</span>;
+                }
+              })()}
             </div>
 
             <div className="grid grid-cols-2 gap-2.5">
               {[
-                { name: 'Module 1 (Ingestion)', port: '8000', label: 'PDF, OCR & Graph' },
-                { name: 'Module 2 (Copilot)', port: '8001', label: 'RAG & Citations' },
-                { name: 'Module 3 (MIRA)', port: '8002', label: '5-Why & Telemetry' },
-                { name: 'Module 4 (QRCI)', port: '8003', label: 'OISD & PESO Matrix' },
-              ].map((m) => (
-                <div key={m.port} className="p-3 rounded-xl bg-zinc-900 border border-zinc-800 space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-extrabold text-lime-400">Port {m.port}</span>
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                { key: 'knowledge', name: 'Module 1 (Ingestion)', port: '8000', label: 'PDF, OCR & Graph' },
+                { key: 'copilot', name: 'Module 2 (Copilot)', port: '8001', label: 'RAG & Citations' },
+                { key: 'maintenance', name: 'Module 3 (MIRA)', port: '8002', label: '5-Why & Telemetry' },
+                { key: 'compliance', name: 'Module 4 (QRCI)', port: '8003', label: 'OISD & PESO Matrix' },
+              ].map((m) => {
+                const isOnline = serverHealth[m.key as keyof typeof serverHealth];
+                return (
+                  <div key={m.port} className={`p-3 rounded-xl border transition space-y-1 ${
+                    isOnline ? 'bg-zinc-900 border-zinc-800' : 'bg-zinc-900/60 border-rose-900/40'
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <span className={`text-[10px] font-extrabold ${isOnline ? 'text-lime-400' : 'text-rose-400'}`}>Port {m.port}</span>
+                      <div className="flex items-center gap-1">
+                        <span className={`text-[9px] font-extrabold uppercase ${isOnline ? 'text-emerald-400' : 'text-rose-400'}`}>{isOnline ? 'ONLINE' : 'OFFLINE'}</span>
+                        <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-emerald-400 animate-ping' : 'bg-rose-500'}`} />
+                      </div>
+                    </div>
+                    <div className="text-xs font-bold text-zinc-100">{m.name}</div>
+                    <div className="text-[9px] text-zinc-500 font-medium">{m.label}</div>
                   </div>
-                  <div className="text-xs font-bold text-zinc-100">{m.name}</div>
-                  <div className="text-[9px] text-zinc-500 font-medium">{m.label}</div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
