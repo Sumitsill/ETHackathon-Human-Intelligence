@@ -1,6 +1,5 @@
 fastapi
 uvicorn
-sentence-transformers
 pypdf
 python-dotenv
 openai
