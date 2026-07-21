@@ -634,4 +634,45 @@ async def get_node_subgraph(node_id: str, depth: int = Query(default=1, ge=1, le
         raise HTTPException(status_code=404, detail=f"Node '{node_id}' not found in the graph.")
     return subgraph
 
+# ─── GATEWAY PROXY TO OTHER PORT MODULES (M2, M3, M4) ───
+from fastapi import Response
+import httpx
+
+PROXY_MAPPING = {
+    "copilot": "http://127.0.0.1:8001",
+    "maintenance": "http://127.0.0.1:8002",
+    "compliance": "http://127.0.0.1:8003",
+}
+
+@app.api_route("/proxy/{module_name}/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"])
+async def gateway_proxy(module_name: str, path: str, request: Request):
+    if module_name not in PROXY_MAPPING:
+        raise HTTPException(status_code=404, detail=f"Module '{module_name}' not found in proxy mapping")
+        
+    target_base = PROXY_MAPPING[module_name]
+    query_str = str(request.url.query)
+    target_url = f"{target_base}/{path}"
+    if query_str:
+        target_url += f"?{query_str}"
+        
+    body = await request.body()
+    
+    headers = {}
+    for k, v in request.headers.items():
+        if k.lower() not in ["host", "content-length"]:
+            headers[k] = v
+            
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        try:
+            r = await client.request(
+                method=request.method,
+                url=target_url,
+                headers=headers,
+                content=body
+            )
+            response_headers = {k: v for k, v in r.headers.items() if k.lower() not in ["content-length", "transfer-encoding"]}
+            return Response(content=r.content, status_code=r.status_code, headers=response_headers)
+        except Exception as e:
+            raise HTTPException(status_code=502, detail=f"Gateway failed to contact local port {target_url}: {e}")
+
 import re # needed in process_document_pipeline for ocr mapping regex
