@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
+import { usePwa } from '@/context/PwaContext';
 import {
   ArrowRight,
   ChevronDown,
@@ -100,11 +101,22 @@ function StatCard({ value, label, suffix = '' }: { value: number; label: string;
 
 export default function LandingPage() {
   const { user } = useAuth();
+  const { isInstallable, installPwa, showInstallModal, installProgress, isPwaModeActive } = usePwa();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
+
+  useEffect(() => {
+    if (isPwaModeActive) {
+      if (user) {
+        window.location.href = '/app';
+      } else {
+        window.location.href = '/login';
+      }
+    }
+  }, [isPwaModeActive, user]);
 
   const modules = [
     {
@@ -200,9 +212,6 @@ export default function LandingPage() {
                 </div>
               )}
             </div>
-            <Link href="/contact" className="text-zinc-600 hover:text-zinc-900 text-sm font-semibold transition">
-              Contact Us
-            </Link>
           </nav>
 
           {/* CTA Buttons */}
@@ -222,12 +231,12 @@ export default function LandingPage() {
                 >
                   Login
                 </Link>
-                <Link
-                  href="/contact"
-                  className="flex items-center gap-1.5 px-5 py-2.5 bg-[#18181b] hover:bg-zinc-700 text-white rounded-full font-bold text-xs uppercase tracking-wider transition shadow"
+                <button
+                  onClick={installPwa}
+                  className="flex items-center gap-1.5 px-5 py-2.5 bg-[#18181b] hover:bg-zinc-700 text-white rounded-full font-bold text-xs uppercase tracking-wider transition shadow cursor-pointer border-0"
                 >
-                  Request Access <ArrowRight size={12} />
-                </Link>
+                  Download Now <ArrowRight size={12} />
+                </button>
               </>
             )}
           </div>
@@ -251,13 +260,17 @@ export default function LandingPage() {
                 {m.tag} · {m.label}
               </Link>
             ))}
-            <Link href="/contact" onClick={() => setMobileMenuOpen(false)} className="hover:text-zinc-900">Contact Us</Link>
             {user ? (
               <Link href="/app" onClick={() => setMobileMenuOpen(false)} className="text-zinc-900 font-black">Go to Workspace</Link>
             ) : (
               <>
                 <Link href="/login" onClick={() => setMobileMenuOpen(false)}>Login</Link>
-                <Link href="/contact" onClick={() => setMobileMenuOpen(false)} className="text-zinc-900 font-black">Request Access</Link>
+                <button
+                  onClick={() => { setMobileMenuOpen(false); installPwa(); }}
+                  className="text-zinc-900 font-black text-left cursor-pointer border-0 bg-transparent p-0 outline-none"
+                >
+                  Download Now
+                </button>
               </>
             )}
           </nav>
@@ -299,12 +312,12 @@ export default function LandingPage() {
 
             {/* CTAs */}
             <div className="flex flex-wrap items-center gap-4">
-              <Link
-                href="/contact"
-                className="flex items-center gap-2 px-7 py-3.5 bg-[#18181b] hover:bg-zinc-700 text-white rounded-full font-bold text-sm tracking-wide transition shadow-lg hover:shadow-zinc-400/20"
+              <button
+                onClick={installPwa}
+                className="flex items-center gap-2 px-7 py-3.5 bg-[#18181b] hover:bg-zinc-700 text-white rounded-full font-bold text-sm tracking-wide transition shadow-lg hover:shadow-zinc-400/20 cursor-pointer border-0"
               >
-                Request Access <ArrowRight size={14} />
-              </Link>
+                Download Now <ArrowRight size={14} />
+              </button>
               <Link
                 href="/app"
                 className="flex items-center gap-1.5 text-sm font-semibold text-zinc-600 hover:text-zinc-900 transition group"
@@ -684,12 +697,12 @@ export default function LandingPage() {
           </div>
 
           <div className="relative z-10 flex flex-col sm:flex-row gap-3">
-            <Link
-              href="/contact"
-              className="flex items-center justify-center gap-2 px-7 py-4 bg-lime-300 hover:bg-lime-400 text-zinc-900 rounded-2xl font-black text-sm tracking-wide transition shadow-lg"
+            <button
+              onClick={installPwa}
+              className="flex items-center justify-center gap-2 px-7 py-4 bg-lime-300 hover:bg-lime-400 text-zinc-900 rounded-2xl font-black text-sm tracking-wide transition shadow-lg cursor-pointer border-0"
             >
-              Request Access <ArrowRight size={14} />
-            </Link>
+              Download Now <ArrowRight size={14} />
+            </button>
             <Link
               href="/app"
               className="flex items-center justify-center gap-2 px-7 py-4 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-2xl font-bold text-sm transition"
@@ -709,12 +722,54 @@ export default function LandingPage() {
             <span className="text-zinc-300 text-xs ml-2">© 2026 ET Hackathon</span>
           </div>
           <div className="flex items-center gap-6 text-xs font-semibold text-zinc-400">
-            <Link href="/contact" className="hover:text-zinc-700 transition">Contact</Link>
             <Link href="/app" className="hover:text-zinc-700 transition">Workspace</Link>
             <Link href="/login" className="hover:text-zinc-700 transition">Login</Link>
           </div>
         </div>
       </footer>
+
+      {showInstallModal && (
+        <div className="fixed inset-0 bg-[#020617]/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-[#0f172a] border border-[#334155] rounded-3xl p-8 text-center shadow-2xl relative overflow-hidden">
+            {/* Ambient light glow inside modal */}
+            <div className="absolute -top-24 -left-24 w-48 h-48 bg-lime-400/10 rounded-full blur-2xl" />
+            
+            <div className="relative z-10 space-y-6">
+              {/* Animated icon */}
+              <div className="w-20 h-20 bg-lime-400/15 border-2 border-lime-400/30 rounded-2xl flex items-center justify-center mx-auto animate-pulse">
+                <Brain className="text-lime-400" size={36} />
+              </div>
+              
+              <div className="space-y-2">
+                <h3 className="text-xl font-black text-white uppercase tracking-wider">Installing ET-Brain</h3>
+                <p className="text-xs text-zinc-400">Downloading package, establishing secure SQLite sandbox, and registering local offline worker...</p>
+              </div>
+
+              {/* Progress bar container */}
+              <div className="space-y-2">
+                <div className="w-full h-2.5 bg-zinc-800 rounded-full overflow-hidden border border-zinc-700/50">
+                  <div 
+                    className="h-full bg-gradient-to-r from-lime-400 to-lime-600 rounded-full transition-all duration-300"
+                    style={{ width: `${installProgress}%` }}
+                  />
+                </div>
+                <div className="flex justify-between text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
+                  <span>{installProgress < 100 ? 'Configuring Asset Cache...' : 'Ready!'}</span>
+                  <span>{installProgress}%</span>
+                </div>
+              </div>
+
+              {installProgress === 100 && (
+                <div className="pt-2 animate-bounce">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black bg-lime-400 text-zinc-950 uppercase tracking-wider">
+                    Installation Complete
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

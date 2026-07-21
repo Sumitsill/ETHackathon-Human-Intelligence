@@ -264,9 +264,13 @@ export default function LoginPage() {
                   />
                   Remember session
                 </label>
-                <Link href="/contact" className="text-zinc-500 hover:text-zinc-900 transition font-semibold hover:underline">
+                <button 
+                  type="button"
+                  onClick={() => alert("To reset credentials, please contact the system administrator.")}
+                  className="text-zinc-500 hover:text-zinc-900 transition font-semibold hover:underline bg-transparent border-0 cursor-pointer p-0"
+                >
                   Reset credentials
-                </Link>
+                </button>
               </div>
 
               <button

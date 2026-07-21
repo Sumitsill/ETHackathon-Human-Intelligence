@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { NetworkProvider } from "@/context/NetworkContext";
+import { PwaProvider } from "@/context/PwaContext";
 import { OfflineBanner } from "@/components/OfflineBanner";
 
 const geistSans = Geist({
@@ -18,6 +19,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Unified Asset & Operations Brain",
   description: "Universal operational control, knowledge graph cockpit, and RAG copilot for refinery management.",
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
@@ -29,12 +31,14 @@ export default function RootLayout({
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}>
       <body className="min-h-full flex flex-col bg-[#0b0f19] text-slate-100 font-sans">
         <NetworkProvider>
-          <AuthProvider>
-            <OfflineBanner />
-            <div className="flex-1 flex flex-col">
-              {children}
-            </div>
-          </AuthProvider>
+          <PwaProvider>
+            <AuthProvider>
+              <OfflineBanner />
+              <div className="flex-1 flex flex-col">
+                {children}
+              </div>
+            </AuthProvider>
+          </PwaProvider>
         </NetworkProvider>
       </body>
     </html>
