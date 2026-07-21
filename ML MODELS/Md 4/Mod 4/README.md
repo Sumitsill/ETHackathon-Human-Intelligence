@@ -100,3 +100,4 @@ Whenever `initialize_database()` is invoked (on startup, testing, or reset), thi
 - [graph_db.py](file:///c:/Users/GUNUS/OneDrive/Attachments/Desktop/ET%20Model/Mod%204/graph_db.py): Neo4j adapter and Mock JSON Graph logic.
 - [gemini_client.py](file:///c:/Users/GUNUS/OneDrive/Attachments/Desktop/ET%20Model/Mod%204/gemini_client.py): Direct Google/Groq REST HTTP endpoint Wrapper.
 - [test_agent.py](file:///c:/Users/GUNUS/OneDrive/Attachments/Desktop/ET%20Model/Mod%204/test_agent.py): System integration tests.
+
