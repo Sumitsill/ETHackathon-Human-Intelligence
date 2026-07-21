@@ -261,7 +261,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <div className="flex-1 flex flex-col min-h-0 bg-transparent">
         
         {/* Top Operational Header Bar */}
-        <header className="h-14 bg-white/90 backdrop-blur border border-zinc-200/90 rounded-2xl px-3 sm:px-4 flex items-center justify-between shadow-sm mb-3">
+        <header className="h-14 bg-white/90 backdrop-blur border border-zinc-200/90 rounded-2xl px-3 sm:px-4 flex items-center justify-between shadow-sm mb-3 relative z-50">
           
           {/* Left: Active Persona Badge */}
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -359,7 +359,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
         {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
-          <div className="md:hidden bg-zinc-900 text-white rounded-2xl p-4 mb-3 space-y-2 border border-zinc-800 shadow-xl">
+          <div className="md:hidden bg-zinc-900 text-white rounded-2xl p-4 mb-3 space-y-2 border border-zinc-800 shadow-xl relative z-50 animate-fadeIn">
             <span className="text-[10px] font-extrabold text-zinc-400 uppercase tracking-widest block pb-1 border-b border-zinc-800">
               Navigation Menu
             </span>
