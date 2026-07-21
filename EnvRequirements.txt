@@ -18,3 +18,4 @@ qdrant-client
 neo4j
 openai
 python-multipart
+
