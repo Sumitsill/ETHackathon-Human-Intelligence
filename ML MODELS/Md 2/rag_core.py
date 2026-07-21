@@ -21,6 +21,9 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(level
 logger = logging.getLogger("rag_core")
 
 DB_PATH = os.getenv("KNOWLEDGE_GRAPH_DB_PATH", os.path.join(WORKSPACE_ROOT, "ML MODELS", "Md 1", "backend", "knowledge_graph.db"))
+if not os.path.exists(os.path.dirname(DB_PATH)):
+    DB_PATH = os.path.join(MD2_DIR, "knowledge_graph.db")
+
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 
 # Initialize Groq client
@@ -42,6 +45,27 @@ def get_db_connection() -> sqlite3.Connection:
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON;")
+    # Ensure necessary tables exist
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS queries (
+            id TEXT PRIMARY KEY,
+            question TEXT,
+            answer TEXT,
+            sources TEXT,
+            confidence REAL,
+            created_at TEXT
+        );
+    """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS chunks (
+            id TEXT PRIMARY KEY,
+            document_id TEXT,
+            content TEXT,
+            page_or_ref TEXT,
+            chunk_type TEXT
+        );
+    """)
+    conn.commit()
     return conn
 
 
