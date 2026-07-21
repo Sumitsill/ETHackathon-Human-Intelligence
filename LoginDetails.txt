@@ -13,3 +13,4 @@
 | Field Technician       | David Moraes    | tech.moraes@plantbrain.net         | Field2026         | Machinery inspection checklist                               |
 | Field Technician       | Amit Kumar      | tech.kumar@plantbrain.net          | Field2026         | Telemetry validation checklist                               |
 +------------------------+-----------------+------------------------------------+-------------------+--------------------------------------------------------------+
+
