@@ -13,9 +13,3 @@ httpx
 google-auth-oauthlib
 google-api-python-client
 pymupdf
-pydantic
-qdrant-client
-neo4j
-openai
-python-multipart
-
