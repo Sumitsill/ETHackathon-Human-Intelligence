@@ -1,0 +1,15 @@
++------------------------+-----------------+------------------------------------+-------------------+--------------------------------------------------------------+
+| Persona Role           | User Name       | Username / Email                   | Password          | Access Scope & Default Target                                |
++------------------------+-----------------+------------------------------------+-------------------+--------------------------------------------------------------+
+| Plant Manager          | Vikram Patel    | admin.patel@plantbrain.net         | Manager2026       | Macro visibility, Brain Sync alerts (/app)                   |
+| Plant Manager          | Rajesh Sharma   | admin.sharma@plantbrain.net        | Manager2026       | All modules & supervisor overrides                           |
+| Reliability Engineer   | Ananya Gupta    | engineer.gupta@plantbrain.net      | Reliability2026   | 5-Why RCA workbench & telemetry (/app/maintenance)           |
+| Reliability Engineer   | Suresh Singh    | engineer.singh@plantbrain.net      | Reliability2026   | Predictive vibration & thermal analysis                      |
+| Compliance Officer     | Meera Verma     | compliance.verma@plantbrain.net    | Auditor2026       | Traffic Light grid & audit ZIP (/app/compliance)             |
+| Compliance Officer     | Karthik Reddy   | compliance.reddy@plantbrain.net    | Auditor2026       | Regulatory rule scans & amendment diffs                      |
+| Knowledge Engineer     | Debashish Roy   | knowledge.roy@plantbrain.net       | Ingest2026        | Knowledge Graph & Ingestion (/app/knowledge/ingest)          |
+| Knowledge Engineer     | Priya Das       | knowledge.das@plantbrain.net       | Ingest2026        | Multi-format PDF/OCR tuning                                  |
+| Field Technician       | Ramesh Sharma   | tech.sharma@plantbrain.net         | Field2026         | Mobile Work Order checklist (/app/tasks)                     |
+| Field Technician       | David Moraes    | tech.moraes@plantbrain.net         | Field2026         | Machinery inspection checklist                               |
+| Field Technician       | Amit Kumar      | tech.kumar@plantbrain.net          | Field2026         | Telemetry validation checklist                               |
++------------------------+-----------------+------------------------------------+-------------------+--------------------------------------------------------------+

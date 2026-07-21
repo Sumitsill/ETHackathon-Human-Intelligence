@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { bffFetch } from '@/lib/bff-fetch';
 import { 
   UploadCloud, 
@@ -20,7 +21,9 @@ import {
   AlertCircle,
   FileCode,
   Shield,
-  Server
+  Server,
+  Network,
+  Maximize2
 } from 'lucide-react';
 
 interface DocumentRecord {
@@ -136,16 +139,8 @@ export default function KnowledgeCockpit() {
       setGraphLinks(res.links || []);
     } catch (e) {
       console.warn("Graph fetch failed: ", e);
-      setGraphNodes([
-        { id: 'equipment:p-204', label: 'Equipment', name: 'P-204', properties: { type: 'Pump' } },
-        { id: 'equipment:v-102', label: 'Equipment', name: 'V-102', properties: { type: 'Valve' } },
-        { id: 'parameter:vibration', label: 'Parameter', name: 'Vibration Threshold', properties: { value: '5.0 mm/s' } },
-        { id: 'regulation:oisd-117', label: 'RegulatoryReference', name: 'OISD-117', properties: { clause: 'Section 4' } }
-      ]);
-      setGraphLinks([
-        { source: 'equipment:p-204', target: 'parameter:vibration', type: 'HAS_LIMIT' },
-        { source: 'equipment:p-204', target: 'regulation:oisd-117', type: 'GOVERNED_BY' }
-      ]);
+      setGraphNodes([]);
+      setGraphLinks([]);
     } finally {
       setGraphLoading(false);
     }
@@ -392,7 +387,7 @@ export default function KnowledgeCockpit() {
     } catch (err: any) {
       console.warn("Visualization API failed, using fallback:", err.message);
       if (vizType === 'flowchart') {
-        setFlowchartMermaid(`graph TD\n  Start[Start Isolation] --> Step1[Close Inlet Valve V-102]\n  Step1 --> Step2[Verify Pressure < 150 PSI]\n  Step2 --> End[Log Supervisor Clearance]`);
+        setFlowchartMermaid(`graph TD\n  Start[Start Isolation] --> Step1[Close Inlet Valve P-204]\n  Step1 --> Step2[Verify Pressure < 150 PSI]\n  Step2 --> End[Log Supervisor Clearance]`);
       } else {
         setMindmapJson({
           root: {
@@ -838,53 +833,69 @@ export default function KnowledgeCockpit() {
       {/* 4. GRAPH EXPLORER NETWORK */}
       {activeSubTab === 'graph' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-8 p-6 rounded-3xl bg-[#f8f9f8] dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 h-[28rem] flex flex-col justify-between relative overflow-hidden shadow-sm">
+          <div className="lg:col-span-8 p-6 rounded-3xl bg-zinc-950 text-white border border-zinc-800 h-[28rem] flex flex-col justify-between relative overflow-hidden shadow-2xl">
+            <div className="flex items-center justify-between z-10">
+              <div className="flex items-center gap-2 text-xs font-bold text-zinc-300">
+                <Network size={16} className="text-lime-400" />
+                <span>Knowledge Graph Topology ({graphNodes.length} Nodes · {graphLinks.length} Edges)</span>
+              </div>
+              <Link
+                href="/app/knowledge/graph"
+                className="px-3.5 py-1.5 rounded-xl bg-lime-400 hover:bg-lime-300 text-zinc-950 font-black text-xs uppercase tracking-wider transition shadow-lg flex items-center gap-1.5"
+              >
+                <Maximize2 size={13} /> Fullscreen Visualizer
+              </Link>
+            </div>
+
             {graphLoading ? (
               <div className="flex-1 flex justify-center items-center text-xs text-zinc-400">
-                <RefreshCw size={14} className="animate-spin mr-2" />
-                Plotting graph coordinates...
+                <RefreshCw size={14} className="animate-spin mr-2 text-lime-400" />
+                Plotting graph coordinates from Neo4j / SQLite engine...
               </div>
             ) : (
-              <div className="w-full h-full flex flex-col justify-between p-2 z-10">
-                <span className="text-[10px] font-bold text-zinc-500 uppercase block tracking-wider mb-2">
-                  Interactive Node Connections:
-                </span>
-                
-                {/* Simulated Graph Vector Panel */}
-                <div className="flex-1 flex justify-center items-center relative">
-                  <div className="absolute inset-0 flex justify-center items-center opacity-10">
-                    <div className="w-full h-0.5 bg-zinc-800 absolute top-1/2" />
-                    <div className="h-full w-0.5 bg-zinc-800 absolute left-1/2" />
-                  </div>
+              <div className="flex-1 flex items-center justify-center relative my-4">
+                <svg className="absolute inset-0 w-full h-full pointer-events-none">
+                  <line x1="20%" y1="50%" x2="50%" y2="25%" stroke="#10b981" strokeWidth="2" strokeDasharray="4" />
+                  <line x1="50%" y1="25%" x2="80%" y2="50%" stroke="#f59e0b" strokeWidth="2" />
+                  <line x1="20%" y1="50%" x2="50%" y2="75%" stroke="#0ea5e9" strokeWidth="2" />
+                  <line x1="50%" y1="75%" x2="80%" y2="50%" stroke="#a855f7" strokeWidth="2" />
+                </svg>
 
-                  {/* Render Nodes */}
-                  <div className="grid grid-cols-2 gap-16 relative">
-                    {graphNodes.length === 0 ? (
-                      <span className="text-zinc-400 text-xs">No graph nodes loaded in database. Ingest a document.</span>
-                    ) : (
-                      graphNodes.slice(0, 6).map((n) => (
-                        <button
-                          key={n.id}
-                          onClick={() => setSelectedNode(n)}
-                          className={`p-4 rounded-2xl border text-xs font-bold transition-all duration-200 z-10 shadow-sm ${
-                            selectedNode?.id === n.id 
-                              ? 'bg-lime-300 border-lime-400 text-zinc-950 scale-105 shadow-md' 
-                              : 'bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-850 text-zinc-700 dark:text-zinc-300 hover:border-zinc-400'
-                          }`}
-                        >
-                          <span className="text-[8px] text-zinc-405 dark:text-zinc-550 uppercase block font-semibold mb-0.5">{n.label}</span>
-                          {n.name}
-                        </button>
-                      ))
-                    )}
-                  </div>
-                </div>
-
-                <div className="text-[10px] text-zinc-400 text-center font-bold mt-2">
-                  Total nodes: {graphNodes.length} · Total links: {graphLinks.length}
+                <div className="grid grid-cols-3 gap-8 w-full max-w-lg z-10">
+                  {graphNodes.length === 0 ? (
+                    <div className="col-span-3 text-center py-8 space-y-2">
+                      <Network size={32} className="mx-auto text-zinc-600" />
+                      <p className="text-xs font-bold text-zinc-400">No active knowledge graph nodes stored in database.</p>
+                      <Link
+                        href="/app/knowledge/graph"
+                        className="inline-block px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-lime-400 text-xs font-bold transition"
+                      >
+                        Explore Interactive Visualizer Topology
+                      </Link>
+                    </div>
+                  ) : (
+                    graphNodes.slice(0, 6).map((n) => (
+                      <button
+                        key={n.id}
+                        onClick={() => setSelectedNode(n)}
+                        className={`p-3.5 rounded-2xl border text-xs font-extrabold transition-all duration-200 shadow-xl flex flex-col items-center justify-center text-center gap-1 ${
+                          selectedNode?.id === n.id 
+                            ? 'bg-lime-400 border-lime-400 text-zinc-950 scale-105 shadow-lime-400/20' 
+                            : 'bg-zinc-900 border-zinc-800 text-white hover:border-zinc-700'
+                        }`}
+                      >
+                        <span className="text-[8px] uppercase tracking-wider text-lime-400 font-black">{n.label}</span>
+                        <span className="truncate w-full">{n.name}</span>
+                      </button>
+                    ))
+                  )}
                 </div>
               </div>
             )}
+
+            <div className="text-[10px] text-zinc-400 text-center font-bold">
+              Tip: Click any node to inspect metadata or click Fullscreen Visualizer for drag-and-drop node physics.
+            </div>
           </div>
 
           {/* Node Inspect panel */}

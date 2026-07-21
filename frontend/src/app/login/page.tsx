@@ -14,14 +14,51 @@ import {
   Zap
 } from 'lucide-react';
 
+interface UserAccount {
+  name: string;
+  email: string;
+  pass: string;
+  role: UserRole;
+  title: string;
+}
+
+const REGISTERED_USER_ACCOUNTS: UserAccount[] = [
+  // Plant Manager (All Features)
+  { name: 'Vikram Patel', email: 'admin.patel@plantbrain.net', pass: 'Manager2026!', role: 'plant_admin', title: 'Plant Operations Director' },
+  { name: 'Rajesh Sharma', email: 'admin.sharma@plantbrain.net', pass: 'Manager2026!', role: 'plant_admin', title: 'General Manager - CDU Unit' },
+
+  // Reliability Maintenance Engineer
+  { name: 'Ananya Gupta', email: 'engineer.gupta@plantbrain.net', pass: 'Reliability2026!', role: 'engineer', title: 'Lead Reliability Engineer' },
+  { name: 'Suresh Singh', email: 'engineer.singh@plantbrain.net', pass: 'Reliability2026!', role: 'engineer', title: 'Senior Predictive Maintenance Eng.' },
+
+  // Quality Compliance Officer
+  { name: 'Meera Verma', email: 'compliance.verma@plantbrain.net', pass: 'Auditor2026!', role: 'compliance_officer', title: 'Chief Quality & Statutory Auditor' },
+  { name: 'Karthik Reddy', email: 'compliance.reddy@plantbrain.net', pass: 'Auditor2026!', role: 'compliance_officer', title: 'QRCI Compliance Officer' },
+
+  // Knowledge Engineer
+  { name: 'Debashish Roy', email: 'knowledge.roy@plantbrain.net', pass: 'Ingest2026!', role: 'knowledge_admin', title: 'Lead Knowledge & Graph Architect' },
+  { name: 'Priya Das', email: 'knowledge.das@plantbrain.net', pass: 'Ingest2026!', role: 'knowledge_admin', title: 'Document Ingestion Specialist' },
+
+  // Field Operator / Technician
+  { name: 'Ramesh Sharma', email: 'tech.sharma@plantbrain.net', pass: 'Field2026!', role: 'technician', title: 'Senior Field Maintenance Operator' },
+  { name: 'David Moraes', email: 'tech.moraes@plantbrain.net', pass: 'Field2026!', role: 'technician', title: 'Field Machinery Specialist' },
+  { name: 'Amit Kumar', email: 'tech.kumar@plantbrain.net', pass: 'Field2026!', role: 'technician', title: 'Telemetry Inspection Operator' }
+];
+
 export default function LoginPage() {
   const router = useRouter();
   const { signInWithMock } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState(REGISTERED_USER_ACCOUNTS[0].email);
+  const [password, setPassword] = useState(REGISTERED_USER_ACCOUNTS[0].pass);
   const [loading, setLoading] = useState(false);
   const [mockRole, setMockRole] = useState<UserRole>('plant_admin');
   const [rememberMe, setRememberMe] = useState(true);
+
+  const handleSelectAccount = (acc: UserAccount) => {
+    setEmail(acc.email);
+    setPassword(acc.pass);
+    setMockRole(acc.role);
+  };
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,72 +128,90 @@ export default function LoginPage() {
 
       {/* Main Container */}
       <div className="flex-1 flex items-center justify-center p-4 md:p-8 relative z-10">
-        <div className="max-w-5xl w-full grid grid-cols-1 md:grid-cols-12 gap-8 bg-white/90 backdrop-blur-md border border-zinc-200 p-6 md:p-8 rounded-[2.5rem] shadow-2xl items-center">
+        <div className="max-w-6xl w-full grid grid-cols-1 md:grid-cols-12 gap-8 bg-white/90 backdrop-blur-md border border-zinc-200 p-6 md:p-8 rounded-[2.5rem] shadow-2xl items-start">
           
-          {/* Left Side: SVG Illustration & Persona Briefing */}
-          <div className="md:col-span-6 flex flex-col justify-between h-full space-y-6 border-b md:border-b-0 md:border-r border-zinc-200/80 pb-6 md:pb-0 md:pr-8">
-            <div className="space-y-3">
+          {/* Left Side: Persona Credentials Quick Selector */}
+          <div className="md:col-span-6 flex flex-col justify-between h-full space-y-5 border-b md:border-b-0 md:border-r border-zinc-200/80 pb-6 md:pb-0 md:pr-8">
+            <div className="space-y-2">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-900 text-lime-400 text-[10px] font-black uppercase tracking-widest">
                 <Cpu size={13} className="animate-pulse" />
-                INDUSTRIAL INTELLIGENCE SUITE
+                REGISTERED PLANT ACCOUNTS
               </div>
-              <h2 className="text-2xl md:text-3xl font-extrabold text-zinc-950 tracking-tight leading-tight">
-                Role-Based Autonomous Operations
+              <h2 className="text-xl md:text-2xl font-extrabold text-zinc-950 tracking-tight leading-tight">
+                Select Persona User Account
               </h2>
-              <p className="text-xs text-zinc-600 leading-relaxed font-medium">
-                Bridge the gap between raw plant data, compliance standards, and real-time field operations with persona-driven AI context.
+              <p className="text-xs text-zinc-600 font-medium leading-relaxed">
+                Click any registered user below to auto-fill authentic credentials for testing role permissions.
               </p>
             </div>
 
-            {/* Login SVG Vector Illustration */}
-            <div className="relative w-full h-56 md:h-64 flex items-center justify-center bg-gradient-to-br from-zinc-50 to-zinc-100/60 rounded-2xl border border-zinc-200/80 overflow-hidden group shadow-inner">
-              <Image 
-                src="/Login.svg" 
-                alt="ET Unified Operations Login Illustration" 
-                fill 
-                className="object-contain p-4 transition-transform duration-500 group-hover:scale-105"
-                priority
-              />
+            {/* Quick Account Selector Grid */}
+            <div className="space-y-2 max-h-[360px] overflow-y-auto pr-1">
+              {REGISTERED_USER_ACCOUNTS.map((acc, idx) => (
+                <div
+                  key={idx}
+                  onClick={() => handleSelectAccount(acc)}
+                  className={`p-3 rounded-2xl border transition cursor-pointer flex items-center justify-between gap-3 ${
+                    email === acc.email
+                      ? 'bg-zinc-950 text-white border-zinc-950 shadow-md'
+                      : 'bg-zinc-50 hover:bg-white text-zinc-900 border-zinc-200'
+                  }`}
+                >
+                  <div className="space-y-0.5 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-black truncate">{acc.name}</span>
+                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                        email === acc.email ? 'bg-lime-400 text-zinc-950' : 'bg-zinc-200 text-zinc-800'
+                      }`}>
+                        {acc.role.toUpperCase().replace('_', ' ')}
+                      </span>
+                    </div>
+                    <p className={`text-[10px] font-mono truncate ${email === acc.email ? 'text-zinc-300' : 'text-zinc-500'}`}>
+                      {acc.email} · Pass: <span className="font-bold">{acc.pass}</span>
+                    </p>
+                  </div>
+                  <span className={`text-[10px] font-bold shrink-0 ${email === acc.email ? 'text-lime-400' : 'text-zinc-400'}`}>
+                    {email === acc.email ? '✓ Selected' : 'Use'}
+                  </span>
+                </div>
+              ))}
             </div>
 
-            {/* Selected Persona Helper Card */}
+            {/* Active Persona Access Target */}
             <div className="p-3.5 rounded-xl bg-lime-50/70 border border-lime-200/80 space-y-1">
               <span className="text-[10px] font-bold text-lime-900 uppercase tracking-wider flex items-center gap-1">
                 <Zap size={12} className="text-lime-700" />
-                Active Persona Access Target
+                Selected Role Destination: {ROLE_DETAILS[mockRole]?.defaultRoute}
               </span>
-              <p className="text-xs font-semibold text-zinc-800">
-                {ROLE_DETAILS[mockRole]?.label}
-              </p>
               <p className="text-[11px] text-zinc-600 font-medium">
                 {ROLE_DETAILS[mockRole]?.description}
               </p>
             </div>
           </div>
 
-          {/* Right Side: Login Form & Role Selector */}
-          <div className="md:col-span-6 space-y-6">
-            <div className="space-y-1.5">
+          {/* Right Side: Form Submission */}
+          <div className="md:col-span-6 space-y-5">
+            <div className="space-y-1">
               <h1 className="text-2xl font-extrabold text-zinc-950 tracking-tight">
-                Access Portal
+                Authentication Portal
               </h1>
               <p className="text-xs text-zinc-500 font-medium">
-                Select your operational role below to enter your workspace deck.
+                Enter your registered operational credentials to launch your workspace.
               </p>
             </div>
 
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
                 <label className="block text-[11px] font-extrabold text-zinc-700 uppercase tracking-wider mb-1.5">
-                  Operator / User Email
+                  Registered Username / Email
                 </label>
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-zinc-50 border border-zinc-300 rounded-xl px-4 py-3 text-xs font-medium text-zinc-950 focus:outline-none focus:border-zinc-950 transition shadow-inner"
-                  placeholder="operator@refinery-plant.com"
+                  className="w-full bg-zinc-50 border border-zinc-300 rounded-xl px-4 py-3 text-xs font-mono font-bold text-zinc-950 focus:outline-none focus:border-zinc-950 transition shadow-inner"
+                  placeholder="admin.patel@plantbrain.net"
                 />
               </div>
 
@@ -169,16 +224,16 @@ export default function LoginPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-zinc-50 border border-zinc-300 rounded-xl px-4 py-3 text-xs font-medium text-zinc-950 focus:outline-none focus:border-zinc-950 transition shadow-inner"
-                  placeholder="••••••••••••••••"
+                  className="w-full bg-zinc-50 border border-zinc-300 rounded-xl px-4 py-3 text-xs font-mono font-bold text-zinc-950 focus:outline-none focus:border-zinc-950 transition shadow-inner"
+                  placeholder="Manager2026!"
                 />
               </div>
 
               {/* Persona Claim Selection */}
               <div>
                 <label className="block text-[11px] font-extrabold text-zinc-700 uppercase tracking-wider mb-1.5 flex items-center justify-between">
-                  <span>Demonstration Persona Role</span>
-                  <span className="text-[9px] text-lime-700 font-bold bg-lime-100 px-1.5 py-0.5 rounded">Required</span>
+                  <span>Assigned Operational Role</span>
+                  <span className="text-[9px] text-lime-700 font-bold bg-lime-100 px-1.5 py-0.5 rounded">Active</span>
                 </label>
                 <div className="relative">
                   <select
@@ -222,11 +277,11 @@ export default function LoginPage() {
                 {loading ? (
                   <>
                     <Zap size={15} className="animate-spin text-lime-400" />
-                    Connecting Persona Session...
+                    Authenticating Credentials...
                   </>
                 ) : (
                   <>
-                    Enter Persona Workspace
+                    Authenticate & Launch Workspace
                     <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform text-lime-400" />
                   </>
                 )}

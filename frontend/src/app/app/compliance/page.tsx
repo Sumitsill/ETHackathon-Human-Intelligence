@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { bffFetch } from '@/lib/bff-fetch';
@@ -29,195 +29,133 @@ interface MatrixCell {
   evidenceDoc: string;
 }
 
+// Fallback structured compliance matrix data
+const INITIAL_DEMO_MATRIX: Record<string, Record<string, MatrixCell>> = {
+  'P-204 (Crude Pump)': {
+    'OISD-117': {
+      tag: 'P-204 (Crude Pump)',
+      reg: 'OISD-117',
+      status: 'pass',
+      score: 92,
+      ruleTitle: 'Mechanical Seal Flush & Fire Protection Standards',
+      oldRule: 'Clause 4.1: Biannual visual inspection of mechanical pump seal flushing system recommended.',
+      newRule: 'Clause 4.1 (2026 Revision): Mandatory 180-day logged inspection of dual mechanical seal API Plan 53B barrier pressure.',
+      evidenceDoc: 'sample_compliance_requirements.json (Clause 4, Page 2)'
+    },
+    'PESO-2024': {
+      tag: 'P-204 (Crude Pump)',
+      reg: 'PESO-2024',
+      status: 'warning',
+      score: 78,
+      ruleTitle: 'Hydrocarbon Centrifugal Pump Operating Limits',
+      oldRule: 'Rule 18: Maximum allowable continuous vibration limit 12.0 mm/s gauge.',
+      newRule: 'Rule 18 (2026 Revision): Maximum allowable continuous vibration limit tightened to 10.0 mm/s RMS with automated telemetry alarm.',
+      evidenceDoc: 'sample_oem_manual.pdf (Section 3.2, Page 14)'
+    },
+    'Factories Act': {
+      tag: 'P-204 (Crude Pump)',
+      reg: 'Factories Act',
+      status: 'pass',
+      score: 95,
+      ruleTitle: 'Rotating Equipment Guarding & Safety Shielding',
+      oldRule: 'Section 31: Primary shaft coupling guard mandatory for all high-speed pumps.',
+      newRule: 'Section 31 (Amended): Non-sparking coupling guard with visual inspection port mandatory.',
+      evidenceDoc: 'sample_compliance_requirements.json (Clause 8, Page 4)'
+    }
+  },
+  'C-301 (Compressor)': {
+    'OISD-117': {
+      tag: 'C-301 (Compressor)',
+      reg: 'OISD-117',
+      status: 'warning',
+      score: 82,
+      ruleTitle: 'Gas Compressor Emergency Shutdown (ESD) Response',
+      oldRule: 'Clause 9.2: Manual ESD valve test every 12 months.',
+      newRule: 'Clause 9.2 (2026 Revision): Automated ESD trip test required every 6 months with certified telemetry log.',
+      evidenceDoc: 'sample_old_sop.pdf (SOP-C301-04, Page 3)'
+    },
+    'PESO-2024': {
+      tag: 'C-301 (Compressor)',
+      reg: 'PESO-2024',
+      status: 'violation',
+      score: 64,
+      ruleTitle: 'High-Pressure Reciprocating Thermal Limits',
+      oldRule: 'Rule 42: Cylinder discharge gas temperature threshold set at 150°C.',
+      newRule: 'Rule 42 (2026 Revision): Cylinder discharge gas temperature threshold reduced to 140°C with mandatory auto-cutoff.',
+      evidenceDoc: 'sample_work_orders.xlsx (Sheet WO-7712)'
+    },
+    'Factories Act': {
+      tag: 'C-301 (Compressor)',
+      reg: 'Factories Act',
+      status: 'pass',
+      score: 90,
+      ruleTitle: 'Overpressure Relief Valve Calibration',
+      oldRule: 'Section 31A: Annual safety valve pop test.',
+      newRule: 'Section 31A (Amended): Biannual bench test and calibration certificate filing.',
+      evidenceDoc: 'sample_compliance_requirements.json (Clause 12, Page 6)'
+    }
+  },
+  'Generator-3 (Emergency Generator)': {
+    'PESO-2024': {
+      tag: 'Generator-3 (Emergency Generator)',
+      reg: 'PESO-2024',
+      status: 'pass',
+      score: 96,
+      ruleTitle: 'Emergency Power Stator Winding Insulation & Safety Survey',
+      oldRule: 'Rule 55: 5-year insulation resistance test interval for emergency power units.',
+      newRule: 'Rule 55 (2026 Revision): 3-year partial discharge & thermal imaging survey required for emergency diesel generators.',
+      evidenceDoc: 'sample_compliance_requirements.json (Clause 2, Page 1)'
+    },
+    'BIS IS:2825': {
+      tag: 'Generator-3 (Emergency Generator)',
+      reg: 'BIS IS:2825',
+      status: 'pass',
+      score: 94,
+      ruleTitle: 'Unfired Emergency Fuel Vessel Safety Integrity Code',
+      oldRule: 'IS:2825 Code 1998: Fuel day-tank wall thickness minimum 3.0 mm.',
+      newRule: 'IS:2825 Code (2026 Standard): Fuel day-tank wall thickness minimum 4.5 mm with auto-containment coupon.',
+      evidenceDoc: 'sample_compliance_requirements.json (Clause 15, Page 7)'
+    }
+  }
+};
+
 export default function QrciMatrixPage() {
   const { currentActiveRole } = useAuth();
-  const [selectedCell, setSelectedCell] = useState<MatrixCell | null>({
-    tag: 'P-204 Centrifugal Pump',
-    reg: 'OISD-117 Standard',
-    status: 'warning',
-    score: 74,
-    ruleTitle: 'Max Allowable Operating Pressure Limit',
-    oldRule: 'Max Allowable Continuous Pressure: 15.0 Bar',
-    newRule: 'Max Allowable Continuous Pressure: 12.0 Bar (OISD 2026 Revision 4 Amendment)',
-    evidenceDoc: 'sample_regulation_amendment.json (Section 4.1)'
-  });
+  const [selectedCell, setSelectedCell] = useState<MatrixCell | null>(INITIAL_DEMO_MATRIX['P-204 (Crude Pump)']['OISD-117']);
 
   const [exporting, setExporting] = useState(false);
   const [exportSuccessMsg, setExportSuccessMsg] = useState<string | null>(null);
 
-  const equipmentTags = ['P-204 Centrifugal Pump', 'V-102 Separator Vessel', 'C-301 Hydrocracker Compressor', 'T-501 Storage Tank'];
-  const regulatoryBodies = ['OISD Standard', 'PESO Guidelines', 'Factories Act 1948', 'IBR Boiler Rules'];
+  const [matrixData, setMatrixData] = useState<Record<string, Record<string, MatrixCell>>>(INITIAL_DEMO_MATRIX);
+  const [loading, setLoading] = useState(false);
 
-  const matrixData: Record<string, Record<string, MatrixCell>> = {
-    'P-204 Centrifugal Pump': {
-      'OISD Standard': {
-        tag: 'P-204 Centrifugal Pump',
-        reg: 'OISD Standard',
-        status: 'warning',
-        score: 74,
-        ruleTitle: 'Pressure & Vibration Limits',
-        oldRule: 'Max Pressure: 15 bar | Vibration: 15 mm/s',
-        newRule: 'Max Pressure: 12 bar | Vibration: 10 mm/s',
-        evidenceDoc: 'sample_oem_manual.pdf & sample_regulation_amendment.json'
-      },
-      'PESO Guidelines': {
-        tag: 'P-204 Centrifugal Pump',
-        reg: 'PESO Guidelines',
-        status: 'pass',
-        score: 98,
-        ruleTitle: 'Explosion Proof Housing',
-        oldRule: 'Flameproof enclosure Class 1 Div 1',
-        newRule: 'Flameproof enclosure Class 1 Div 1',
-        evidenceDoc: 'sample_compliance_requirements.json'
-      },
-      'Factories Act 1948': {
-        tag: 'P-204 Centrifugal Pump',
-        reg: 'Factories Act 1948',
-        status: 'pass',
-        score: 100,
-        ruleTitle: 'Safety Guard & Earthing',
-        oldRule: 'Coupling guard mandated',
-        newRule: 'Coupling guard mandated',
-        evidenceDoc: 'sample_compliance_requirements.json'
-      },
-      'IBR Boiler Rules': {
-        tag: 'P-204 Centrifugal Pump',
-        reg: 'IBR Boiler Rules',
-        status: 'pass',
-        score: 95,
-        ruleTitle: 'Thermal Exchanger Certification',
-        oldRule: 'Biannual hydrostatic testing',
-        newRule: 'Biannual hydrostatic testing',
-        evidenceDoc: 'sample_inspection_scan.png'
+  const fetchComplianceMatrix = async () => {
+    setLoading(true);
+    try {
+      const res = await bffFetch('compliance/matrix');
+      if (res && res.matrix && Object.keys(res.matrix).length > 0) {
+        setMatrixData(res.matrix);
+      } else if (res && typeof res === 'object' && Object.keys(res).length > 0 && !res.detail) {
+        setMatrixData(res);
+      } else {
+        setMatrixData(INITIAL_DEMO_MATRIX);
       }
-    },
-    'V-102 Separator Vessel': {
-      'OISD Standard': {
-        tag: 'V-102 Separator Vessel',
-        reg: 'OISD Standard',
-        status: 'pass',
-        score: 92,
-        ruleTitle: 'Relief Valve Capacity',
-        oldRule: 'Set pressure 8 bar',
-        newRule: 'Set pressure 8 bar',
-        evidenceDoc: 'sample_compliance_requirements.json'
-      },
-      'PESO Guidelines': {
-        tag: 'V-102 Separator Vessel',
-        reg: 'PESO Guidelines',
-        status: 'pass',
-        score: 96,
-        ruleTitle: 'Static Discharge Bonding',
-        oldRule: 'Resistance < 10 ohms',
-        newRule: 'Resistance < 10 ohms',
-        evidenceDoc: 'sample_compliance_requirements.json'
-      },
-      'Factories Act 1948': {
-        tag: 'V-102 Separator Vessel',
-        reg: 'Factories Act 1948',
-        status: 'pass',
-        score: 90,
-        ruleTitle: 'Manhole Inspection Hatch',
-        oldRule: 'Clearance > 450mm',
-        newRule: 'Clearance > 450mm',
-        evidenceDoc: 'sample_inspection_scan.png'
-      },
-      'IBR Boiler Rules': {
-        tag: 'V-102 Separator Vessel',
-        reg: 'IBR Boiler Rules',
-        status: 'pass',
-        score: 100,
-        ruleTitle: 'Pressure Vessel Stamp',
-        oldRule: 'IBR Tag Active',
-        newRule: 'IBR Tag Active',
-        evidenceDoc: 'sample_compliance_requirements.json'
-      }
-    },
-    'C-301 Hydrocracker Compressor': {
-      'OISD Standard': {
-        tag: 'C-301 Hydrocracker Compressor',
-        reg: 'OISD Standard',
-        status: 'violation',
-        score: 42,
-        ruleTitle: 'Cooling Jacket Flushing Interval',
-        oldRule: 'Inspection interval: 12 months',
-        newRule: 'Inspection interval: 6 months (OISD 2026 Mandate)',
-        evidenceDoc: 'sample_gmail_export.mbox & sample_old_sop.pdf'
-      },
-      'PESO Guidelines': {
-        tag: 'C-301 Hydrocracker Compressor',
-        reg: 'PESO Guidelines',
-        status: 'warning',
-        score: 68,
-        ruleTitle: 'Gas Leak Detection Sensors',
-        oldRule: 'Dual IR sensors',
-        newRule: 'Triple redundant laser sensors',
-        evidenceDoc: 'sample_regulation_amendment.json'
-      },
-      'Factories Act 1948': {
-        tag: 'C-301 Hydrocracker Compressor',
-        reg: 'Factories Act 1948',
-        status: 'pass',
-        score: 91,
-        ruleTitle: 'Noise Attenuation Enclosure',
-        oldRule: 'Decibel level < 85 dBA',
-        newRule: 'Decibel level < 85 dBA',
-        evidenceDoc: 'sample_compliance_requirements.json'
-      },
-      'IBR Boiler Rules': {
-        tag: 'C-301 Hydrocracker Compressor',
-        reg: 'IBR Boiler Rules',
-        status: 'pass',
-        score: 94,
-        ruleTitle: 'Steam Drive Turbine Safety',
-        oldRule: 'Over-speed trip test',
-        newRule: 'Over-speed trip test',
-        evidenceDoc: 'sample_work_orders.xlsx'
-      }
-    },
-    'T-501 Storage Tank': {
-      'OISD Standard': {
-        tag: 'T-501 Storage Tank',
-        reg: 'OISD Standard',
-        status: 'pass',
-        score: 95,
-        ruleTitle: 'Floating Roof Rim Seal',
-        oldRule: 'Double rim seal required',
-        newRule: 'Double rim seal required',
-        evidenceDoc: 'sample_compliance_requirements.json'
-      },
-      'PESO Guidelines': {
-        tag: 'T-501 Storage Tank',
-        reg: 'PESO Guidelines',
-        status: 'pass',
-        score: 99,
-        ruleTitle: 'Dyke Wall Storage Ratio',
-        oldRule: 'Capacity 110% of tank',
-        newRule: 'Capacity 110% of tank',
-        evidenceDoc: 'sample_compliance_requirements.json'
-      },
-      'Factories Act 1948': {
-        tag: 'T-501 Storage Tank',
-        reg: 'Factories Act 1948',
-        status: 'pass',
-        score: 93,
-        ruleTitle: 'Foam Pourer Fire System',
-        oldRule: 'Auto-foam injection test',
-        newRule: 'Auto-foam injection test',
-        evidenceDoc: 'sample_compliance_requirements.json'
-      },
-      'IBR Boiler Rules': {
-        tag: 'T-501 Storage Tank',
-        reg: 'IBR Boiler Rules',
-        status: 'pass',
-        score: 100,
-        ruleTitle: 'Heating Coil Inspection',
-        oldRule: 'Coil pressure test',
-        newRule: 'Coil pressure test',
-        evidenceDoc: 'sample_compliance_requirements.json'
-      }
+    } catch (e) {
+      console.warn("Failed fetching compliance matrix: ", e);
+      setMatrixData(INITIAL_DEMO_MATRIX);
+    } finally {
+      setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchComplianceMatrix();
+  }, []);
+
+  const equipmentTags = Object.keys(matrixData);
+  const regulatoryBodies = Array.from(
+    new Set(Object.values(matrixData).flatMap((row) => Object.keys(row)))
+  );
 
   const handleCompileAuditPackage = async () => {
     setExporting(true);
@@ -233,10 +171,76 @@ export default function QrciMatrixPage() {
       // Fallback
     }
 
+    // Build comprehensive structured audit package text report for direct file download
+    const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
+    
+    let summaryText = `================================================================================\n`;
+    summaryText += `       QUALITY & REGULATORY COMPLIANCE INTELLIGENCE (QRCI) AUDIT PACKAGE\n`;
+    summaryText += `================================================================================\n`;
+    summaryText += `Generated Timestamp : ${timestamp} UTC\n`;
+    summaryText += `Facility / Plant    : Industrial Refinery CDU-2 & Hydrocracker Facility\n`;
+    summaryText += `Audit Package Status: COMPLETED & SANITIZED FOR EXTERNAL REGULATOR INSPECTION\n`;
+    summaryText += `Standards Evaluated : OISD-117 | PESO-2024 | Factories Act Sec 31 | BIS IS:2825\n\n`;
+
+    summaryText += `--------------------------------------------------------------------------------\n`;
+    summaryText += `1. COMPLIANCE EVALUATION MATRIX SUMMARY\n`;
+    summaryText += `--------------------------------------------------------------------------------\n\n`;
+
+    Object.entries(matrixData).forEach(([tag, regs]) => {
+      summaryText += `EQUIPMENT TAG: ${tag}\n`;
+      Object.entries(regs).forEach(([reg, cell]) => {
+        summaryText += `  • [${reg}] Status: ${cell.status.toUpperCase()} | Score: ${cell.score}%\n`;
+        summaryText += `    Title   : ${cell.ruleTitle}\n`;
+        summaryText += `    Evidence: ${cell.evidenceDoc}\n`;
+      });
+      summaryText += `\n`;
+    });
+
+    summaryText += `--------------------------------------------------------------------------------\n`;
+    summaryText += `2. REGULATORY AMENDMENT SIDE-BY-SIDE DIFF & ENFORCEMENT AUDIT\n`;
+    summaryText += `--------------------------------------------------------------------------------\n\n`;
+
+    Object.entries(matrixData).forEach(([tag, regs]) => {
+      Object.entries(regs).forEach(([reg, cell]) => {
+        summaryText += `[${tag} <---> ${reg}]\n`;
+        summaryText += `  Rule Title       : ${cell.ruleTitle}\n`;
+        summaryText += `  OLD RULE (DEPR.) : ${cell.oldRule}\n`;
+        summaryText += `  NEW RULE (2026)  : ${cell.newRule}\n`;
+        summaryText += `  EVIDENCE SOURCE  : ${cell.evidenceDoc}\n`;
+        summaryText += `--------------------------------------------------------------------------------\n`;
+      });
+    });
+
+    summaryText += `\n--------------------------------------------------------------------------------\n`;
+    summaryText += `3. CORRECTIVE ACTION RECOMMENDATIONS\n`;
+    summaryText += `--------------------------------------------------------------------------------\n`;
+    summaryText += `• P-204 (PESO-2024 Warning): Recalibrate continuous vibration alarm thresholds down to 10.0 mm/s.\n`;
+    summaryText += `• C-301 (PESO-2024 Violation): Schedule immediate intercooler heat exchanger tube cleaning (WO-7712) to restore 140°C thermal safety margin.\n`;
+    summaryText += `• Generator-3 (PESO-2024 Pass): Maintain current 3-year insulation & stator survey interval.\n\n`;
+
+    summaryText += `================================================================================\n`;
+    summaryText += `   END OF QRCI COMPLIANCE AUDIT SUMMARY PACKAGE — ET HACKATHON 2026\n`;
+    summaryText += `================================================================================\n`;
+
+    // Trigger browser file download
+    try {
+      const blob = new Blob([summaryText], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `QRCI_Compliance_Audit_Package_Summary_${new Date().toISOString().slice(0,10)}.txt`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Browser download failed:", err);
+    }
+
     setTimeout(() => {
       setExporting(false);
-      setExportSuccessMsg('🎉 Audit Package Compiled: Includes OISD/PESO Matrix, Auto-Narration & Evidence PDFs.');
-    }, 1200);
+      setExportSuccessMsg('🎉 Audit Package Downloaded: Summary report file saved to downloads folder.');
+    }, 800);
   };
 
   return (
@@ -251,8 +255,8 @@ export default function QrciMatrixPage() {
           <h1 className="text-xl font-black tracking-tight text-white">
             Quality & Regulatory Compliance Intelligence
           </h1>
-          <p className="text-xs text-zinc-400 font-medium max-w-xl">
-            Real-time compliance gap analysis mapped against Indian Standards (OISD, PESO, Factories Act, IBR) with side-by-side rule amendment diffs.
+          <p className="text-xs text-zinc-400 font-medium">
+            Dynamic regulatory matrix cross-referencing equipment tags against OISD, PESO, Factories Act, and BIS standards.
           </p>
         </div>
 
@@ -308,47 +312,57 @@ export default function QrciMatrixPage() {
             </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-center border-collapse">
-              <thead>
-                <tr className="border-b border-zinc-200 bg-zinc-50 text-[10px] font-extrabold uppercase text-zinc-600">
-                  <th className="py-3 px-4 text-left">Equipment Tag (Y-Axis)</th>
-                  {regulatoryBodies.map((reg) => (
-                    <th key={reg} className="py-3 px-3">{reg}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-100 text-xs">
-                {equipmentTags.map((tag) => (
-                  <tr key={tag} className="hover:bg-zinc-50/60 transition">
-                    <td className="py-3.5 px-4 text-left font-extrabold text-zinc-950">{tag}</td>
-                    {regulatoryBodies.map((reg) => {
-                      const cell = matrixData[tag]?.[reg];
-                      if (!cell) return <td key={reg} className="py-3 px-3">-</td>;
-
-                      return (
-                        <td key={reg} className="py-3 px-3">
-                          <button
-                            onClick={() => setSelectedCell(cell)}
-                            className={`w-full py-2 px-2 rounded-xl text-xs font-black transition shadow-sm border flex flex-col items-center justify-center gap-0.5 ${
-                              cell.status === 'pass'
-                                ? 'bg-emerald-500 text-white border-emerald-600 hover:bg-emerald-600'
-                                : cell.status === 'warning'
-                                  ? 'bg-amber-400 text-zinc-950 border-amber-500 hover:bg-amber-500 animate-pulse'
-                                  : 'bg-red-600 text-white border-red-700 hover:bg-red-700'
-                            }`}
-                          >
-                            <span>{cell.score}%</span>
-                            <span className="text-[9px] uppercase font-bold opacity-90">{cell.status}</span>
-                          </button>
-                        </td>
-                      );
-                    })}
+          {equipmentTags.length === 0 ? (
+            <div className="p-12 text-center text-zinc-400 space-y-2">
+              <ShieldCheck size={32} className="mx-auto text-zinc-300" />
+              <p className="text-xs font-extrabold text-zinc-900">No Compliance Records Found</p>
+              <p className="text-[11px] text-zinc-500 max-w-sm mx-auto">
+                No active compliance matrix entries. Upload regulatory documents or equipment specifications to populate dynamic evaluations.
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-center border-collapse">
+                <thead>
+                  <tr className="border-b border-zinc-200 bg-zinc-50 text-[10px] font-extrabold uppercase text-zinc-600">
+                    <th className="py-3 px-4 text-left">Equipment Tag (Y-Axis)</th>
+                    {regulatoryBodies.map((reg) => (
+                      <th key={reg} className="py-3 px-3">{reg}</th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-zinc-100 text-xs">
+                  {equipmentTags.map((tag) => (
+                    <tr key={tag} className="hover:bg-zinc-50/60 transition">
+                      <td className="py-3.5 px-4 text-left font-extrabold text-zinc-950">{tag}</td>
+                      {regulatoryBodies.map((reg) => {
+                        const cell = matrixData[tag]?.[reg];
+                        if (!cell) return <td key={reg} className="py-3 px-3">-</td>;
+
+                        return (
+                          <td key={reg} className="py-3 px-3">
+                            <button
+                              onClick={() => setSelectedCell(cell)}
+                              className={`w-full py-2 px-2 rounded-xl text-xs font-black transition shadow-sm border flex flex-col items-center justify-center gap-0.5 ${
+                                cell.status === 'pass'
+                                  ? 'bg-emerald-500 text-white border-emerald-600 hover:bg-emerald-600'
+                                  : cell.status === 'warning'
+                                    ? 'bg-amber-400 text-zinc-950 border-amber-500 hover:bg-amber-500 animate-pulse'
+                                    : 'bg-red-600 text-white border-red-700 hover:bg-red-700'
+                              }`}
+                            >
+                              <span>{cell.score}%</span>
+                              <span className="text-[9px] uppercase font-bold opacity-90">{cell.status}</span>
+                            </button>
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
         {/* Right Slide-out Drawer: Amendment Diff Viewer */}

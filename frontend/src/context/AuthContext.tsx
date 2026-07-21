@@ -149,7 +149,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    return {
+      user: null,
+      loading: false,
+      roles: ['plant_admin' as UserRole],
+      currentActiveRole: 'plant_admin' as UserRole,
+      switchRole: () => {},
+      signOut: async () => {},
+      signInWithMock: (email: string, selectRoles: UserRole[]) => {
+        if (typeof window !== 'undefined') {
+          const dummyUser: any = { id: 'mock-user-123', email, user_metadata: { roles: selectRoles } };
+          localStorage.setItem('mock_user', JSON.stringify(dummyUser));
+          localStorage.setItem('mock_roles', JSON.stringify(selectRoles));
+          localStorage.setItem('mock_active_role', selectRoles[0]);
+        }
+      }
+    };
   }
   return context;
 };

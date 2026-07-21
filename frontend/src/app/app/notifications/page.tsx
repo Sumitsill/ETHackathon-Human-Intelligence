@@ -24,16 +24,10 @@ export default function NotificationsFeed() {
 
   const fetchNotifications = async () => {
     setLoading(true);
-    // Simulate pulling from Supabase notifications table
     setTimeout(() => {
-      setNotifications([
-        { id: '1', type: 'critical', title: 'Critical Telemetry Deviation', message: 'Pump P-204 vibration reached 5.2 mm/s (Specification threshold limit: 5.0 mm/s)', timestamp: '12 min ago', read: false },
-        { id: '2', type: 'major', title: 'RCA Session Human Intervention Required', message: 'Guided RCA for WO-9942 is awaiting engineer hypothesis verification step.', timestamp: '1 hour ago', read: false },
-        { id: '3', type: 'minor', title: 'Evidence Package Overdue', message: 'Evidence package PKG-3991 for PESO safety standard requires compliance officer final review.', timestamp: '4 hours ago', read: true },
-        { id: '4', type: 'healthy', title: 'Universal Ingestion Complete', message: 'File P-204_SOP_Maintenance.pdf successfully indexed. 12 vector chunks added.', timestamp: '1 day ago', read: true }
-      ]);
+      setNotifications([]);
       setLoading(false);
-    }, 400);
+    }, 100);
   };
 
   useEffect(() => {

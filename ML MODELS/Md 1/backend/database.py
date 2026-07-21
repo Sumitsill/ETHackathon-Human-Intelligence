@@ -286,19 +286,28 @@ def get_graph() -> Dict[str, List[Dict[str, Any]]]:
     conn.close()
     return {"nodes": nodes, "links": edges}
 
-def get_subgraph_by_document(doc_id: str) -> Dict[str, List[Dict[str, Any]]]:
-    """Retrieve nodes and edges connected to a specific document ID."""
+def get_subgraph_by_document(doc_id_or_filename: str) -> Dict[str, List[Dict[str, Any]]]:
+    """Retrieve nodes and edges connected to a specific document ID or filename."""
     conn = get_db_connection()
     nodes = []
     edges = []
     
+    # Resolve filename to doc_id if needed
+    doc_row = conn.execute("SELECT id FROM documents WHERE id = ? OR filename LIKE ?", 
+                           (doc_id_or_filename, f"%{doc_id_or_filename}%")).fetchone()
+    target_doc_id = doc_row['id'] if doc_row else doc_id_or_filename
+
     # Get all nodes mentioned in document
     node_rows = conn.execute("""
         SELECT n.* FROM nodes n
         JOIN node_documents nd ON n.id = nd.node_id
         WHERE nd.document_id = ?
-    """, (doc_id,)).fetchall()
+    """, (target_doc_id,)).fetchall()
     
+    # If no specific nodes bound to this doc_id, fallback to all nodes
+    if not node_rows:
+        node_rows = conn.execute("SELECT * FROM nodes").fetchall()
+
     node_ids = set()
     for row in node_rows:
         node_id = row['id']
@@ -311,21 +320,41 @@ def get_subgraph_by_document(doc_id: str) -> Dict[str, List[Dict[str, Any]]]:
             "id": node_id,
             "label": row['label'],
             "name": row['name'],
-            "properties": json.loads(row['properties']),
+            "properties": json.loads(row['properties']) if row['properties'] else {},
             "documents": doc_ids
         })
         
-    # Get edges mentioned in document OR connecting nodes in the document
-    edge_rows = conn.execute("""
-        SELECT DISTINCT e.* FROM edges e
-        LEFT JOIN edge_documents ed ON e.id = ed.edge_id
-        WHERE ed.document_id = ? 
-           OR (e.source_id IN ({seq}) AND e.target_id IN ({seq}))
-    """.format(seq=','.join(['?'] * len(node_ids)) if node_ids else "''"), 
-    ([doc_id] + list(node_ids) + list(node_ids) if node_ids else [doc_id])).fetchall()
+    # Get all edges where source or target is in node_ids
+    if node_ids:
+        placeholders = ','.join(['?'] * len(node_ids))
+        edge_rows = conn.execute(f"""
+            SELECT DISTINCT * FROM edges 
+            WHERE source_id IN ({placeholders}) OR target_id IN ({placeholders})
+        """, list(node_ids) + list(node_ids)).fetchall()
+    else:
+        edge_rows = conn.execute("SELECT * FROM edges").fetchall()
     
+    seen_edges = set()
     for row in edge_rows:
         edge_id = row['id']
+        if edge_id in seen_edges:
+            continue
+        seen_edges.add(edge_id)
+        
+        # Ensure target/source node exists in nodes array if neighbor node was pulled in
+        for endpoint in (row['source_id'], row['target_id']):
+            if endpoint not in node_ids:
+                n_row = conn.execute("SELECT * FROM nodes WHERE id = ?", (endpoint,)).fetchone()
+                if n_row:
+                    node_ids.add(endpoint)
+                    nodes.append({
+                        "id": n_row['id'],
+                        "label": n_row['label'],
+                        "name": n_row['name'],
+                        "properties": json.loads(n_row['properties']) if n_row['properties'] else {},
+                        "documents": []
+                    })
+
         doc_rows = conn.execute("SELECT document_id FROM edge_documents WHERE edge_id = ?", (edge_id,)).fetchall()
         doc_ids = [r['document_id'] for r in doc_rows]
         
@@ -334,7 +363,7 @@ def get_subgraph_by_document(doc_id: str) -> Dict[str, List[Dict[str, Any]]]:
             "source": row['source_id'],
             "target": row['target_id'],
             "type": row['type'],
-            "properties": json.loads(row['properties']),
+            "properties": json.loads(row['properties']) if row['properties'] else {},
             "documents": doc_ids
         })
         

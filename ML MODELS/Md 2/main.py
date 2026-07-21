@@ -42,7 +42,10 @@ async def verify_api_key(request: Request, call_next):
 # Request Schemas
 # -------------------------------------------------------------
 class QueryRequest(BaseModel):
-    question: str
+    question: Optional[str] = None
+    query: Optional[str] = None
+    mode: Optional[str] = None
+    role: Optional[str] = None
 
 class MindmapRequest(BaseModel):
     topic: Optional[str] = None
@@ -67,12 +70,16 @@ class IngestionRequest(BaseModel):
 async def post_query(req: QueryRequest, request: Request):
     """Executes a grounded RAG query using Groq LLM and local embeddings with Field Tech & Knowledge Decay support."""
     try:
+        user_prompt = (req.question or req.query or "").strip()
+        if not user_prompt:
+            user_prompt = "Hello"
+
         is_field_tech = (
             request.headers.get("X-Field-Tech-Mode") == "true" or 
             req.mode == "field_tech"
         )
         
-        result = rag_core.execute_rag_flow(req.question)
+        result = rag_core.execute_rag_flow(user_prompt)
         
         # Calculate knowledge decay indicators for citations
         import json

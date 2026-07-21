@@ -1,4 +1,387 @@
 {
-  "nodes": [],
-  "relationships": []
+  "nodes": [
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Crude Charge Centrifugal Pump",
+        "asset_class": "Pump",
+        "location": "CDU-1",
+        "criticality": "High",
+        "oem_manual_ref": "MAN-P14",
+        "tag": "Pump-14",
+        "created_at": "2026-07-20 23:48:08.647308",
+        "updated_at": "2026-07-21 19:07:26.770501"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Crude Charge Pump Drive Motor",
+        "asset_class": "Motor",
+        "location": "CDU-1",
+        "criticality": "High",
+        "oem_manual_ref": "MAN-P14",
+        "tag": "Motor-14",
+        "created_at": "2026-07-20 23:48:08.662018",
+        "updated_at": "2026-07-21 19:07:26.789365"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Pump Main Radial Bearing Housing",
+        "asset_class": "Bearing",
+        "location": "CDU-1",
+        "criticality": "High",
+        "oem_manual_ref": "MAN-P14",
+        "tag": "Bearing-14",
+        "created_at": "2026-07-20 23:48:08.689940",
+        "updated_at": "2026-07-21 19:07:26.825253"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Emergency Diesel Generator 3",
+        "asset_class": "Generator",
+        "location": "Powerhouse-A",
+        "criticality": "Critical",
+        "oem_manual_ref": "MAN-G3",
+        "tag": "Generator-3",
+        "created_at": "2026-07-20 23:48:08.714859",
+        "updated_at": "2026-07-21 19:07:26.865496"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Generator Alternator Stator Winding",
+        "asset_class": "Stator",
+        "location": "Powerhouse-A",
+        "criticality": "Critical",
+        "oem_manual_ref": "MAN-G3",
+        "tag": "Stator-3",
+        "created_at": "2026-07-20 23:48:08.729635",
+        "updated_at": "2026-07-21 19:07:26.884596"
+      }
+    },
+    {
+      "label": "Asset",
+      "properties": {
+        "name": "Reciprocating Instrument Air Compressor",
+        "asset_class": "Compressor",
+        "location": "Utility-Line-2",
+        "criticality": "Medium",
+        "oem_manual_ref": "MAN-C8",
+        "tag": "Compressor-8",
+        "created_at": "2026-07-20 23:48:08.756272",
+        "updated_at": "2026-07-21 19:07:26.925642"
+      }
+    },
+    {
+      "label": "WorkOrder",
+      "properties": {
+        "type": "corrective",
+        "opened_at": "2026-01-14 08:00:00",
+        "closed_at": "2026-01-15 14:00:00",
+        "status": "closed",
+        "technician_id": "Alice Green",
+        "description": "Replaced worn impeller due to cavitation and flow degradation. Adjusted wearing rings.",
+        "cost": 2500,
+        "id": "WO-1002",
+        "created_at": "2026-07-20 23:48:08.767709",
+        "updated_at": "2026-07-21 19:07:26.946000"
+      }
+    },
+    {
+      "label": "WorkOrder",
+      "properties": {
+        "type": "preventive",
+        "opened_at": "2026-03-10 09:00:00",
+        "closed_at": "2026-03-10 11:00:00",
+        "status": "closed",
+        "technician_id": "Bob Miller",
+        "description": "Performed quarterly lubrication check. Flushed housing and replaced bearing oil with synthetic ISO VG 46.",
+        "cost": 350,
+        "id": "WO-2041",
+        "created_at": "2026-07-20 23:48:08.793790",
+        "updated_at": "2026-07-21 19:07:26.981093"
+      }
+    },
+    {
+      "label": "WorkOrder",
+      "properties": {
+        "type": "preventive",
+        "opened_at": "2026-05-15 08:00:00",
+        "closed_at": "N/A",
+        "status": "deferred",
+        "technician_id": "Bob Miller",
+        "description": "Quarterly lubrication PM scheduled. Deferred by operations coordinator due to high plant feed demands.",
+        "cost": 350,
+        "id": "WO-4019",
+        "created_at": "2026-07-20 23:48:08.828000",
+        "updated_at": "2026-07-21 19:07:27.016398"
+      }
+    },
+    {
+      "label": "WorkOrder",
+      "properties": {
+        "type": "preventive",
+        "opened_at": "2026-06-25 08:00:00",
+        "closed_at": "N/A",
+        "status": "deferred",
+        "technician_id": "Charlie Davis",
+        "description": "Lubrication follow-up PM. Deferred again by operations. Technician note: Bearing housing running warm, needs attention.",
+        "cost": 350,
+        "id": "WO-6012",
+        "created_at": "2026-07-20 23:48:08.859088",
+        "updated_at": "2026-07-21 19:07:27.055796"
+      }
+    },
+    {
+      "label": "WorkOrder",
+      "properties": {
+        "type": "corrective",
+        "opened_at": "2026-07-10 12:00:00",
+        "closed_at": "2026-07-11 18:00:00",
+        "status": "closed",
+        "technician_id": "Bob Miller & Alice Green",
+        "description": "Breakdown repair. Replaced seized bearing, mechanical seals, and shaft sleeve. Noticed dry bearing housing with visual heat discolouration.",
+        "cost": 4200,
+        "id": "WO-9872",
+        "created_at": "2026-07-20 23:48:08.892072",
+        "updated_at": "2026-07-21 19:07:27.088215"
+      }
+    },
+    {
+      "label": "WorkOrder",
+      "properties": {
+        "type": "preventive",
+        "opened_at": "2026-07-14 08:00:00",
+        "closed_at": "N/A",
+        "status": "scheduled",
+        "technician_id": "Charlie Davis",
+        "description": "Post-overhaul calibration. Align shaft coupling, verify seal flush line flow, and check bearing thermal trends.",
+        "cost": 450,
+        "id": "WO-9910",
+        "created_at": "2026-07-20 23:48:08.924421",
+        "updated_at": "2026-07-21 19:07:27.127603"
+      }
+    },
+    {
+      "label": "WorkOrder",
+      "properties": {
+        "type": "preventive",
+        "opened_at": "2026-02-20 08:00:00",
+        "closed_at": "2026-02-20 16:00:00",
+        "status": "closed",
+        "technician_id": "Dave Carter",
+        "description": "Completed annual load bank testing and fuel quality analysis. Checked battery charging system.",
+        "cost": 1200,
+        "id": "WO-3022",
+        "created_at": "2026-07-20 23:48:08.958011",
+        "updated_at": "2026-07-21 19:07:27.166109"
+      }
+    },
+    {
+      "label": "WorkOrder",
+      "properties": {
+        "type": "preventive",
+        "opened_at": "2026-05-20 08:00:00",
+        "closed_at": "2026-05-20 11:00:00",
+        "status": "closed",
+        "technician_id": "Dave Carter",
+        "description": "Changed engine oil, oil filters, and coolant level check. Verified diesel fuel tank level.",
+        "cost": 450,
+        "id": "WO-5011",
+        "created_at": "2026-07-20 23:48:08.992746",
+        "updated_at": "2026-07-21 19:07:27.199887"
+      }
+    },
+    {
+      "label": "WorkOrder",
+      "properties": {
+        "type": "corrective",
+        "opened_at": "2026-07-14 08:00:00",
+        "closed_at": "N/A",
+        "status": "scheduled",
+        "technician_id": "Elena Rostova",
+        "description": "Replace worn stator insulation sleeves identified during insulation resistance test (Megger test).",
+        "cost": 1800,
+        "id": "WO-8874",
+        "created_at": "2026-07-20 23:48:09.026687",
+        "updated_at": "2026-07-21 19:07:27.236053"
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "type": "PART_OF",
+      "from": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Motor-14"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Pump-14"
+      },
+      "properties": {}
+    },
+    {
+      "type": "PART_OF",
+      "from": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Bearing-14"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Pump-14"
+      },
+      "properties": {}
+    },
+    {
+      "type": "PART_OF",
+      "from": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Stator-3"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Generator-3"
+      },
+      "properties": {}
+    },
+    {
+      "type": "SERVICED",
+      "from": {
+        "label": "WorkOrder",
+        "key": "id",
+        "val": "WO-1002"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Pump-14"
+      },
+      "properties": {}
+    },
+    {
+      "type": "SERVICED",
+      "from": {
+        "label": "WorkOrder",
+        "key": "id",
+        "val": "WO-2041"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Pump-14"
+      },
+      "properties": {}
+    },
+    {
+      "type": "SERVICED",
+      "from": {
+        "label": "WorkOrder",
+        "key": "id",
+        "val": "WO-4019"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Pump-14"
+      },
+      "properties": {}
+    },
+    {
+      "type": "SERVICED",
+      "from": {
+        "label": "WorkOrder",
+        "key": "id",
+        "val": "WO-6012"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Pump-14"
+      },
+      "properties": {}
+    },
+    {
+      "type": "SERVICED",
+      "from": {
+        "label": "WorkOrder",
+        "key": "id",
+        "val": "WO-9872"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Pump-14"
+      },
+      "properties": {}
+    },
+    {
+      "type": "SERVICED",
+      "from": {
+        "label": "WorkOrder",
+        "key": "id",
+        "val": "WO-9910"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Pump-14"
+      },
+      "properties": {}
+    },
+    {
+      "type": "SERVICED",
+      "from": {
+        "label": "WorkOrder",
+        "key": "id",
+        "val": "WO-3022"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Generator-3"
+      },
+      "properties": {}
+    },
+    {
+      "type": "SERVICED",
+      "from": {
+        "label": "WorkOrder",
+        "key": "id",
+        "val": "WO-5011"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Generator-3"
+      },
+      "properties": {}
+    },
+    {
+      "type": "SERVICED",
+      "from": {
+        "label": "WorkOrder",
+        "key": "id",
+        "val": "WO-8874"
+      },
+      "to": {
+        "label": "Asset",
+        "key": "tag",
+        "val": "Generator-3"
+      },
+      "properties": {}
+    }
+  ]
 }

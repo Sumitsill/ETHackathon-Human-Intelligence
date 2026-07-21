@@ -506,68 +506,47 @@ def get_brain_sync_correlation(asset_id: str):
 # ------------------------------------------------------------------
 
 # In-memory store for submitted incident/near-miss/audit records.
-# In production this would be persisted to a relational table.
 LESSONS_RECORDS_STORE: List[Dict[str, Any]] = [
     {
         "id": "LL-001",
         "type": "incident",
-        "department": "CDU-1",
-        "date": "2026-01-14",
-        "description": "Pump-14 bearing seizure due to deferred lubrication PM. Oil film depleted causing rapid thermal seizure. 18-hour shutdown.",
-        "asset_tag": "Pump-14",
-        "severity": "critical",
-        "tags": ["lubrication", "bearing", "deferred_maintenance"]
+        "department": "CDU-1 Unit",
+        "date": "2026-06-15",
+        "description": "Centrifugal Pump P-204 mechanical seal thermal trip during continuous crude charge run. Flush line restricted by particulate accumulation.",
+        "asset_tag": "P-204",
+        "severity": "high",
+        "tags": ["seal", "lubrication", "bearing", "pump"]
     },
     {
         "id": "LL-002",
         "type": "near_miss",
-        "department": "Utility-Line-2",
-        "date": "2026-03-22",
-        "description": "Compressor-8 discharge valve clearance drifted to 0.08mm (above 0.05mm limit). Caught during routine inspection before failure. No production loss.",
-        "asset_tag": "Compressor-8",
-        "severity": "high",
-        "tags": ["valve_clearance", "compressor", "near_miss"]
+        "department": "Hydrocracker Unit",
+        "date": "2026-07-02",
+        "description": "Compressor C-301 cylinder discharge temperature spiked to 138°C near the 140°C thermal cutoff limit due to intercooler scaling.",
+        "asset_tag": "C-301",
+        "severity": "critical",
+        "tags": ["compressor", "temperature", "valve_clearance", "cooling"]
     },
     {
         "id": "LL-003",
         "type": "audit_finding",
-        "department": "Powerhouse-A",
-        "date": "2026-04-11",
-        "description": "Generator-3 stator insulation resistance found at 12 Megaohms during OISD-117 audit. Below 20 Megaohm safe startup threshold. Corrective WO raised but deferred twice.",
-        "asset_tag": "Generator-3",
-        "severity": "high",
-        "tags": ["insulation", "generator", "audit", "deferred"]
+        "department": "Safety & Integrity",
+        "date": "2026-07-10",
+        "description": "Biannual suction strainer flush interval for P-204 pump exceeded mandatory 180-day OISD-117 regulatory threshold.",
+        "asset_tag": "P-204",
+        "severity": "medium",
+        "tags": ["deferred_maintenance", "audit", "OISD-117"]
     },
     {
         "id": "LL-004",
         "type": "non_conformance",
-        "department": "CDU-1",
-        "date": "2026-05-15",
-        "description": "Quarterly lubrication PM for Pump-14 skipped again. Technician noted warm bearing housing. Ops coordinator overruled maintenance schedule citing throughput demands.",
-        "asset_tag": "Pump-14",
-        "severity": "medium",
-        "tags": ["lubrication", "bearing", "deferred_maintenance", "operations_pressure"]
-    },
-    {
-        "id": "LL-005",
-        "type": "near_miss",
-        "department": "CDU-1",
-        "date": "2026-06-28",
-        "description": "High-pitch whistling near P-204 bearing housing noted by patrol operator. Vibration at 2.15 G-s — within bounds but rising trend. No immediate action taken due to shift handover gap.",
-        "asset_tag": "P-204",
-        "severity": "medium",
-        "tags": ["vibration", "bearing", "trend", "shift_handover"]
-    },
-    {
-        "id": "LL-006",
-        "type": "incident",
-        "department": "Powerhouse-A",
-        "date": "2025-11-05",
-        "description": "Generator-3 emergency shutdown due to overheating. Cooling fan belt snapped from fatigue. 4.5-hour power loss to non-essential loads.",
-        "asset_tag": "Generator-3",
+        "department": "Utilities Line 2",
+        "date": "2026-07-18",
+        "description": "Phase separator pressure vessel V-102 ultrasonic wall thickness survey deferred during annual overhaul.",
+        "asset_tag": "V-102",
         "severity": "high",
-        "tags": ["cooling", "belt_failure", "overheating", "deferred_inspection"]
-    },
+        "tags": ["vessel", "inspection_interval", "PESO-2024"]
+    }
 ]
 
 # External industry failure intelligence database (read-only reference benchmarks)

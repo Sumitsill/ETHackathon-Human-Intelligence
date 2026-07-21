@@ -168,6 +168,7 @@ async def get_document_details(doc_id: str):
     return doc
 
 @app.post("/documents/upload", status_code=201)
+@app.post("/upload", status_code=201)
 async def upload_document(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
     """Uploads a PDF, Excel sheet, or Image file and triggers background processing."""
     filename = file.filename
@@ -619,6 +620,11 @@ async def get_flowchart(req: FlowchartRequest):
 async def get_entire_graph():
     """Fetches the complete knowledge graph nodes and connections."""
     return database.get_graph()
+
+@app.get("/graph/document/{doc_id}")
+async def get_document_subgraph(doc_id: str):
+    """Fetches the subgraph connected to a specific document."""
+    return database.get_subgraph_by_document(doc_id)
 
 @app.get("/graph/node/{node_id}")
 async def get_node_subgraph(node_id: str, depth: int = Query(default=1, ge=1, le=3)):
