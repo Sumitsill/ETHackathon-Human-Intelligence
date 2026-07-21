@@ -83,8 +83,8 @@ export default function SignupPage() {
       </header>
 
       {/* Centered Register Card */}
-      <div className="flex-1 flex items-center justify-center p-6 relative z-10">
-        <div className="max-w-md w-full space-y-6 bg-white border border-zinc-200 p-8 rounded-[2.5rem] shadow-xl">
+      <div className="flex-1 flex items-center justify-center p-3 sm:p-6 relative z-10">
+        <div className="max-w-md w-full space-y-6 bg-white border border-zinc-200 p-5 sm:p-8 rounded-3xl sm:rounded-[2.5rem] shadow-xl">
           
           <div className="space-y-2">
             <span className="text-[10px] font-black text-[#10b981] uppercase tracking-widest flex items-center gap-1">

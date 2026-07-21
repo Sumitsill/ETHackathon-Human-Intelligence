@@ -138,22 +138,22 @@ export default function KnowledgeIngestPage() {
         </div>
 
         {/* Format Icons Badge Group */}
-        <div className="flex items-center gap-2 border-t md:border-t-0 md:border-l border-zinc-800 pt-3 md:pt-0 md:pl-4">
-          <div className="flex items-center gap-2">
-            <div className="p-2.5 rounded-xl bg-red-950/80 border border-red-800/80 text-red-400 flex flex-col items-center gap-1">
-              <FileText size={18} />
+        <div className="flex items-center gap-2 border-t md:border-t-0 md:border-l border-zinc-800 pt-3 md:pt-0 md:pl-4 w-full md:w-auto overflow-x-auto pb-1 md:pb-0 scrollbar-none shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <div className="p-2 sm:p-2.5 rounded-xl bg-red-950/80 border border-red-800/80 text-red-400 flex flex-col items-center gap-1 shrink-0">
+              <FileText size={16} className="sm:w-[18px] sm:h-[18px]" />
               <span className="text-[9px] font-black">PDF</span>
             </div>
-            <div className="p-2.5 rounded-xl bg-amber-950/80 border border-amber-800/80 text-amber-400 flex flex-col items-center gap-1">
-              <ImageIcon size={18} />
+            <div className="p-2 sm:p-2.5 rounded-xl bg-amber-950/80 border border-amber-800/80 text-amber-400 flex flex-col items-center gap-1 shrink-0">
+              <ImageIcon size={16} className="sm:w-[18px] sm:h-[18px]" />
               <span className="text-[9px] font-black">PNG/JPG</span>
             </div>
-            <div className="p-2.5 rounded-xl bg-emerald-950/80 border border-emerald-800/80 text-emerald-400 flex flex-col items-center gap-1">
-              <FileSpreadsheet size={18} />
+            <div className="p-2 sm:p-2.5 rounded-xl bg-emerald-950/80 border border-emerald-800/80 text-emerald-400 flex flex-col items-center gap-1 shrink-0">
+              <FileSpreadsheet size={16} className="sm:w-[18px] sm:h-[18px]" />
               <span className="text-[9px] font-black">XLSX/CSV</span>
             </div>
-            <div className="p-2.5 rounded-xl bg-violet-950/80 border border-violet-800/80 text-violet-400 flex flex-col items-center gap-1">
-              <Mail size={18} />
+            <div className="p-2 sm:p-2.5 rounded-xl bg-violet-950/80 border border-violet-800/80 text-violet-400 flex flex-col items-center gap-1 shrink-0">
+              <Mail size={16} className="sm:w-[18px] sm:h-[18px]" />
               <span className="text-[9px] font-black">MBOX</span>
             </div>
           </div>
@@ -164,16 +164,16 @@ export default function KnowledgeIngestPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         
         {/* Drag & Drop Upload Zone (Center - 8 cols) */}
-        <div className="lg:col-span-8 bg-white border border-zinc-200/90 rounded-2xl p-6 shadow-sm space-y-4">
+        <div className="lg:col-span-8 bg-white border border-zinc-200/90 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-extrabold text-zinc-950 uppercase tracking-wider flex items-center gap-2">
+            <h2 className="text-xs sm:text-sm font-extrabold text-zinc-950 uppercase tracking-wider flex items-center gap-2">
               <FileUp size={16} className="text-lime-600" />
               Ingestion Drag & Drop Target
             </h2>
-            <span className="text-[11px] font-bold text-zinc-500">Connected: Port 8000</span>
+            <span className="text-[10px] sm:text-[11px] font-bold text-zinc-500">Connected: Port 8000</span>
           </div>
 
-          <label className="border-2 border-dashed border-zinc-300 hover:border-zinc-950 bg-zinc-50 hover:bg-zinc-100/80 rounded-2xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all duration-200 group text-center relative overflow-hidden">
+          <label className="border-2 border-dashed border-zinc-300 hover:border-zinc-950 bg-zinc-50 hover:bg-zinc-100/80 rounded-2xl p-6 sm:p-8 flex flex-col items-center justify-center cursor-pointer transition-all duration-200 group text-center relative overflow-hidden">
             <input 
               type="file" 
               className="hidden" 
@@ -280,17 +280,17 @@ export default function KnowledgeIngestPage() {
       </div>
 
       {/* Bottom Queue / Ingested Files Status Table */}
-      <div className="bg-white border border-zinc-200/90 rounded-2xl p-5 shadow-sm space-y-3">
-        <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
-          <h2 className="text-sm font-extrabold text-zinc-950 uppercase tracking-wider flex items-center gap-2">
+      <div className="bg-white border border-zinc-200/90 rounded-2xl p-4 sm:p-5 shadow-sm space-y-3">
+        <div className="flex flex-wrap items-start sm:items-center justify-between border-b border-zinc-100 pb-3 gap-2">
+          <h2 className="text-xs sm:text-sm font-extrabold text-zinc-950 uppercase tracking-wider flex items-center gap-2">
             <Clock size={16} className="text-zinc-600" />
             Live Processing Queue & Ingested Entity Counts
           </h2>
-          <span className="text-xs font-bold text-zinc-500">{queue.length} Files Total</span>
+          <span className="text-[10px] sm:text-xs font-bold text-zinc-500 shrink-0">{queue.length} Files Total</span>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse min-w-[700px]">
             <thead>
               <tr className="border-b border-zinc-200 bg-zinc-50 text-[10px] font-extrabold uppercase text-zinc-500 tracking-wider">
                 <th className="py-2.5 px-3">File Name</th>

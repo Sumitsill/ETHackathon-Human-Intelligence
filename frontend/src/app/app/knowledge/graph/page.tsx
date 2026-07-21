@@ -628,10 +628,10 @@ export default function KnowledgeGraphPage() {
   }, [selectedDocId, documents]);
 
   return (
-    <div className="h-[calc(100vh-5.5rem)] flex flex-col md:flex-row gap-3 relative overflow-hidden">
+    <div className="h-[calc(100vh-6rem)] sm:h-[calc(100vh-5.5rem)] flex flex-col md:flex-row gap-3 relative overflow-y-auto md:overflow-hidden pb-12 md:pb-0">
       
       {/* Left Sidebar: Controls, Document Selector & Inspector Permissions */}
-      <aside className="w-full md:w-80 bg-white border border-zinc-200/90 rounded-2xl p-4 shadow-sm flex flex-col justify-between flex-shrink-0 space-y-4">
+      <aside className="w-full md:w-80 bg-white border border-zinc-200/90 rounded-2xl p-4 shadow-sm flex flex-col flex-shrink-0 space-y-4 h-auto md:h-full md:justify-between">
         <div className="space-y-4">
           
           {/* Header */}
@@ -782,7 +782,7 @@ export default function KnowledgeGraphPage() {
       </aside>
 
       {/* Main Canvas Container (Fixed 100% Width Layout) */}
-      <div className="flex-1 bg-zinc-950 rounded-2xl relative border border-zinc-800 shadow-2xl overflow-hidden flex flex-col justify-between p-4 select-none">
+      <div className="w-full h-[400px] md:h-full md:flex-1 bg-zinc-950 rounded-2xl relative border border-zinc-800 shadow-2xl overflow-hidden flex flex-col justify-between p-4 select-none min-h-[350px]">
         
         {/* Canvas Top Header Controls & Active Selection Banner */}
         <div className="flex items-center justify-between z-20 pointer-events-none">
@@ -1090,7 +1090,7 @@ export default function KnowledgeGraphPage() {
 
         {/* FLOATING OVERLAY INSPECTOR DRAWER (Does NOT shift canvas or move nodes when opened) */}
         {selectedNode && (
-          <aside className="absolute top-4 right-4 bottom-4 w-80 bg-white/95 backdrop-blur-md border border-zinc-200 rounded-2xl p-5 shadow-2xl flex flex-col justify-between flex-shrink-0 space-y-4 animate-in slide-in-from-right-4 duration-200 z-30 pointer-events-auto">
+          <aside className="absolute top-4 right-4 bottom-4 left-4 md:left-auto w-[calc(100%-2rem)] md:w-80 bg-white/95 backdrop-blur-md border border-zinc-200 rounded-2xl p-4 sm:p-5 shadow-2xl flex flex-col justify-between flex-shrink-0 space-y-4 animate-in slide-in-from-right-4 duration-200 z-30 pointer-events-auto">
             <div className="space-y-4 overflow-y-auto pr-1">
               
               {/* Inspector Header */}

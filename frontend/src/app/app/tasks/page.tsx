@@ -235,7 +235,7 @@ export default function FieldTasksPage() {
         {/* Assign Task Button */}
         <button
           onClick={() => setShowAssignModal(true)}
-          className="px-5 py-3 rounded-xl bg-lime-400 hover:bg-lime-300 text-zinc-950 font-black text-xs uppercase tracking-wider shadow-xl transition flex items-center gap-2"
+          className="w-full md:w-auto px-5 py-3 rounded-xl bg-lime-400 hover:bg-lime-300 text-zinc-950 font-black text-xs uppercase tracking-wider shadow-xl transition flex items-center justify-center gap-2 shrink-0"
         >
           <Sparkles size={16} />
           + Assign New Work Order Task
@@ -306,13 +306,13 @@ export default function FieldTasksPage() {
           </div>
 
           {/* Right Active Task Form with Live Telemetry Validation */}
-          <div className="lg:col-span-7 bg-white border border-zinc-200/90 rounded-2xl p-6 shadow-sm space-y-5">
-            <div className="border-b border-zinc-100 pb-3 flex items-center justify-between">
-              <div>
+          <div className="lg:col-span-7 bg-white border border-zinc-200/90 rounded-2xl p-4 sm:p-6 shadow-sm space-y-5">
+            <div className="border-b border-zinc-100 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div className="min-w-0">
                 <span className="text-[10px] font-black text-lime-700 uppercase tracking-widest block">Focus Task Target</span>
-                <h2 className="text-sm font-extrabold text-zinc-950">{activeTask.title}</h2>
+                <h2 className="text-xs sm:text-sm font-extrabold text-zinc-950 leading-snug">{activeTask.title}</h2>
               </div>
-              <span className="px-2.5 py-1 rounded-full bg-zinc-100 text-zinc-800 text-[10px] font-extrabold">
+              <span className="px-2.5 py-1 rounded-full bg-zinc-100 text-zinc-800 text-[10px] font-extrabold shrink-0 w-fit">
                 Tag: {activeTask.tag}
               </span>
             </div>
@@ -329,9 +329,7 @@ export default function FieldTasksPage() {
                     <span className="text-[10px] font-bold text-zinc-500 bg-zinc-200 px-2 py-0.5 rounded">
                       Limit: {reading.minLimit} - {reading.maxLimit} {reading.unit}
                     </span>
-                  </div>
-
-                  <div className="flex items-center gap-3">
+                                <div className="flex flex-col xs:flex-row xs:items-center gap-2 sm:gap-3">
                     <input
                       type="number"
                       step="0.1"
@@ -339,21 +337,21 @@ export default function FieldTasksPage() {
                       value={reading.value}
                       onChange={(e) => handleInputChange(idx, e.target.value)}
                       placeholder={`Enter value in ${reading.unit}...`}
-                      className="flex-1 bg-white border border-zinc-300 rounded-xl px-4 py-2.5 text-xs font-bold text-zinc-950 focus:outline-none focus:border-zinc-950 shadow-sm"
+                      className="w-full xs:flex-1 bg-white border border-zinc-300 rounded-xl px-4 py-2.5 text-xs font-bold text-zinc-950 focus:outline-none focus:border-zinc-950 shadow-sm"
                     />
-
+ 
                     {/* Real-time Validation Status Badge */}
                     {reading.validated === true && (
-                      <span className="px-3 py-2 rounded-xl bg-emerald-100 text-emerald-800 text-xs font-extrabold flex items-center gap-1 border border-emerald-300">
+                      <span className="px-3 py-2 rounded-xl bg-emerald-100 text-emerald-800 text-xs font-extrabold flex items-center gap-1 border border-emerald-300 shrink-0 w-fit">
                         <CheckCircle2 size={14} /> Pass
                       </span>
                     )}
                     {reading.validated === false && (
-                      <span className="px-3 py-2 rounded-xl bg-red-100 text-red-800 text-xs font-extrabold flex items-center gap-1 border border-red-300 animate-pulse">
+                      <span className="px-3 py-2 rounded-xl bg-red-100 text-red-800 text-xs font-extrabold flex items-center gap-1 border border-red-300 animate-pulse shrink-0 w-fit">
                         <AlertTriangle size={14} /> Out of Bounds
                       </span>
                     )}
-                  </div>
+                  </div>        </div>
                 </div>
               ))}
 

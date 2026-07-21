@@ -90,11 +90,11 @@ function DotGrid() {
 function StatCard({ value, label, suffix = '' }: { value: number; label: string; suffix?: string }) {
   const c = useCounter(value);
   return (
-    <div className="flex flex-col items-center gap-1">
-      <span className="text-4xl md:text-5xl font-black text-zinc-950 tracking-tight tabular-nums">
+    <div className="flex flex-col items-center gap-1 min-w-0">
+      <span className="text-2xl sm:text-3xl md:text-5xl font-black text-zinc-950 tracking-tight tabular-nums truncate">
         {c.toLocaleString()}{suffix}
       </span>
-      <span className="text-[11px] font-semibold text-zinc-500 uppercase tracking-widest">{label}</span>
+      <span className="text-[9px] sm:text-[11px] font-semibold text-zinc-500 uppercase tracking-widest text-center truncate w-full">{label}</span>
     </div>
   );
 }

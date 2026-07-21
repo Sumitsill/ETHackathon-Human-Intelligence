@@ -264,7 +264,7 @@ export default function QrciMatrixPage() {
         <button
           onClick={handleCompileAuditPackage}
           disabled={exporting}
-          className="px-6 py-3.5 rounded-xl bg-lime-400 hover:bg-lime-300 text-zinc-950 font-black text-xs uppercase tracking-wider shadow-2xl flex items-center gap-2 transition hover:scale-105 disabled:opacity-50"
+          className="w-full md:w-auto px-6 py-3.5 rounded-xl bg-lime-400 hover:bg-lime-300 text-zinc-950 font-black text-xs uppercase tracking-wider shadow-2xl flex items-center justify-center gap-2 transition hover:scale-105 disabled:opacity-50 shrink-0"
         >
           {exporting ? (
             <>
@@ -322,7 +322,7 @@ export default function QrciMatrixPage() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-center border-collapse">
+              <table className="w-full text-center border-collapse min-w-[700px]">
                 <thead>
                   <tr className="border-b border-zinc-200 bg-zinc-50 text-[10px] font-extrabold uppercase text-zinc-600">
                     <th className="py-3 px-4 text-left">Equipment Tag (Y-Axis)</th>

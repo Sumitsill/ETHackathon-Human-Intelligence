@@ -39,13 +39,13 @@ export default function NotificationsFeed() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-12">
       {/* Title */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-zinc-100 pb-4 gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-zinc-100 pb-4 gap-3">
         <div>
           <span className="text-[10px] font-black text-[#10b981] uppercase tracking-widest block mb-1">PLANT WARNINGS</span>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-zinc-950 tracking-tight flex items-center gap-2">
-            <Bell size={24} className="text-zinc-950" />
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-zinc-950 tracking-tight flex items-center gap-2">
+            <Bell size={20} className="text-zinc-950 shrink-0" />
             Realtime Notifications Feed
           </h1>
         </div>
@@ -90,9 +90,9 @@ export default function NotificationsFeed() {
 
               {/* Text */}
               <div className="flex-1 space-y-1">
-                <div className="flex justify-between items-start gap-4">
+                <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-1 xs:gap-4">
                   <h4 className="text-xs font-black text-zinc-950 leading-snug">{n.title}</h4>
-                  <span className="text-[9px] text-zinc-400 font-mono whitespace-nowrap">{n.timestamp}</span>
+                  <span className="text-[9px] text-zinc-400 font-mono shrink-0">{n.timestamp}</span>
                 </div>
                 <p className="text-[11px] text-zinc-500 leading-relaxed">{n.message}</p>
               </div>

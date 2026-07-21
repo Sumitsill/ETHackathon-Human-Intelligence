@@ -127,11 +127,11 @@ export default function LoginPage() {
       </header>
 
       {/* Main Container */}
-      <div className="flex-1 flex items-center justify-center p-4 md:p-8 relative z-10">
-        <div className="max-w-6xl w-full grid grid-cols-1 md:grid-cols-12 gap-8 bg-white/90 backdrop-blur-md border border-zinc-200 p-6 md:p-8 rounded-[2.5rem] shadow-2xl items-start">
+      <div className="flex-1 flex items-center justify-center p-3 sm:p-6 md:p-8 relative z-10">
+        <div className="max-w-6xl w-full grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 bg-white/90 backdrop-blur-md border border-zinc-200 p-4 sm:p-6 md:p-8 rounded-3xl md:rounded-[2.5rem] shadow-2xl items-start">
           
           {/* Left Side: Persona Credentials Quick Selector */}
-          <div className="md:col-span-6 flex flex-col justify-between h-full space-y-5 border-b md:border-b-0 md:border-r border-zinc-200/80 pb-6 md:pb-0 md:pr-8">
+          <div className="md:col-span-6 flex flex-col justify-between h-full space-y-5 border-b md:border-b-0 md:border-r border-zinc-200/80 pb-6 md:pb-0 md:pr-8 w-full">
             <div className="space-y-2">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-900 text-lime-400 text-[10px] font-black uppercase tracking-widest">
                 <Cpu size={13} className="animate-pulse" />

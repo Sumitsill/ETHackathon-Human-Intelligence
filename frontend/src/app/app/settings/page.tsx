@@ -124,13 +124,13 @@ export default function SettingsDashboard() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-12">
       {/* Title */}
-      <div className="flex justify-between items-center border-b border-zinc-100 pb-4">
+      <div className="flex items-center justify-between border-b border-zinc-100 pb-4 gap-2">
         <div>
           <span className="text-[10px] font-black text-[#10b981] uppercase tracking-widest block mb-1">ADMIN DESK</span>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-zinc-950 tracking-tight flex items-center gap-2">
-            <Settings size={24} className="text-zinc-950" />
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-zinc-950 tracking-tight flex items-center gap-2">
+            <Settings size={20} className="text-zinc-950 shrink-0" />
             Settings & Integrations
           </h1>
         </div>
@@ -152,11 +152,11 @@ export default function SettingsDashboard() {
           
           <div className="space-y-3">
             {integrations.map((item, idx) => (
-              <div key={idx} className="p-5 rounded-3xl bg-[#f8f9f8] border border-zinc-200 space-y-2.5 shadow-sm">
-                <div className="flex justify-between items-center">
-                  <h4 className="text-xs font-bold text-zinc-950">{item.moduleName}</h4>
+              <div key={idx} className="p-4 sm:p-5 rounded-3xl bg-[#f8f9f8] border border-zinc-200 space-y-2.5 shadow-sm">
+                <div className="flex flex-wrap sm:flex-nowrap items-start sm:items-center justify-between gap-2">
+                  <h4 className="text-xs font-bold text-zinc-950 leading-snug">{item.moduleName}</h4>
                   
-                  <span className={`px-2.5 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider ${
+                  <span className={`px-2.5 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider shrink-0 ${
                     item.status === 'active' 
                       ? 'bg-lime-300 text-zinc-900 border border-lime-400' 
                       : (item.status === 'warning' ? 'bg-amber-300/30 text-amber-800 border border-amber-300' : 'bg-red-500/10 text-red-600 border border-red-500/20')

@@ -298,20 +298,22 @@ export default function MiraWorkbenchPage() {
         </div>
 
         {/* Asset Selection Dropdown */}
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <span className="text-xs font-black text-amber-950 uppercase tracking-wider">Target Asset:</span>
-          <select
-            value={selectedAsset}
-            onChange={(e) => setSelectedAsset(e.target.value)}
-            className="bg-white border border-amber-400 rounded-xl px-3 py-1.5 text-xs font-extrabold text-zinc-950 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer shadow-sm"
-          >
-            <option value="P-204">⚙️ P-204 Centrifugal Pump</option>
-            <option value="C-301">🌪️ C-301 Compressor Unit</option>
-            <option value="Generator-3">⚡ Generator-3 Emergency Diesel</option>
-          </select>
+        <div className="flex flex-wrap items-center gap-2 flex-shrink-0 w-full sm:w-auto justify-between sm:justify-start">
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs font-black text-amber-950 uppercase tracking-wider">Target Asset:</span>
+            <select
+              value={selectedAsset}
+              onChange={(e) => setSelectedAsset(e.target.value)}
+              className="bg-white border border-amber-400 rounded-xl px-2 py-1.5 sm:px-3 text-xs font-extrabold text-zinc-950 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer shadow-sm flex-1 sm:flex-none max-w-[200px] sm:max-w-none animate-fadeIn"
+            >
+              <option value="P-204">⚙️ P-204 Centrifugal Pump</option>
+              <option value="C-301">🌪️ C-301 Compressor Unit</option>
+              <option value="Generator-3">⚡ Generator-3 Emergency Diesel</option>
+            </select>
+          </div>
           <Link 
             href="/app/copilot"
-            className="px-3.5 py-2 rounded-xl bg-amber-950 text-amber-200 font-extrabold text-xs uppercase hover:bg-zinc-950 transition"
+            className="px-3.5 py-2 rounded-xl bg-amber-950 text-amber-200 font-extrabold text-xs uppercase hover:bg-zinc-950 transition whitespace-nowrap shrink-0"
           >
             Open Copilot
           </Link>
@@ -381,21 +383,21 @@ export default function MiraWorkbenchPage() {
           <div className="bg-zinc-950 text-white rounded-2xl p-5 shadow-2xl space-y-4 border border-zinc-800">
             
             {/* Header Controls */}
-            <div className="flex flex-wrap items-center justify-between border-b border-zinc-800 pb-3 gap-2">
-              <div className="flex items-center gap-2">
-                <Activity size={18} className={`text-lime-400 ${isLiveStreaming ? 'animate-pulse' : ''}`} />
-                <div>
-                  <h3 className="text-xs font-extrabold uppercase tracking-wider text-white flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-800 pb-3 gap-3">
+              <div className="flex items-center gap-2 min-w-0">
+                <Activity size={18} className={`text-lime-400 shrink-0 ${isLiveStreaming ? 'animate-pulse' : ''}`} />
+                <div className="min-w-0">
+                  <h3 className="text-xs font-extrabold uppercase tracking-wider text-white flex items-center gap-1.5 flex-wrap">
                     <span>Real-time Telemetry Waveform Stream</span>
-                    <span className="text-[9px] font-mono font-normal text-zinc-400 bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded-md">
+                    <span className="text-[9px] font-mono font-normal text-zinc-400 bg-zinc-900 border border-zinc-800 px-1.5 py-0.5 rounded-md shrink-0">
                       {selectedAsset} ({selectedSensor})
                     </span>
                   </h3>
-                  <p className="text-[10px] text-zinc-400 font-mono">1000ms Live Telemetry Frequency • Vibration Accelerometer (mm/s)</p>
+                  <p className="text-[9px] sm:text-[10px] text-zinc-400 font-mono truncate">1000ms Live Telemetry Frequency • Vibration (mm/s)</p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 shrink-0">
                 <button 
                   onClick={() => setIsLiveStreaming(!isLiveStreaming)}
                   className={`px-3 py-1 rounded-xl text-[10px] font-black uppercase transition border flex items-center gap-1.5 ${
@@ -403,13 +405,13 @@ export default function MiraWorkbenchPage() {
                   }`}
                 >
                   <Radio size={12} className={isLiveStreaming ? "animate-pulse" : ""} />
-                  {isLiveStreaming ? '● Live Feed ON' : 'Feed Paused'}
+                  {isLiveStreaming ? '● Live ON' : 'Feed Paused'}
                 </button>
-                <span className={`text-[10px] font-extrabold px-2.5 py-1 rounded-xl border flex items-center gap-1.5 ${
+                <span className={`text-[10px] font-extrabold px-2 py-1 rounded-xl border flex items-center gap-1.5 ${
                   isThresholdExceeded ? 'text-red-400 bg-red-950/90 border-red-800 animate-pulse shadow-[0_0_20px_rgba(244,63,94,0.4)]' : 'text-emerald-400 bg-emerald-950/90 border-emerald-800'
                 }`}>
                   <Gauge size={12} />
-                  {isThresholdExceeded ? `ALARM: Threshold Exceeded (${vibrationThreshold}mm/s)` : 'Normal (Within Specs)'}
+                  {isThresholdExceeded ? `ALARM (${vibrationThreshold}mm/s)` : 'Normal'}
                 </span>
               </div>
             </div>
@@ -541,17 +543,17 @@ export default function MiraWorkbenchPage() {
           </div>
 
           {/* Bottom Right: Work Order Cross-Reference (25% Height) */}
-          <div className="bg-white border border-zinc-200/90 rounded-2xl p-5 shadow-sm space-y-3">
-            <div className="flex items-center justify-between border-b border-zinc-100 pb-2">
+          <div className="bg-white border border-zinc-200/90 rounded-2xl p-4 sm:p-5 shadow-sm space-y-3">
+            <div className="flex flex-wrap items-start sm:items-center justify-between border-b border-zinc-100 pb-2 gap-2">
               <h3 className="text-xs font-extrabold text-zinc-950 uppercase tracking-wider flex items-center gap-2">
                 <FileSpreadsheet size={16} className="text-zinc-600" />
                 Historical Work Order Cross-Reference ({selectedAsset})
               </h3>
-              <span className="text-[11px] font-bold text-zinc-500">Asset Tag: {selectedAsset}</span>
+              <span className="text-[10px] sm:text-[11px] font-bold text-zinc-500 shrink-0">Asset Tag: {selectedAsset}</span>
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+              <table className="w-full text-left border-collapse min-w-[500px]">
                 <thead>
                   <tr className="border-b border-zinc-200 bg-zinc-50 text-[10px] font-extrabold uppercase text-zinc-500">
                     <th className="py-2 px-3">WO ID</th>

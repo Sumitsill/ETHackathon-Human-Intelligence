@@ -261,13 +261,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <div className="flex-1 flex flex-col min-h-0 bg-transparent">
         
         {/* Top Operational Header Bar */}
-        <header className="h-14 bg-white/90 backdrop-blur border border-zinc-200/90 rounded-2xl px-4 flex items-center justify-between shadow-sm mb-3">
+        <header className="h-14 bg-white/90 backdrop-blur border border-zinc-200/90 rounded-2xl px-3 sm:px-4 flex items-center justify-between shadow-sm mb-3">
           
           {/* Left: Active Persona Badge */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 px-3 py-1 rounded-xl bg-zinc-950 text-white text-xs font-extrabold shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-lime-400 animate-ping" />
-              {ROLE_DETAILS[currentActiveRole]?.label || currentActiveRole}
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-zinc-950 text-white text-[10px] sm:text-xs font-extrabold shadow-sm truncate max-w-[130px] sm:max-w-none">
+              <span className="w-1.5 h-1.5 rounded-full bg-lime-400 animate-ping flex-shrink-0" />
+              <span className="truncate">{ROLE_DETAILS[currentActiveRole]?.label || currentActiveRole}</span>
             </div>
 
             {/* Quick Microservices Status Bar */}
@@ -299,14 +299,39 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
 
           {/* Right Header Actions: User Profile & Explicit Logout */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3 relative">
             
             <button 
               onClick={() => setShowRoleSelector(!showRoleSelector)}
-              className="md:hidden px-3 py-1 rounded-xl bg-zinc-900 text-lime-400 text-xs font-bold flex items-center gap-1"
+              className="md:hidden px-2.5 py-1.5 rounded-xl bg-zinc-900 text-lime-400 text-[11px] font-bold flex items-center gap-1 shrink-0"
             >
-              Switch Role <ChevronDown size={12} />
+              <span className="hidden xs:inline">Switch Role</span>
+              <span className="xs:hidden">Role</span>
+              <ChevronDown size={11} className="shrink-0" />
             </button>
+
+            {/* Mobile Role Selector Popup */}
+            {showRoleSelector && (
+              <div className="absolute top-12 right-0 w-64 rounded-2xl bg-zinc-900 border border-zinc-700 shadow-2xl p-2 space-y-1.5 z-50 md:hidden animate-fadeIn">
+                <span className="text-[9px] font-extrabold text-zinc-400 uppercase tracking-widest block px-2.5 py-1 border-b border-zinc-800">
+                  Switch Operational Persona
+                </span>
+                {roles.map((r) => (
+                  <button
+                    key={r}
+                    onClick={() => handleRoleChange(r)}
+                    className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold transition flex flex-col ${
+                      currentActiveRole === r 
+                        ? 'bg-lime-400/10 text-lime-400 border border-lime-400/20' 
+                        : 'text-zinc-300 hover:bg-zinc-800'
+                    }`}
+                  >
+                    <span>{ROLE_DETAILS[r]?.label}</span>
+                    <span className="text-[10px] text-zinc-500 font-normal">{ROLE_DETAILS[r]?.description.substring(0, 45)}...</span>
+                  </button>
+                ))}
+              </div>
+            )}
 
             <div className="hidden sm:flex items-center gap-2 px-3 py-1 bg-zinc-50 rounded-xl border border-zinc-200 text-xs font-semibold text-zinc-700">
               <User size={14} className="text-zinc-400" />
@@ -315,17 +340,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
             <button
               onClick={handleLogout}
-              className="px-3.5 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm"
+              className="hidden sm:flex px-3.5 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold transition items-center gap-1.5 shadow-sm"
               title="Sign Out"
             >
               <LogOut size={13} className="text-red-400" />
-              <span className="hidden sm:inline">Logout</span>
+              <span>Logout</span>
             </button>
 
             {/* Mobile Hamburger Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-xl bg-zinc-100 text-zinc-800"
+              className="md:hidden p-2 rounded-xl bg-zinc-100 text-zinc-800 flex items-center justify-center shrink-0"
             >
               {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>

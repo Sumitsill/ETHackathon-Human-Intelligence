@@ -150,56 +150,56 @@ export default function CommandCenterDashboard() {
     <div className="space-y-4 pb-12">
       
       {/* Top KPI Ribbon */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="bg-white border border-zinc-200/90 rounded-2xl p-4 shadow-sm flex items-center justify-between">
-          <div className="space-y-1">
-            <span className="text-[10px] font-extrabold text-zinc-400 uppercase tracking-widest block">Active Anomalies</span>
-            <div className="text-2xl md:text-3xl font-black text-amber-600 flex items-center gap-1.5">
-              {metrics.activeAnomalies}
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">MIRA</span>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
+        <div className="bg-white border border-zinc-200/90 rounded-2xl p-3 sm:p-4 shadow-sm flex items-center justify-between min-w-0">
+          <div className="space-y-1 min-w-0">
+            <span className="text-[9px] sm:text-[10px] font-extrabold text-zinc-400 uppercase tracking-widest block truncate">Active Anomalies</span>
+            <div className="text-xl sm:text-2xl md:text-3xl font-black text-amber-600 flex items-center gap-1 sm:gap-1.5 flex-wrap">
+              <span>{metrics.activeAnomalies}</span>
+              <span className="text-[9px] sm:text-[10px] font-bold px-1 sm:px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">MIRA</span>
             </div>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600">
-            <AlertTriangle size={20} />
+          <div className="hidden xs:flex w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-amber-50 border border-amber-200 items-center justify-center text-amber-600 shrink-0">
+            <AlertTriangle size={18} className="sm:w-5 sm:h-5" />
           </div>
         </div>
 
-        <div className="bg-white border border-zinc-200/90 rounded-2xl p-4 shadow-sm flex items-center justify-between">
-          <div className="space-y-1">
-            <span className="text-[10px] font-extrabold text-zinc-400 uppercase tracking-widest block">Compliance Gaps</span>
-            <div className="text-2xl md:text-3xl font-black text-red-600 flex items-center gap-1.5">
-              {metrics.complianceGaps}
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-100 text-red-800">QRCI</span>
+        <div className="bg-white border border-zinc-200/90 rounded-2xl p-3 sm:p-4 shadow-sm flex items-center justify-between min-w-0">
+          <div className="space-y-1 min-w-0">
+            <span className="text-[9px] sm:text-[10px] font-extrabold text-zinc-400 uppercase tracking-widest block truncate">Compliance Gaps</span>
+            <div className="text-xl sm:text-2xl md:text-3xl font-black text-red-600 flex items-center gap-1 sm:gap-1.5 flex-wrap">
+              <span>{metrics.complianceGaps}</span>
+              <span className="text-[9px] sm:text-[10px] font-bold px-1 sm:px-1.5 py-0.5 rounded bg-red-100 text-red-800">QRCI</span>
             </div>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-red-50 border border-red-200 flex items-center justify-center text-red-600">
-            <ShieldAlert size={20} />
+          <div className="hidden xs:flex w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-red-50 border border-red-200 items-center justify-center text-red-600 shrink-0">
+            <ShieldAlert size={18} className="sm:w-5 sm:h-5" />
           </div>
         </div>
 
-        <div className="bg-white border border-zinc-200/90 rounded-2xl p-4 shadow-sm flex items-center justify-between">
-          <div className="space-y-1">
-            <span className="text-[10px] font-extrabold text-zinc-400 uppercase tracking-widest block">Knowledge Decay</span>
-            <div className="text-2xl md:text-3xl font-black text-sky-600 flex items-center gap-1.5">
-              {metrics.knowledgeDecay}%
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-sky-100 text-sky-800">SOPs</span>
+        <div className="bg-white border border-zinc-200/90 rounded-2xl p-3 sm:p-4 shadow-sm flex items-center justify-between min-w-0">
+          <div className="space-y-1 min-w-0">
+            <span className="text-[9px] sm:text-[10px] font-extrabold text-zinc-400 uppercase tracking-widest block truncate">Knowledge Decay</span>
+            <div className="text-xl sm:text-2xl md:text-3xl font-black text-sky-600 flex items-center gap-1 sm:gap-1.5 flex-wrap">
+              <span>{metrics.knowledgeDecay}%</span>
+              <span className="text-[9px] sm:text-[10px] font-bold px-1 sm:px-1.5 py-0.5 rounded bg-sky-100 text-sky-800">SOPs</span>
             </div>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center text-sky-600">
-            <FileText size={20} />
+          <div className="hidden xs:flex w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-sky-50 border border-sky-200 items-center justify-center text-sky-600 shrink-0">
+            <FileText size={18} className="sm:w-5 sm:h-5" />
           </div>
         </div>
 
-        <div className="bg-white border border-zinc-200/90 rounded-2xl p-4 shadow-sm flex items-center justify-between">
-          <div className="space-y-1">
-            <span className="text-[10px] font-extrabold text-zinc-400 uppercase tracking-widest block">Knowledge Base</span>
-            <div className="text-2xl md:text-3xl font-black text-emerald-600 flex items-center gap-1.5">
-              {metrics.ingestedDocs}
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">Files</span>
+        <div className="bg-white border border-zinc-200/90 rounded-2xl p-3 sm:p-4 shadow-sm flex items-center justify-between min-w-0">
+          <div className="space-y-1 min-w-0">
+            <span className="text-[9px] sm:text-[10px] font-extrabold text-zinc-400 uppercase tracking-widest block truncate">Knowledge Base</span>
+            <div className="text-xl sm:text-2xl md:text-3xl font-black text-emerald-600 flex items-center gap-1 sm:gap-1.5 flex-wrap">
+              <span>{metrics.ingestedDocs}</span>
+              <span className="text-[9px] sm:text-[10px] font-bold px-1 sm:px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">Files</span>
             </div>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600">
-            <Database size={20} />
+          <div className="hidden xs:flex w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 border border-emerald-200 items-center justify-center text-emerald-600 shrink-0">
+            <Database size={18} className="sm:w-5 sm:h-5" />
           </div>
         </div>
       </div>
@@ -208,15 +208,15 @@ export default function CommandCenterDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         
         {/* Left Arena (60% width on desktop) */}
-        <div className="lg:col-span-7 bg-white border border-zinc-200/90 rounded-2xl p-5 shadow-sm space-y-4">
-          <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
+        <div className="lg:col-span-7 bg-white border border-zinc-200/90 rounded-2xl p-4 sm:p-5 shadow-sm space-y-4">
+          <div className="flex flex-wrap sm:flex-nowrap items-start sm:items-center justify-between border-b border-zinc-100 pb-3 gap-2">
             <div className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 rounded-full bg-lime-500 animate-ping" />
-              <h2 className="text-sm font-extrabold text-zinc-950 uppercase tracking-wider">
+              <div className="w-2.5 h-2.5 rounded-full bg-lime-500 animate-ping flex-shrink-0" />
+              <h2 className="text-xs sm:text-sm font-extrabold text-zinc-950 uppercase tracking-wider">
                 Brain Sync Event Feed
               </h2>
             </div>
-            <span className="text-[11px] font-semibold text-zinc-500 flex items-center gap-1">
+            <span className="text-[10px] sm:text-[11px] font-semibold text-zinc-500 flex items-center gap-1 shrink-0">
               <Clock size={12} /> Live Cross-Module Telemetry
             </span>
           </div>
@@ -342,9 +342,9 @@ export default function CommandCenterDashboard() {
       {/* Floating Action Button (FAB) for Quick Copilot Launch */}
       <Link
         href="/app/copilot"
-        className="fixed bottom-6 right-6 z-40 bg-zinc-950 hover:bg-zinc-800 text-white font-extrabold text-xs px-5 py-3.5 rounded-2xl shadow-2xl border border-zinc-700 flex items-center gap-2.5 transition-all hover:scale-105 group"
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 bg-zinc-950 hover:bg-zinc-800 text-white font-extrabold text-[11px] sm:text-xs px-4 py-3 sm:px-5 sm:py-3.5 rounded-2xl shadow-2xl border border-zinc-700 flex items-center gap-2 sm:gap-2.5 transition-all hover:scale-105 group"
       >
-        <MessageSquare size={18} className="text-lime-400 group-hover:scale-110 transition-transform" />
+        <MessageSquare size={16} className="text-lime-400 group-hover:scale-110 transition-transform shrink-0" />
         <span>Ask Operational Copilot</span>
       </Link>
     </div>

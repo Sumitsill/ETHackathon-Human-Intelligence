@@ -202,37 +202,38 @@ export default function GroundedCopilotPage() {
   };
 
   return (
-    <div className="h-[calc(100vh-5rem)] flex flex-col justify-between rounded-2xl border bg-white text-zinc-950 border-zinc-200/90 shadow-sm relative overflow-hidden">
+    <div className="h-[calc(100vh-6rem)] sm:h-[calc(100vh-5rem)] flex flex-col justify-between rounded-2xl border bg-white text-zinc-950 border-zinc-200/90 shadow-sm relative overflow-hidden">
       
       {/* Top Header Controls Bar */}
-      <div className="p-4 border-b border-zinc-200 bg-zinc-50 flex items-center justify-between z-10">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-zinc-950 text-lime-400 flex items-center justify-center font-black text-xs">
+      <div className="p-3 sm:p-4 border-b border-zinc-200 bg-zinc-50 flex flex-wrap sm:flex-nowrap items-start sm:items-center justify-between gap-2 z-10">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-zinc-950 text-lime-400 flex items-center justify-center font-black text-xs shrink-0">
             M2
           </div>
-          <div>
-            <h1 className="text-xs font-extrabold uppercase tracking-wider text-zinc-900">
+          <div className="min-w-0">
+            <h1 className="text-[10px] sm:text-xs font-extrabold uppercase tracking-wider text-zinc-900 truncate">
               Grounded Operational Copilot
             </h1>
-            <p className="text-[10px] text-zinc-500 font-semibold">
-              Port 8001 Connected | Source Citations Verified
+            <p className="text-[9px] sm:text-[10px] text-zinc-500 font-semibold truncate">
+              Port 8001 Connected | Citations Verified
             </p>
           </div>
         </div>
 
         {/* Toggles */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 shrink-0">
           {/* Low Bandwidth Toggle */}
           <button
             onClick={() => setLowBandwidth(!lowBandwidth)}
-            className={`px-3 py-1.5 rounded-xl border text-[11px] font-bold flex items-center gap-1.5 transition ${
+            className={`px-2 py-1 sm:px-3 sm:py-1.5 rounded-xl border text-[10px] sm:text-[11px] font-bold flex items-center gap-1 sm:gap-1.5 transition shrink-0 ${
               lowBandwidth 
                 ? 'bg-amber-950 text-amber-300 border-amber-800' 
                 : 'bg-zinc-100 hover:bg-zinc-200 text-zinc-700 border-zinc-300'
             }`}
           >
-            {lowBandwidth ? <WifiOff size={13} /> : <Wifi size={13} />}
-            {lowBandwidth ? 'Low Bandwidth Active' : 'Normal Data'}
+            {lowBandwidth ? <WifiOff size={12} className="shrink-0" /> : <Wifi size={12} className="shrink-0" />}
+            <span className="hidden xs:inline">{lowBandwidth ? 'Low Bandwidth Active' : 'Normal Data'}</span>
+            <span className="xs:hidden">{lowBandwidth ? 'Low BW' : 'Normal'}</span>
           </button>
         </div>
       </div>
@@ -409,27 +410,28 @@ export default function GroundedCopilotPage() {
               type="button"
               onClick={toggleVoiceInput}
               title={isListening ? "Stop Voice Input" : "Speak Voice Command"}
-              className={`p-3 rounded-xl border transition shadow-sm ${
+              className={`p-2.5 sm:p-3 rounded-xl border transition shadow-sm shrink-0 ${
                 isListening 
                   ? 'bg-red-600 text-white border-red-700 animate-pulse' 
                   : 'bg-zinc-100 hover:bg-zinc-200 text-zinc-800 border-zinc-300'
               }`}
             >
-              {isListening ? <MicOff size={16} /> : <Mic size={16} />}
+              {isListening ? <MicOff size={14} /> : <Mic size={14} />}
             </button>
             <input 
               type="text"
               value={inputQuery}
               onChange={(e) => setInputQuery(e.target.value)}
-              placeholder="Ask Copilot about equipment limits, SOPs, or work order histories (or click mic to speak)..."
-              className="flex-1 bg-white border border-zinc-300 rounded-xl px-4 py-3 text-xs text-zinc-950 focus:outline-none focus:border-zinc-950 transition shadow-inner font-medium"
+              placeholder="Ask Copilot (or click mic)..."
+              className="flex-1 bg-white border border-zinc-300 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3 text-xs text-zinc-950 focus:outline-none focus:border-zinc-950 transition shadow-inner font-medium min-w-0"
             />
             <button
               type="submit"
               disabled={loading}
-              className="px-5 py-3 rounded-xl bg-zinc-950 hover:bg-zinc-800 text-white font-extrabold text-xs uppercase tracking-wider shadow-md flex items-center gap-1.5 disabled:opacity-50"
+              className="px-3.5 py-2.5 sm:px-5 sm:py-3 rounded-xl bg-zinc-950 hover:bg-zinc-800 text-white font-extrabold text-xs uppercase tracking-wider shadow-md flex items-center gap-1 disabled:opacity-50 shrink-0"
             >
-              <Send size={14} className="text-lime-400" /> Send
+              <Send size={14} className="text-lime-400 shrink-0" />
+              <span className="hidden xs:inline">Send</span>
             </button>
           </form>
         </div>
