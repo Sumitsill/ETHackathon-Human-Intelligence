@@ -29,7 +29,7 @@ def main():
     
     time.sleep(3)
     
-    # 4. Start Module 1 (Ingestion) as the foreground process on the public PORT
+    # 4. Starts Module 1 (Ingestion) as the foreground process on the public PORT
     print(f"[Gateway] Starting Module 1 on 0.0.0.0:{port}...")
     cmd = [sys.executable, "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", port]
     subprocess.run(cmd, cwd=os.path.join(os.getcwd(), "ML MODELS", "Md 1", "backend"))
