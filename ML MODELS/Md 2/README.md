@@ -146,3 +146,5 @@ The current RAG core version achieves the following metrics:
 - **DocVQA Generalization Slice**: `100.0%` Contains-Match accuracy.
 - **FUNSD Forms Extraction Slice**: `88.0%` F1 Score.
 - **OSHA Safety reasoning**: `66.7%` exact keyword cause match (100% semantic alignment).
+
+--EOF--
